@@ -89,10 +89,11 @@ while [ $i -le 6 ]; do
 done
 printf "\e[37m█\e[0m▒░\n\n"
 
-# greetings
-printf "%s%b" "$PADC" "         hello $RED$BLD$name$RST\n"
-printf "%s%b" "$PADC" "      welcome to $GRN$BLD$host$RST\n"
-printf "%s%b" "$PADC" " i've been $CYN$BLD$uptm$RST\n\n"
+#█▓▒░ greets
+printf " \e[1;34m    user \e[30m\\\\\ \e[36m$name\n"
+printf " \e[1;34m    host \e[30m\\\\\ \e[32m$host\n"
+printf " \e[1;34m      up \e[30m\\\\\ \e[37m$uptime\n"
+printf " \e[0m\n"
 
 # environment
 printf "%s%b" "$PADC" "$YLW        distro $GRY⏹ $RST$distro\n"
