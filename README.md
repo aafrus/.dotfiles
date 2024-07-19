@@ -5,7 +5,7 @@
     ░▀▀░░▀▀▀░░▀░░▀░░░▀▀▀░▀▀▀░▀▀▀░▀▀▀░░
 
     ABOUT     custom Linux configuration files
-    CODE      https://github.com/aafrus/dotfiles
+    CODE      https://github.com/aafrus/.dotfiles
 
     herbstlufwm     - window manager
     dunst           - notification daemon
