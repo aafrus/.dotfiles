@@ -90,9 +90,9 @@ done
 printf "\e[37m█\e[0m▒░\n\n"
 
 # greetings
-printf "%s%b" "$PADC" " user $RED$BLD$name$RST\n"
-printf "%s%b" "$PADC" " host $GRN$BLD$host$RST\n"
-printf "%s%b" "$PADC" " up $CYN$BLD$uptm$RST\n\n"
+printf "%s%b" "$PADC" "$YLW          user $RED$BLD$name$RST\n"
+printf "%s%b" "$PADC" "$YLW          host $GRN$BLD$host$RST\n"
+printf "%s%b" "$PADC" "$YLW            up $CYN$BLD$uptm$RST\n\n"
 
 # environment
 printf "%s%b" "$PADC" "$YLW        distro $GRY⏹ $RST$distro\n"
