@@ -28,18 +28,13 @@ PRST=$(printf "%b" "\e[0m")
 PBLD=$(printf "%b" "\033[1m")
 
 # vars
-#FULL=▓
-#EMPTY=░
-#FULL=━
-#EMPTY=━
 FULL=─
-#FULL=┅
 EMPTY=┄
 
 name=$USER
 host=$(uname -n)
 battery=/sys/class/power_supply/BAT1
-distro="$(cat /etc/os-release | grep NAME -m 1 | sed 's/NAME=//g' | sed 's/\"//g')"
+distro="$(grep -E '^NAME=' /etc/os-release | sed 's/NAME=//g' | sed 's/"//g')"
 kernel=$(uname -r)
 pkgs=$(xbps-query -l | wc -l)
 colors='alduin'
@@ -48,10 +43,18 @@ wm="hlwm"
 shell=$(basename $(printenv SHELL))
 term=$(echo "$TERM")
 term="${term%-256color}"
-#uptm=$(uptime -p | sed -e 's/hour/hr/' -e 's/hours/hrs/' -e 's/minutes/mins/' -e 's/minute/min/' -e 's/up //')
-uptm=$(uptime -p)
 
-#Cleanup first
+# Format uptime to "1h 2m"
+format_uptime() {
+    local seconds=$(awk '{print int($1)}' /proc/uptime)
+    local hours=$(($seconds / 3600))
+    local minutes=$((($seconds % 3600) / 60))
+    printf "%dh %dm" $hours $minutes
+}
+
+uptm=$(format_uptime)
+
+# Cleanup first
 clear
 
 # find the center of the screen
@@ -61,11 +64,11 @@ ROW=$(tput lines)
 ((PADX = COL / 2 - 34 / 2))
 
 for ((i = 0; i < PADX; ++i)); do
-	PADC="$PADC "
+    PADC="$PADC "
 done
 
 for ((i = 0; i < PADY; ++i)); do
-	PADR="$PADR\n"
+    PADR="$PADR\n"
 done
 
 # vertical padding
@@ -74,18 +77,14 @@ printf "\n"
 
 PADXX=$((PADX - 3))
 for ((i = 0; i < PADXX; ++i)); do
-	PADCC="$PADCC "
+    PADCC="$PADCC "
 done
 
-#BAR="█▓▒░"
-#OUTT="$BLK$BAR$RED$BAR$GRN$BAR$YLW$BAR$BLU$BAR$PUR$BAR$CYN$BAR$WHT$BAR$RST"
-#printf "%s%b" "$PADC" "$OUTT"
-#printf "\n\n"
 printf "%s" "$PADC"
 i=0
 while [ $i -le 6 ]; do
-	printf "\e[$((i + 41))m\e[$((i + 30))m█▓▒░"
-	i=$(($i + 1))
+    printf "\e[$((i + 41))m\e[$((i + 30))m█▓▒░"
+    i=$(($i + 1))
 done
 printf "\e[37m█\e[0m▒░\n\n"
 
@@ -107,17 +106,17 @@ printf " $RST\n"
 
 # progress bar
 draw() {
-	perc=$1
-	size=$2
-	inc=$((perc * size / 100))
-	out=
-	color="$3"
-	for v in $(seq 0 $((size - 1))); do
-		test "$v" -le "$inc" &&
-			out="${out}\e[1;${color}m${FULL}" ||
-			out="${out}\e[0;37m${GRY}${EMPTY}"
-	done
-	printf $out
+    perc=$1
+    size=$2
+    inc=$((perc * size / 100))
+    out=
+    color="$3"
+    for v in $(seq 0 $((size - 1))); do
+        test "$v" -le "$inc" &&
+            out="${out}\e[1;${color}m${FULL}" ||
+            out="${out}\e[0;37m${GRY}${EMPTY}"
+    done
+    printf $out
 }
 
 # cpu
