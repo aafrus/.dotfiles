@@ -1,0 +1,13 @@
+#█▓▒░ progress bar
+draw() {
+    local level=$1
+    local max=$2
+    local color=$3
+    local width=$((max * 2))
+    local filled=$((level * width / 100))
+    local empty=$((width - filled))
+    printf "\e[0;${color}m"
+    printf "%${filled}s" | tr ' ' '█'
+    printf "%${empty}s" | tr ' ' '░'
+    printf "\e[0m"
+}
