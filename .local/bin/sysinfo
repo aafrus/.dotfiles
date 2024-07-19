@@ -101,6 +101,7 @@ printf "%s%b" "$PADC" "$YLW         shell $GRY⏹ $RST$shell\n"
 printf "%s%b" "$PADC" "$YLW          term $GRY⏹ $RST$term\n"
 printf "%s%b" "$PADC" "$YLW            wm $GRY⏹ $RST$wm\n"
 printf "%s%b" "$PADC" "$YLW          font $GRY⏹ $RST$font\n"
+printf "%s%b" "$PADC" "$YLW          font $GRY⏹ $RST$font $font_size\n"
 printf "%s%b" "$PADC" "$YLW        colors $GRY⏹ $RST$colors\n"
 printf " $RST\n"
 
