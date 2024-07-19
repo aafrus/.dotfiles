@@ -1,0 +1,38 @@
+! Immortalmachine
+
+! special
+*.foreground:   #c0c0c0
+*.background:   #121212
+*.cursorColor:  #c0c0c0
+
+! black
+*.color0:       #080808
+*.color8:       #36393f
+
+! red
+*.color1:       #6a7f7f
+*.color9:       #6a7f7f
+
+! green
+*.color2:       #5b9fbc
+*.color10:      #5b9fbc
+
+! yellow
+*.color3:       #4c6a75
+*.color11:      #4c6a75
+
+! blue
+*.color4:       #6d6d6d
+*.color12:      #6d6d6d
+
+! magenta
+*.color5:       #a3a3a3
+*.color13:      #6f6f9e
+
+! cyan
+*.color6:       #6b7575
+*.color14:      #6b8fc5
+
+! white
+*.color7:       #c0c0c0
+*.color15:      #b0b2b3
