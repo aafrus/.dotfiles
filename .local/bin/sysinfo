@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+# sysinfo
 
 # color escapes
 BLK="\e[30m"
@@ -35,23 +37,24 @@ FULL=─
 EMPTY=┄
 
 name=$USER
-host=$(hostname)
-uptime=$(uptime -p | cut -b4- | tr -d ',|eeks|ay|our|inute')
+host=$(uname -n)
 battery=/sys/class/power_supply/BAT1
-distro=$(grep -E "^ID=" /etc/os-release | awk -F= '{print $2}')
+distro="$(cat /etc/os-release | grep NAME -m 1 | sed 's/NAME=//g' | sed 's/\"//g')"
 kernel=$(uname -r)
-pkgs=$(pacman -Qqs | wc -l)
-shell=$(echo $SHELL | awk -F/ '{print $NF}')
-term=$TERM
-colors=$(grep urxvt-colors ~/.Xdefaults | awk -F\/ '{print $NF}' | tr -d '"')
-font=$(grep -Ei "^urxvt\*font" ~/.Xdefaults | awk -F: '{print $3}')
-font_size=$(grep -Ei "^urxvt\*font" ~/.Xdefaults | grep -Eo '[0-9]{1,2}')
-wm='herbstluftwm'
+pkgs=$(xbps-query -l | wc -l)
+colors='alduin'
+font='spleen'
+wm="hlwm"
+shell=$(basename $(printenv SHELL))
+term=$(echo "$TERM")
+term="${term%-256color}"
+#uptm=$(uptime -p | sed -e 's/hour/hr/' -e 's/hours/hrs/' -e 's/minutes/mins/' -e 's/minute/min/' -e 's/up //')
+uptm=$(uptime -p)
 
 #Cleanup first
 clear
 
- the center of the screen
+# find the center of the screen
 COL=$(tput cols)
 ROW=$(tput lines)
 ((PADY = ROW / 2 - 10 - 22 / 2))
@@ -86,23 +89,21 @@ while [ $i -le 6 ]; do
 done
 printf "\e[37m█\e[0m▒░\n\n"
 
-#█▓▒░ greets
-printf " \e[1;34m    user \e[30m\\\\\ \e[36m$name\n"
-printf " \e[1;34m    host \e[30m\\\\\ \e[32m$host\n"
-printf " \e[1;34m      up \e[30m\\\\\ \e[37m$uptime\n"
-printf " \e[0m\n"
+# greetings
+printf "%s%b" "$PADC" "         hello $RED$BLD$name$RST\n"
+printf "%s%b" "$PADC" "      welcome to $GRN$BLD$host$RST\n"
+printf "%s%b" "$PADC" " i've been $CYN$BLD$uptm$RST\n\n"
 
-#█▓▒░ environment
-printf " \e[1;34m  distro \e[30m\\\\\ \e[0m$distro\n"
-printf " \e[1;34m  kernel \e[30m\\\\\ \e[0m$kernel\n"
-printf " \e[1;34mpackages \e[30m\\\\\ \e[0m$pkgs\n"
-printf " \e[1;34m upgrade \e[30m\\\\\ \e[0m$upgrade\n"
-printf " \e[1;34m      wm \e[30m\\\\\ \e[0m$wm\n"
-printf " \e[1;34m   shell \e[30m\\\\\ \e[0m$shell\n"
-printf " \e[1;34m    term \e[30m\\\\\ \e[0m$term\n"
-printf " \e[1;34m    font \e[30m\\\\\ \e[0m$font $font_size\n"
-printf " \e[1;34m  colors \e[30m\\\\\ \e[0m$colors\n"
-printf " \e[0m\n"
+# environment
+printf "%s%b" "$PADC" "$YLW        distro $GRY⏹ $RST$distro\n"
+printf "%s%b" "$PADC" "$YLW        kernel $GRY⏹ $RST$kernel\n"
+printf "%s%b" "$PADC" "$YLW      packages $GRY⏹ $RST$pkgs\n"
+printf "%s%b" "$PADC" "$YLW         shell $GRY⏹ $RST$shell\n"
+printf "%s%b" "$PADC" "$YLW          term $GRY⏹ $RST$term\n"
+printf "%s%b" "$PADC" "$YLW            wm $GRY⏹ $RST$wm\n"
+printf "%s%b" "$PADC" "$YLW          font $GRY⏹ $RST$font\n"
+printf "%s%b" "$PADC" "$YLW        colors $GRY⏹ $RST$colors\n"
+printf " $RST\n"
 
 # progress bar
 draw() {
@@ -129,12 +130,6 @@ printf "   $PUR%-4s $WHT%-5s %-25s \n" " cpu" "$c_lvl%" $(draw $c_lvl 15 35)
 ram=$(free | awk '/Mem:/ {print int($3/$2 * 100.0)}')
 printf "%b" "$RST$PADC"
 printf "   $PUR%-4s $WHT%-5s %-25s \n" " ram" "$ram%" $(draw $ram 15 35)
-
-# temperature
-#temp=$(sensors | awk '/Core 0/ {gsub(/\+/,"",$3); gsub(/\..+/,"",$3)    ; print $3}')
-temp=$(cat /proc/acpi/ibm/thermal | awk '{print $2}')
-printf "%b" "$RST$PADC"
-printf "   $PUR%-4s $WHT%-5s %-25s \n\n" " tmp" "$temp°c " $(draw $temp 15 35)
 
 # hide the cursor and wait for user input
 tput civis
