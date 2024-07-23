@@ -1,0 +1,43 @@
+! Special colors
+*background: #181818
+*foreground: #767b6f
+*cursorColor: #c7c7c7
+
+! Black
+*color0:  #4a4131
+*color8:  #4b4131
+
+! Red
+*color1:  #cb712a
+*color9:  #cb712a
+
+! Green
+*color2:  #cc7c34
+*color10: #cc7c34
+
+! Yellow
+*color3:  #c38e45
+*color11: #c38e45
+
+! Blue
+*color4:  #767b6f
+*color12: #767b6f
+
+! Magenta
+*color5:  #9fafaf
+*color13: #abbcbc
+
+! Cyan
+*color6:  #86a3a4
+*color14: #87a4a5
+
+! White
+*color7:  #cad7ca
+*color15: #cad7ca
+
+! Highlight settings
+*highlightTextColor: #000000
+*highlightColor: #c1ddff
+
+! No support for cursor text coloring; would be #feffff.
+! No support for bold coloring; would be #feffff.
