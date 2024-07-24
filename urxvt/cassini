@@ -20,16 +20,16 @@
 *.color11:      #d2b67f
 
 ! blue
-*.color4:       #1f1f1f
-*.color12:      #e18282
+*.color4:       #4c2f2f
+*.color12:      #7d4c4c
 
 ! magenta
 *.color5:       #7d4f3f
 *.color13:      #b68f6a
 
 ! cyan
-*.color6:       #ddcc74
-*.color14:      #7f4b4b
+*.color6:       #6b5b4f
+*.color14:      #8c7b6f
 
 ! white
 *.color7:       #d9cba4
