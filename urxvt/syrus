@@ -5,7 +5,7 @@
 
 ! black
 *.color0:       #050505
-*.color8:       #7d4d4d
+*.color8:       #bf4b4b
 
 ! red
 *.color1:       #bf4b4b
@@ -20,7 +20,7 @@
 *.color11:      #f2f2f2
 
 ! blue
-*.color4:       #7d4d4d
+*.color4:       #bf4b4b
 *.color12:      #e18282
 
 ! magenta
