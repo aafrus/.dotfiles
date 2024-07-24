@@ -1,0 +1,36 @@
+! special
+URxvt.foreground: #C6AB6D      
+URxvt.background: #030202     
+URxvt.cursorColor: #C6AB6D    
+
+! black
+URxvt.color0: #030202        
+URxvt.color8: #010100       
+
+! red
+URxvt.color1: #AC752F       
+URxvt.color9: #C6AB6D       
+
+! green
+URxvt.color2: #805B26         
+URxvt.color10: #AC752F     
+
+! yellow
+URxvt.color3: #C6AB6D        
+URxvt.color11: #805B26        
+
+! blue
+URxvt.color4: #030202       
+URxvt.color12: #C6AB6D       
+
+! magenta
+URxvt.color5: #805B26       
+URxvt.color13: #AC752F       
+
+! cyan
+URxvt.color6: #030202        
+URxvt.color14: #C6AB6D      
+
+! white
+URxvt.color7: #C6AB6D       
+URxvt.color15: #AC752F        
