@@ -13,7 +13,7 @@
 
 ! green
 *.color2:       #d7d7d9
-*.color10:      #f2f2f2
+*.color10:      #bf4b4b
 
 ! yellow
 *.color3:       #d7d7d9
@@ -28,8 +28,8 @@
 *.color13:      #d7d7d9
 
 ! cyan
-*.color6:       #d7d7d9
-*.color14:      #f2f2f2
+*.color6:       #bf4b4b
+*.color14:      #d7d7d9
 
 ! white
 *.color7:       #f2f2f2
