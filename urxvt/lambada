@@ -38,6 +38,3 @@
 ! Highlight settings
 *highlightTextColor: #000000
 *highlightColor: #c1ddff
-
-! No support for cursor text coloring; would be #feffff.
-! No support for bold coloring; would be #feffff.
