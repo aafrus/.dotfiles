@@ -1,0 +1,109 @@
+[flavor]
+use = "sylar"
+
+[manager]
+cwd = { fg = "#d0d0d0", bg = "#0a0a0a" }
+
+[hovered]
+hovered = { fg = "#d0d0d0", bg = "#3a3a3a" }
+preview_hovered = { fg = "#d0d0d0", bg = "#3a3a3a" }
+
+[find]
+find_keyword = { fg = "#e0e0e0", bg = "#1e1e1e", bold = true }
+find_position = { fg = "#d0d0d0", bg = "#1e1e1e", bold = true }
+
+[marker]
+marker_selected = { fg = "#d0d0d0", bg = "#9c353e" }
+marker_copied = { fg = "#d0d0d0", bg = "#b44c4f" }
+marker_cut = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för klippt
+
+[tab]
+tab_active = { fg = "#d0d0d0", bg = "#3a3a3a", bold = true }
+tab_inactive = { fg = "#585858", bg = "#1e1e1e" }
+tab_width = 20
+
+[border]
+border_symbol = "│"
+border_style = { fg = "#585858", bg = "#0a0a0a" }
+
+[highlighting]
+syntect_theme = "~/Downloads/Sylar.tmTheme"
+
+[status]
+separator_open = "["
+separator_close = "]"
+separator_style = { fg = "#585858", bg = "#0a0a0a" }
+
+[mode]
+mode_normal = { fg = "#d0d0d0", bg = "#1e1e1e" }
+mode_select = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för markerat
+mode_unset = { fg = "#585858", bg = "#0a0a0a" }
+
+[progress]
+progress_label = { fg = "#d0d0d0", bg = "#1e1e1e" }
+progress_normal = { fg = "#d0d0d0", bg = "#3a3a3a" }
+progress_error = { fg = "#d0d0d0", bg = "#9c353e" }
+
+[permissions]
+permissions_t = { fg = "#d0d0d0", bg = "#1e1e1e" }
+permissions_r = { fg = "#d0d0d0", bg = "#1e1e1e" }
+permissions_w = { fg = "#d0d0d0", bg = "#1e1e1e" }
+permissions_x = { fg = "#d0d0d0", bg = "#1e1e1e" }
+permissions_s = { fg = "#d0d0d0", bg = "#1e1e1e" }
+
+[select]
+border = { fg = "#585858", bg = "#0a0a0a" }
+active = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för aktivt
+inactive = { fg = "#585858", bg = "#1e1e1e" }
+
+[input]
+border = { fg = "#585858", bg = "#0a0a0a" }
+title = { fg = "#d0d0d0", bg = "#3a3a3a" }
+value = { fg = "#d0d0d0", bg = "#1e1e1e" }
+selected = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för valt
+
+[completion]
+border = { fg = "#585858", bg = "#0a0a0a" }
+active = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för aktivt
+inactive = { fg = "#585858", bg = "#1e1e1e" }
+
+[icon]
+prepend_rules = [
+    { name = "*.rs", text = "" },
+    { name = "Desktop/", text = "" },
+]
+append_rules = [
+    { name = "*", text = "" },
+    { name = "*/", text = "" },
+]
+
+[tasks]
+border = { fg = "#585858", bg = "#0a0a0a" }
+title = { fg = "#d0d0d0", bg = "#3a3a3a" }
+hovered = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för markerat
+
+[which]
+cols = 3
+mask = { fg = "#d0d0d0", bg = "#1e1e1e" }
+cand = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för kandidater
+rest = { fg = "#d0d0d0", bg = "#3a3a3a" }
+desc = { fg = "#d0d0d0", bg = "#1e1e1e" }
+separator = " -> "
+separator_style = { fg = "#585858", bg = "#0a0a0a" }
+
+[help]
+on = { fg = "#d0d0d0", bg = "#3a3a3a" }
+run = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för körda
+desc = { fg = "#d0d0d0", bg = "#1e1e1e" }
+hovered = { fg = "#d0d0d0", bg = "#4b5d49" }  # Mörkgrön för markerat
+footer = { fg = "#d0d0d0", bg = "#0a0a0a" }
+
+[filetype]
+rules = [
+    { mime = "image/*", fg = "yellow" },
+    { mime = "video/*", fg = "magenta" },
+    { mime = "audio/*", fg = "magenta" },
+    { mime = "inode/x-empty", fg = "cyan" },
+    { name = "*", is = "orphan", fg = "red" },
+    { name = "*/", fg = "blue" }
+]
