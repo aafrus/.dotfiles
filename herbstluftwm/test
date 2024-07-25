@@ -1,0 +1,43 @@
+# theme
+hc attr theme.tiling.reset 1
+hc attr theme.floating.reset 1
+hc set frame_border_active_color '#5e81ac'
+hc set frame_border_normal_color '#444444'
+hc set frame_bg_normal_color '#282828'
+hc set frame_bg_active_color '#282828'
+hc set frame_border_width 2
+hc set always_show_frame off
+hc set frame_bg_transparent on
+hc set frame_transparent_width 0
+hc set frame_gap 20
+
+hc attr theme.title_height 15
+hc attr theme.padding_left 3
+hc attr theme.active.color '#ffffff'
+hc attr theme.title_color '#d3d3d3'
+hc attr theme.normal.color '#808980'
+hc attr theme.urgent.color '#ff5555'
+hc attr theme.normal.title_color '#d3d3d3'
+hc attr theme.inner_width 2
+hc attr theme.inner_color '#3b4252'
+hc attr theme.border_width 2
+hc attr theme.floating.border_width 2
+hc attr theme.floating.outer_width 1
+hc attr theme.floating.outer_color '#444444'
+hc attr theme.active.inner_color '#88c0d0'
+hc attr theme.urgent.inner_color '#d08770'
+hc attr theme.normal.inner_color '#3b4252'
+
+# copy inner color to outer_color
+for state in active urgent normal ; do
+    hc substitute C theme.${state}.inner_color \
+        attr theme.${state}.outer_color C
+done
+hc attr theme.active.outer_width 2
+hc attr theme.background_color '#282828'
+
+hc set window_gap 20
+hc set frame_padding 5
+hc set smart_window_surroundings 0
+hc set smart_frame_surroundings 1
+hc set mouse_recenter_gap 0
