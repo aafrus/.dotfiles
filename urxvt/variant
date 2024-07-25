@@ -34,7 +34,3 @@
 ! White
 *color7:  #cad7ca
 *color15: #cad7ca
-
-! Highlight settings
-*highlightTextColor: #000000
-*highlightColor: #c1ddff
