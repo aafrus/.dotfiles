@@ -8,11 +8,11 @@
 *.color8:       #5a5a5a
 
 ! red
-*.color1:       #e07b39
-*.color9:       #e07b39
+*.color1:       #e08b55
+*.color9:       #e0a075
 
 ! green
-*.color2:       #b79e6c
+*.color2:       #9c7a4c
 *.color10:      #b79e6c
 
 ! yellow
@@ -20,12 +20,12 @@
 *.color11:      #f3d06b
 
 ! blue
-*.color4:       #7f8c8d
-*.color12:      #7f8c8d
+*.color4:       #6b8b8b
+*.color12:      #7c9b9b
 
 ! magenta
-*.color5:       #9fa8a0
-*.color13:      #aab8b8
+*.color5:       #b3b8b3
+*.color13:      #9fb4b4
 
 ! cyan
 *.color6:       #4b7f7f
