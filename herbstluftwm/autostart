@@ -9,6 +9,7 @@
 # ░██  ░██░░██████░███   ░██████  ██████   ░░██  ███░░██████  ░██    ░░██
 # ░░   ░░  ░░░░░░ ░░░    ░░░░░   ░░░░░░     ░░  ░░░  ░░░░░░   ░░      ░░
 
+
 hc() {
     herbstclient "$@"
 }
@@ -19,6 +20,9 @@ hc emit_hook reload
 # remove all existing keybindings
 hc keyunbind --all
 
+# gap counter
+echo 30 > /tmp/herbstluftwm-gap
+
 # keybindings
 # if you have a super key you will be much happier with Mod set to Mod4
 Mod=Mod1    # Use alt as the main modifier
@@ -27,6 +31,9 @@ Mod=Mod1    # Use alt as the main modifier
 # scrot
 #hc keybind $Mod-q spawn scrot -e 'mv $f ~trove/images/misc/scrots/ns/'
 
+# dynamic window gap
+hc keybind $Mod-9	spawn zsh /home/ns/.local/bin/herbstluftwm-remove-gap
+hc keybind $Mod-0	spawn zsh /home/ns/.local/bin/herbstluftwm-add-gap
 
 hc keybind $Mod-Control-q quit
 hc keybind $Mod-Shift-r reload
@@ -56,10 +63,11 @@ hc keybind $Mod-Shift-l     shift right
 
 # splitting frames
 # create an empty frame at the specified direction
-hc keybind $Mod-u       split   bottom  0.5
-hc keybind $Mod-o       split   right   0.5
+hc keybind $Mod-u       chain , split   bottom  0.5  , focus down #row
+hc keybind $Mod-o       chain , split   right   0.5  , focus right #column
 # let the current frame explode into subframes
 hc keybind $Mod-Control-space split explode
+
 
 # resizing frames and floating clients
 resizestep=0.01
@@ -156,10 +164,9 @@ hc set frame_transparent_width 0
 hc set frame_gap 33
 
 hc attr theme.title_height 0
-hc attr theme.padding_left 3
-hc attr theme.active.color '#b8c4b8'
-hc attr theme.title_color '#ffffff'
-hc attr theme.normal.color '#808980'
+hc attr theme.padding_left 5
+hc attr theme.active.color '#9c353e'
+hc attr theme.normal.color '#594646'
 hc attr theme.urgent.color '#7811A1dd'
 hc attr theme.normal.title_color '#898989'
 hc attr theme.inner_width 0
@@ -184,9 +191,6 @@ hc set frame_padding 0
 hc set smart_window_surroundings 0
 hc set smart_frame_surroundings 1
 hc set mouse_recenter_gap 0
-
-
-
 
 # rules
 hc unrule -F
@@ -213,13 +217,3 @@ hc rule title=dmenu floating=true
 # hc set_monitors 1280x1024+0+0 1280x1024+1280+0
 # or simply:
 # hc detect_monitors
-
-# find the panel
-panel=~/.config/herbstluftwm/panel.sh
-[ -x "$panel" ] || panel=/etc/xdg/herbstluftwm/panel.sh
-for monitor in $(hc list_monitors | cut -d: -f1) ; do
-    # start it on each monitor
-    "$panel" "$monitor" &
-done
-    "$panel" "$monitor" &
-done
