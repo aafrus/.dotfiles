@@ -14,6 +14,7 @@ green="\e[32m"
 reset="\e[0m"
 
 # ▓▓▒░ root
+
 command -v doas >/dev/null && \
     alias sudo='doas ' || \
     alias sudo='sudo '
