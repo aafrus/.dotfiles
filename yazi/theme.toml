@@ -7,7 +7,7 @@
 # : Flavor {{{
 
 [flavor]
-use = "sylar"
+use = ""
 
 # : }}}
 
