@@ -1,6 +1,4 @@
 #!/bin/bash
-# usage:
-# curl -L https://raw.githubusercontent.com/xero/dotfiles/main/setup > x && chmod +x x && sudo ./x
 # make sure your edit the ARCH var for your architecture
 #
 # user vars
