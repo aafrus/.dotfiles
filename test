@@ -1,32 +1,28 @@
 ~/bin/hashwall -b '#111' -f '#222' -s 12 
 
-# Återställ tema till standard
+# theme
 hc attr theme.tiling.reset 1
 hc attr theme.floating.reset 1
 
-# Ställ in ramen runt fönstren
 hc set frame_border_width 4
-hc set frame_border_active_color '#767676'  # Färg när fönstret är aktivt
-hc set frame_border_normal_color '#222222'  # Standardfärg när fönstret är inaktivt
+hc set frame_border_active_color '#767676'  
+hc set frame_border_normal_color '#222222' 
 
-# Dölj titelraden och annan extra stil
 hc attr theme.title_height 0
-hc set frame_bg_transparent 1  # Gör bakgrunden transparent
-hc set frame_bg_normal_color '#00000000'  # Transparent bakgrundsfärg
-hc set frame_bg_active_color '#00000000'  # Transparent bakgrundsfärg
-hc set always_show_frame 1  # Visa alltid ramen
+hc set frame_bg_transparent 1 
+hc set frame_bg_normal_color '#00000000'  
+hc set frame_bg_active_color '#00000000' 
+hc set always_show_frame 1  
 
-# Ställ in övriga tema-inställningar
 hc attr theme.inner_width 0
-hc attr theme.inner_color '#00000000'  # Transparent innerfärg
+hc attr theme.inner_color '#00000000'  
 hc attr theme.border_width 4
 hc attr theme.floating.border_width 4
 hc attr theme.floating.outer_width 4
-hc attr theme.floating.outer_color '#00000000'  # Transparent yttre färg
+hc attr theme.floating.outer_color '#00000000'  
 
-# Definiera ytterligare inställningar för fönsterhantering
-hc set window_gap 5
-hc set frame_padding 0
+hc set window_gap 0  
+hc set frame_padding 0  
 hc set smart_window_surroundings 0
 hc set smart_frame_surroundings 1
 hc set mouse_recenter_gap 0
