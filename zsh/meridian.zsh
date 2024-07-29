@@ -1,4 +1,6 @@
-# Meridian TTY colors
+# Meridian 
+# TTY colors
+
 if [ "$TERM" = "linux" ]; then
     echo -en "\e]P01e1e1e" # black
     echo -en "\e]P8585858" # darkgrey
