@@ -10,21 +10,21 @@ hc set frame_padding                    0
 hc set frame_transparent_width          0
 hc set mouse_recenter_gap               0
 hc set show_frame_decorations           none
-hc set smart_frame_surroundings         0
+hc set smart_frame_surroundings         1
 hc set smart_window_surroundings        0
 hc set window_gap                       0
 
 hc attr theme.background_color          '#1E1C14'
-hc attr theme.border_width              14
+hc attr theme.border_width              6
 hc attr theme.color                     '#1E1C14'
 hc attr theme.inner_color               '#1E1C14'
 hc attr theme.inner_width               9
-hc attr theme.outer_color               '#1E1C14'
+hc attr theme.outer_color               '#222222'
 hc attr theme.outer_width               3
 hc attr theme.padding_bottom            2
 hc attr theme.padding_left              2
 hc attr theme.padding_top               2
 hc attr theme.padding_right             2
 hc attr theme.active.background_color   '#1E1C14'
-hc attr theme.active.color              '#8C9440'
-hc attr theme.active.inner_width        11
+hc attr theme.active.color              '#767676'
+hc attr theme.active.inner_width        3
