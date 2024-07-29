@@ -12,4 +12,4 @@ setopt auto_cd
 
 export PATH=$PATH:/home/ns/bin:/home/ns/.local/bin
 
-source ~/.config/zsh/downtime.zsh
+source ~/.config/zsh/meridian.zsh
