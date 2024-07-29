@@ -3,6 +3,10 @@
 hc attr theme.tiling.reset 1
 hc attr theme.floating.reset 1
 
+# theme
+hc attr theme.tiling.reset 1
+hc attr theme.floating.reset 1
+
 # Färger
 hc set frame_border_width 4
 hc set frame_border_active_color '#5F8787'  # Aktiva fönster
@@ -13,7 +17,7 @@ hc attr theme.inner_color '#5F8787'  # Inner färg som matchar aktiva fönster
 hc attr theme.border_width 4
 hc attr theme.floating.border_width 4
 hc attr theme.floating.outer_width 4
-hc attr theme.floating.outer_color '#222222'  # Yttre färg för flytande fönster
+hc attr theme.floating.outer_color '#5F8787'  # Yttre färg för flytande fönster
 
 # Dölj titelraden och annan extra stil
 hc attr theme.title_height 0
