@@ -8,11 +8,6 @@
 # ░░░░░░ ░░░░░░  ░░   ░░
 # s h e l l  a l i a s e s
 
-# colours
-red="\e[31m"
-green="\e[32m"
-reset="\e[0m"
-
 # ▓▓▒░ root
 
 command -v doas >/dev/null && \
