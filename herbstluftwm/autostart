@@ -16,12 +16,22 @@ hc() {
 
 hc emit_hook reload
 
-
 # remove all existing keybindings
 hc keyunbind --all
 
+# close tray if reloading
+killall stalonetray
+
 # gap counter
 echo 30 > /tmp/herbstluftwm-gap
+
+# minimize and unminimise windows
+bash /home/ns/.local/bin/herbstluftwm-min_max
+
+hc keybind $Mod-Control-s spawn bash /home/ns/.local/bin/herbstluftwm-miniscratch
+
+# lock screen
+hc keybind $Mod-z	spawn bash /home/ns/.local/bin/lock
 
 # keybindings
 # if you have a super key you will be much happier with Mod set to Mod4
