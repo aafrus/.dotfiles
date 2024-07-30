@@ -26,7 +26,3 @@
 ! white
 *.color7:       #D7C483
 *.color15:      #D7C483
-! others
-URxvt.colorIT:  #78824B
-URxvt.colorBD:  #d3d3d3
-URxvt.colorUL:  #40413E
