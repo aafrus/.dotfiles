@@ -3,7 +3,7 @@
 # minimize and un-minimize.
 
 
-Mod=${Mod:-Mod4}
+Mod=${Mod:-Mod1}
 Minimizekey=Shift-m
 Unminimizekey=Ctrl-m
 # get the absolute path of this script, to call it when minimizing
