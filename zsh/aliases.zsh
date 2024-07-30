@@ -23,7 +23,7 @@ command -v doas >/dev/null && \
     cp="cp -r"                                                                \
     rmrf="rm -rf"                                                             \
     scp="scp -r"                                                              \
-                                                                              \
+    mod="chmod +x"                                                            \
     up="cd ../"                                                               \
     mkdir="mkdir -p"                                                          \
                                                                               \
