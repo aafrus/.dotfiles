@@ -62,22 +62,22 @@ do
 done
 
 # calculate
-max=$((res * 2 + 2))
+max=$((res * 2))
 i=0
 lines=""
-scale=$(echo "scale=2; $res / 10" | bc)
 
-# Generate a slithering pattern using a sine wave function
-while
-    x=$((i % (res * 2)))
-    y=$(echo "scale=2; $res / 2 + $scale * s($i * 0.1)" | bc -l)
-    lines="$lines line $x,0 $x,$y"
-    i="$((i + step))"
-    [ "$i" -lt "$max" ]
-do :; done
+# Generate a slithering pattern using basic line drawing
+while [ "$i" -lt "$max" ]; do
+    if [ $((i % 2)) -eq 0 ]; then
+        lines="$lines line $i,0 $i,$res"
+    else
+        lines="$lines line $i,$res $i,0"
+    fi
+    i=$((i + step))
+done
 
 # generate the image with a slithering pattern
 convert -size ${res}x${res} xc:${bg} -stroke ${fg} -strokewidth 2 \
     -draw "${lines}" /tmp/wall.png
 
-hsetroot -cover /tmp/wall.png
+hsetroot -tile /tmp/wall.png
