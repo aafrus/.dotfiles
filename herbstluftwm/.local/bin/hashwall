@@ -16,16 +16,16 @@ usage() {
     echo "usage: `basename $0` [-bfsr]
     -b background color (#222222)
     -f foreground color (#3e3e3e)
-    -s step (4)
-    -r resolution (24)"
+    -s step (30)
+    -r resolution (150)"
     exit 1
 }
 
 #args
-res=24
-step=4
-bg="#222222"
-fg="#3e3e3e"
+res=150
+step=30
+bg="#000000"
+fg="#151515"
 
 # evaluate
 while [ $# -gt 0 ]
@@ -62,16 +62,17 @@ do
 done
 
 # calculate
-max=$((res*2+2))
+max=$((res * 2 + 2))
 i=0
 lines=""
+scale=$(echo "scale=2; $res / 10" | bc)
 
-# Generate a slithering pattern
+# Generate a slithering pattern using a sine wave function
 while
     x=$((i % (res * 2)))
-    y=$((i / (res * 2) * step))
-    lines="$lines line $x,0 $y,${res}"
-    i="$((i+step))"
+    y=$(echo "scale=2; $res / 2 + $scale * s($i * 0.1)" | bc -l)
+    lines="$lines line $x,0 $x,$y"
+    i="$((i + step))"
     [ "$i" -lt "$max" ]
 do :; done
 
