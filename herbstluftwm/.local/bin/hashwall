@@ -16,16 +16,16 @@ usage() {
     echo "usage: `basename $0` [-bfsr]
     -b background color (#222222)
     -f foreground color (#3e3e3e)
-    -s step (30)
-    -r resolution (150)"
+    -s step (2)
+    -r resolution (24)"
     exit 1
 }
 
 #args
-res=150
-step=30
-bg="#000000"
-fg="#151515"
+res=24
+step=4
+bg="#222222"
+fg="#3e3e3e"
 
 # evaluate
 while [ $# -gt 0 ]
@@ -62,20 +62,15 @@ do
 done
 
 # calculate
-max=$((res * 2))
+max=$((res * 2 + 2))
 i=0
 lines=""
+while
+    lines="$lines line $i,-1 -1,$i"
+    i="$((i + step))"
+    [ "$i" -lt "$max" ]
+do :; done
 
-# Generate a slithering pattern using basic line drawing
-while [ "$i" -lt "$max" ]; do
-    y=$(( (res / 2) + (res / 2) * $(echo "s($i)" | bc -l) ))
-    next_y=$(( (res / 2) + (res / 2) * $(echo "s($((i + step)))" | bc -l) ))
-    lines="$lines line $i,$y $((i + step)),$next_y"
-    i=$((i + step))
-done
-
-# generate the image with a slithering pattern
-convert -size ${res}x${res} xc:${bg} -stroke ${fg} -strokewidth 2 \
-    -draw "${lines}" /tmp/wall.png
-
+# generate
+magick -size ${res}x${res} xc:${bg} -stroke ${fg} -draw "${lines}" /tmp/wall.png
 hsetroot -tile /tmp/wall.png
