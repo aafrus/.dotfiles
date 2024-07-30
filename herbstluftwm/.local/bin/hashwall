@@ -68,11 +68,9 @@ lines=""
 
 # Generate a slithering pattern using basic line drawing
 while [ "$i" -lt "$max" ]; do
-    if [ $((i % 2)) -eq 0 ]; then
-        lines="$lines line $i,0 $i,$res"
-    else
-        lines="$lines line $i,$res $i,0"
-    fi
+    y=$(( (res / 2) + (res / 2) * $(echo "s($i)" | bc -l) ))
+    next_y=$(( (res / 2) + (res / 2) * $(echo "s($((i + step)))" | bc -l) ))
+    lines="$lines line $i,$y $((i + step)),$next_y"
     i=$((i + step))
 done
 
