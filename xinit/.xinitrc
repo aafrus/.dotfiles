@@ -49,7 +49,7 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
 fi
 
 #wallpaper
-~/.local/bin/hashwall -b '#000000' -f '#ffffff' -s 12 -r 24
+~/.local/bin/hashwall -b '#222222' -f '#D7C483' -s 10 -r 24
 
 #cursor
 xsetroot -cursor_name left_ptr &
