@@ -1,30 +1,63 @@
 ~/bin/hashwall -b '#111' -f '#222' -s 12 
 
 # theme
-hc set frame_active_opacity             0
-hc set frame_bg_transparent             0
-hc set frame_border_width               0
-hc set frame_gap                        20
-hc set frame_normal_opacity             0
-hc set frame_padding                    0
-hc set frame_transparent_width          0
-hc set mouse_recenter_gap               0
-hc set show_frame_decorations           none
-hc set smart_frame_surroundings         1
-hc set smart_window_surroundings        0
-hc set window_gap                       0
+hc set frame_border_width 4
+hc set frame_border_active_color '#FFD700'  # Guld
+hc set frame_border_normal_color '#00BFFF'  # Djup himmelsblå
 
-hc attr theme.background_color          '#1E1C14'
-hc attr theme.border_width              6
-hc attr theme.color                     '#1E1C14'
-hc attr theme.inner_color               '#1E1C14'
-hc attr theme.inner_width               9
-hc attr theme.outer_color               '#222222'
-hc attr theme.outer_width               3
-hc attr theme.padding_bottom            2
-hc attr theme.padding_left              2
-hc attr theme.padding_top               2
-hc attr theme.padding_right             2
-hc attr theme.active.background_color   '#1E1C14'
-hc attr theme.active.color              '#767676'
-hc attr theme.active.inner_width        3
+hc set always_show_frame 1
+hc set frame_bg_transparent 1
+hc set frame_transparent_width 0
+hc set frame_gap 5
+hc set frame_padding 0
+
+hc attr theme.tiling.reset 1
+hc attr theme.floating.reset 1
+
+hc attr theme.border_width 4
+hc attr theme.floating.border_width 4
+hc attr theme.floating.inner_width 2
+hc attr theme.floating.outer_width 2
+hc attr theme.floating.inner_color '#00BFFF'  # Djup himmelsblå
+hc attr theme.floating.active.outer_color '#FFD700'  # Guld
+hc attr theme.floating.normal.outer_color '#00BFFF'  # Djup himmelsblå
+hc attr theme.urgent.outer_color '#FF4500'  # Orange röd
+
+hc set window_gap 10
+hc set smart_window_surroundings 0
+hc set smart_frame_surroundings 0
+hc set focus_follows_mouse 1
+hc set mouse_recenter_gap 0
+hc set focus_crosses_monitor_boundaries 1
+hc set swap_monitors_to_get_tag 0
+hc set raise_on_focus 1
+
+# Add some Y2K-style decorations
+hc attr theme.title_height 20
+hc attr theme.title_font 'Monospace:bold:size=12'
+hc attr theme.title_color '#FFD700'  # Guld
+hc attr theme.title_when 'multiple_tabs'
+hc attr theme.title_align 'center'
+
+# Customize the colors of the inner and outer borders
+hc attr theme.active.inner_color '#FFD700'  # Guld
+hc attr theme.active.outer_color '#00BFFF'  # Djup himmelsblå
+hc attr theme.normal.inner_color '#00BFFF'  # Djup himmelsblå
+hc attr theme.normal.outer_color '#00BFFF'  # Djup himmelsblå
+hc attr theme.inner_width 2
+hc attr theme.outer_width 2
+
+# Background color for the frame
+hc attr theme.background_color '#1C1C1C'  # Mörk bakgrundsfärg
+
+# Set the color scheme for tabs
+hc attr theme.tab_color '#FFD700'  # Guld
+hc attr theme.tab_background '#1C1C1C'  # Mörk bakgrund
+
+# Set colors for different window states
+hc attr theme.active.color '#FFD700'  # Guld
+hc attr theme.normal.color '#00BFFF'  # Djup himmelsblå
+hc attr theme.urgent.color '#FF4500'  # Orange röd
+
+# Ensure that the frame is visible at startup
+hc set frame_active_opacity 1
