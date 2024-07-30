@@ -1,76 +1,69 @@
 #!/bin/sh
-#
-#  ██                        ██                            ██  ██
-# ░██                       ░██                           ░██ ░██
-# ░██       ██████    ██████░██      ███     ██  ██████   ░██ ░██
-# ░██████  ░░░░░░██  ██░░░░ ░██████ ░░██  █ ░██ ░░░░░░██  ░██ ░██
-# ░██░░░██  ███████ ░░█████ ░██░░░██ ░██ ███░██  ███████  ░██ ░██
-# ░██  ░██ ██░░░░██  ░░░░░██░██  ░██ ░████░████ ██░░░░██  ░██ ░██
-# ░██  ░██░░████████ ██████ ░██  ░██ ███░ ░░░██░░████████ ███ ███
-# ░░   ░░  ░░░░░░░░ ░░░░░░  ░░   ░░ ░░░    ░░░  ░░░░░░░░ ░░░ ░░░
-#
-#
-#
-#█▓▒░ requires: imagemagick + hsetroot
 
-usage() {
-    echo "usage: `basename $0` [-bfsr]
-    -b background color (#222222)
-    -f foreground color (#3e3e3e)
-    -s step (2)
-    -r resolution (24)"
-    exit 1
-}
+userresources=$HOME/.Xresources
+usermodmap=$HOME/.Xmodmap
+sysresources=/etc/X11/xinit/.Xresources
+sysmodmap=/etc/X11/xinit/.Xmodmap
 
-#args
-res=24
-step=4
-bg="#222222"
-fg="#3e3e3e"
+# merge in defaults and keymaps
 
-# evaluate
-while [ $# -gt 0 ]
-do
-    case "$1" in
-            -b)
-                bg="$2"
-                shift
-            ;;
-            -f)
-                fg="$2"
-                shift
-            ;;
-            -s)
-                step="$2"
-                shift
-            ;;
-            -r)
-                res="$2"
-                shift
-            ;;
-            --)
-                shift
-                break
-            ;;
-            -*)
-                usage
-            ;;
-            *)
-                break
-            ;;
-    esac
-    shift
-done
+if [ -f $sysresources ]; then
 
-# calculate
-max=$((res * 2 + 2))
-i=0
-lines=""
-while [ "$i" -lt "$max" ]; do
-    lines="$lines line $i,$i $((i + step)),$((i + step))"
-    i="$((i + step))"
-done
 
-# generate
-magick -size ${res}x${res} xc:${bg} -stroke ${fg} -draw "${lines}" /tmp/wall.png
-hsetroot -tile /tmp/wall.png
+
+
+
+
+
+    xrdb -merge $sysresources
+
+fi
+
+if [ -f $sysmodmap ]; then
+    xmodmap $sysmodmap
+fi
+
+if [ -f "$userresources" ]; then
+
+
+
+
+
+
+
+    xrdb -merge "$userresources"
+
+fi
+
+if [ -f "$usermodmap" ]; then
+    xmodmap "$usermodmap"
+fi
+
+# start programs
+
+if [ -d /etc/X11/xinit/xinitrc.d ] ; then
+ for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+  [ -x "$f" ] && . "$f"
+ done
+ unset f
+fi
+
+#wallpaper
+~/.local/bin/hashwall -b '#222222' -f '#3e3e3e' -s 2 -r 24 &
+
+#cursor
+xsetroot -cursor_name left_ptr &
+unclutter -idle 0
+
+#load resources
+xrdb -load ~/.config/urxvt/.Xdefaults
+
+#set monitor
+xrandr --output Virtual-1 --mode 1920x1080
+
+# start urxvtd
+urxvtd -q -o -f
+
+
+#start wm
+exec herbstluftwm
