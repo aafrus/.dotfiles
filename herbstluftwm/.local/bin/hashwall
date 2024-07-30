@@ -9,12 +9,6 @@
 # ░██  ░██░░████████ ██████ ░██  ░██ ███░ ░░░██░░████████ ███ ███
 # ░░   ░░  ░░░░░░░░ ░░░░░░  ░░   ░░ ░░░    ░░░  ░░░░░░░░ ░░░ ░░░
 #
-#  ▓▓▓▓▓▓▓▓▓▓
-# ░▓ author ▓ xero <x@xero.nu>
-# ░▓ code   ▓ http://code.xero.nu/dotfiles
-# ░▓ mirror ▓ http://git.io/.files
-# ░▓▓▓▓▓▓▓▓▓▓
-# ░░░░░░░░░░
 #
 #█▓▒░ requires: imagemagick + hsetroot
 
@@ -22,7 +16,7 @@ usage() {
     echo "usage: `basename $0` [-bfsr]
     -b background color (#222222)
     -f foreground color (#3e3e3e)
-    -s step (2)
+    -s step (4)
     -r resolution (24)"
     exit 1
 }
@@ -30,8 +24,8 @@ usage() {
 #args
 res=24
 step=4
-bg="#000000"
-fg="#ffffff"
+bg="#222222"
+fg="#3e3e3e"
 
 # evaluate
 while [ $# -gt 0 ]
@@ -67,8 +61,22 @@ do
     shift
 done
 
-# generate the image with a tiling pattern
+# calculate
+max=$((res*2+2))
+i=0
+lines=""
+
+# Generate a slithering pattern
+while
+    x=$((i % (res * 2)))
+    y=$((i / (res * 2) * step))
+    lines="$lines line $x,0 $y,${res}"
+    i="$((i+step))"
+    [ "$i" -lt "$max" ]
+do :; done
+
+# generate the image with a slithering pattern
 convert -size ${res}x${res} xc:${bg} -stroke ${fg} -strokewidth 2 \
-    -draw "text 10,20 '~'" /tmp/wall.png
+    -draw "${lines}" /tmp/wall.png
 
 hsetroot -cover /tmp/wall.png
