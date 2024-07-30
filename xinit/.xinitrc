@@ -48,8 +48,8 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
  unset f
 fi
 
-#background
-~/bin/hashwall -b '#111' -f '#222' -s 12
+#wallpaper
+~/.local/bin/hashwall -b '#000000' -f '#ffffff' -s 12 -r 24
 
 #cursor
 xsetroot -cursor_name left_ptr &
