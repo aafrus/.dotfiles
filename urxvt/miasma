@@ -1,6 +1,6 @@
 ! █▓▒░ miasma
 *.foreground:   #c2c2b0
-*.background:   #222222
+*.background:   #080808
 *.cursorColor:  #918f6e
 ! black
 *.color0:       #222222
