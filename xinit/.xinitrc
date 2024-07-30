@@ -49,10 +49,11 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
 fi
 
 #background
-xsetroot -solid '#000000'
+~/bin/hashwall -b '#111' -f '#222' -s 12
 
 #cursor
 xsetroot -cursor_name left_ptr &
+unclutter -idle 0
 
 #load resources
 xrdb -load ~/.config/urxvt/.Xdefaults
