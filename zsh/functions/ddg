@@ -1,3 +1,3 @@
 emulate -L zsh
 query=$(php -r 'echo urlencode($argv[1]);' "$1")
-nohup firefox 'https://duckduckgo.com/?q='$query > /dev/null 2>&1 & disown %1
+(firefox 'https://duckduckgo.com/?q='$query > /dev/null 2>&1 &)
