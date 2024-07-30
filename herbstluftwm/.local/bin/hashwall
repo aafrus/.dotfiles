@@ -10,6 +10,7 @@
 # ░░   ░░  ░░░░░░░░ ░░░░░░  ░░   ░░ ░░░    ░░░  ░░░░░░░░ ░░░ ░░░
 #
 #
+#
 #█▓▒░ requires: imagemagick + hsetroot
 
 usage() {
@@ -65,11 +66,10 @@ done
 max=$((res * 2 + 2))
 i=0
 lines=""
-while
-    lines="$lines line $i,-1 -1,$i"
+while [ "$i" -lt "$max" ]; do
+    lines="$lines line $i,$i $((i + step)),$((i + step))"
     i="$((i + step))"
-    [ "$i" -lt "$max" ]
-do :; done
+done
 
 # generate
 magick -size ${res}x${res} xc:${bg} -stroke ${fg} -draw "${lines}" /tmp/wall.png
