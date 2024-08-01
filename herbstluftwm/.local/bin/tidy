@@ -5,7 +5,7 @@ import hashlib
 import time
  
 # Directory containing the files
-directory = r'C:\Path\to\your\wallpapers'
+directory = os.path.expanduser('~/pictures')
  
 """
 This script renames files in a specified directory to random 6-character alphanumeric filenames consisting
