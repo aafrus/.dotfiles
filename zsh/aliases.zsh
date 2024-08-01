@@ -8,6 +8,24 @@
 # ░░░░░░ ░░░░░░  ░░   ░░
 # s h e l l  a l i a s e s
 
+# colours
+red="\e[31m"
+green="\e[32m"
+reset="\e[0m"
+
+# ▓▓▒░ root
+# check for doas so aliases can be used on different systems
+# add whitespace for hack to make aliases woth with {sudo,doas}
+command -v doas >/dev/null && \
+    alias sudo='doas ' || \
+    alias sudo='sudo '
+
+# ▓▓▒░ unix
+# openbsd's ls(1) doesn't provide the `--color` option.
+command -v gls >/dev/null && \
+    alias ls="gls -hF --color=auto" || \
+    alias ls="ls -hF --color=auto"
+
 # ▓▓▒░ root
 
 command -v doas >/dev/null && \
