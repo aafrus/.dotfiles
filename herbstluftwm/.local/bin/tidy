@@ -3,33 +3,40 @@ import random
 import string
 import hashlib
 import time
- 
-# Directory containing the files
-directory = os.path.expanduser('~/pictures')
- 
-"""
-This script renames files in a specified directory to random 6-character alphanumeric filenames consisting
-of uppercase letters and digits. It includes the following features:
- 
-1. Scans the directory and identifies all the files in it.
-2. Calculates hashes for old files (files that already have 6-character names).
-3. Calculates hashes for new files (files with filenames not exactly 6 characters long).
-4. Compares hashes of old files and prompts the user to delete duplicates if conflicts are detected.
-5. Deletes new files with hashes that match old files, ensuring no duplicate content.
-6. Deletes new files with hashes that match other new files.
-7. Renames remaining new files to unique 6-character alphanumeric filenames.
-8. Prints detailed messages for each file, indicating actions taken (skipping, renaming, deleting).
-9. Provides a summary at the end of the script, indicating how many files it scanned, skipped, renamed, deleted,
-   and the count of each file type.
-10. Displays the total time the script took to run.
-"""
- 
-# Function to generate a random filename
+import argparse
+import shutil
+
+# This script provides various functionalities for file management:
+# 1. **Sorting Files**:
+#    - When run with `tidy sort <directory>`, it organizes files in the specified
+#      directory into subdirectories within a 'hub' directory, such as 'pictures',
+#      'documents', 'videos', and 'music', based on their file types.
+#    - Files in 'downloads' are moved to appropriate subdirectories in 'hub'.
+# 2. **Renaming Files**:
+#    - When run with `tidy <directory>`, it renames files within the given directory
+#      to unique 6-character alphanumeric names to avoid conflicts, ensuring that files
+#      are easily distinguishable and organized.
+# 3. **Category-Based Sorting**:
+#    - The script can also be run with a specific category (e.g., `tidy <directory> --category docs`)
+#      to only rename and sort files in a specific type or category as per user’s choice.
+# 4. **Handling Different File Types**:
+#    - Supports images, videos, music, and documents, allowing flexible management and organization
+#      of diverse file types.
+
+import os
+import random
+import string
+import hashlib
+import time
+import argparse
+import shutil
+
+# Function to generate a random filename of a given length (default 6 characters)
 def generate_random_filename(length=6):
     characters = string.ascii_uppercase + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
- 
-# Function to calculate the Blake2b hash of a file
+
+# Function to calculate the Blake2b hash of a file to detect duplicates
 def calculate_hash(file_path):
     hasher = hashlib.blake2b()
     try:
@@ -40,9 +47,14 @@ def calculate_hash(file_path):
     except Exception as e:
         print(f"Error calculating hash for {file_path}: {e}")
         return None
- 
-# Function to rename files in the directory
-def rename_files(directory):
+
+# Function to create a directory if it does not already exist
+def create_directory_if_not_exists(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+# Function to rename files in a specified directory based on their extensions
+def rename_files(directory, extensions):
     start_time = time.time()
     scanned_count = 0
     skipped_count = 0
@@ -52,24 +64,22 @@ def rename_files(directory):
     old_files_hashes = {}
     new_files_hashes = {}
     new_files = []
- 
-    # Step 1: Scan the directory and identify all the files in it
+
+    # Scan the directory for files with specified extensions
     print("Scanning directory and identifying files...")
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path):
+        if os.path.isfile(file_path) and os.path.splitext(filename)[1].lower() in extensions:
             scanned_count += 1
             file_name, file_extension = os.path.splitext(filename)
- 
-            # Count file types
+
             file_extension = file_extension.lower()
             if file_extension not in file_type_counts:
                 file_type_counts[file_extension] = 0
             file_type_counts[file_extension] += 1
- 
-            # Categorize files as old or new
+
+            # Handle files based on their length and hash
             if len(file_name) == 6:
-                # Step 2: Calculate hashes for old files
                 file_hash = calculate_hash(file_path)
                 if file_hash:
                     if file_hash in old_files_hashes:
@@ -79,7 +89,6 @@ def rename_files(directory):
                     skipped_count += 1
                     print(f'Skipping "{filename}" (already 6 characters long) Hash: {file_hash}')
             else:
-                # Step 3: Calculate hashes for new files
                 file_hash = calculate_hash(file_path)
                 if file_hash:
                     new_files.append((filename, file_path, file_hash))
@@ -87,8 +96,8 @@ def rename_files(directory):
                         new_files_hashes[file_hash].append(filename)
                     else:
                         new_files_hashes[file_hash] = [filename]
- 
-    # Check for conflicts among old files
+
+    # Handle conflicts among old files
     conflict_files = [(hash, files) for hash, files in old_files_hashes.items() if len(files) > 1]
     if conflict_files:
         print(f"\nDetected {len(conflict_files)} conflicts among old files:")
@@ -96,16 +105,16 @@ def rename_files(directory):
             print(f"Hash: {hash}")
             for file in files:
                 print(f" - {file}")
-        
+
         user_input = input("Do you want to delete these duplicates? (y/n): ").strip().lower()
         if user_input == 'y':
             for hash, files in conflict_files:
-                for file in files[1:]:  # Keep the first file, delete the rest
+                for file in files[1:]:
                     os.remove(os.path.join(directory, file))
                     duplicate_count += 1
                     print(f'Deleting "{file}" (duplicate content found among old files)')
- 
-    # Step 4: Delete new files with hashes that match old files
+
+    # Check for and handle duplicates among new files
     print("Checking for duplicates and deleting if found...")
     remaining_new_files = []
     for filename, file_path, file_hash in new_files:
@@ -120,27 +129,25 @@ def rename_files(directory):
             print(f'Deleting "{filename}" (duplicate content found with another new file)')
         else:
             remaining_new_files.append((filename, file_path, file_hash))
- 
-    # Step 5: Rename remaining new files
+
+    # Rename remaining new files to unique names
     print("Renaming remaining new files...")
     for filename, file_path, file_hash in remaining_new_files:
         file_name, file_extension = os.path.splitext(filename)
- 
-        # Generate a unique filename
         new_filename = generate_random_filename() + file_extension
         new_file_path = os.path.join(directory, new_filename)
         while os.path.exists(new_file_path):
             new_filename = generate_random_filename() + file_extension
             new_file_path = os.path.join(directory, new_filename)
-        
+
         os.rename(file_path, new_file_path)
         renamed_count += 1
         print(f'Renaming "{filename}" to "{new_filename}"')
- 
+
     end_time = time.time()
     total_time = end_time - start_time
- 
-    # Summary
+
+    # Print a summary of the operations performed
     print("\nSummary:")
     print(f"Total files scanned: {scanned_count}")
     print(f"Files skipped: {skipped_count}")
@@ -149,9 +156,68 @@ def rename_files(directory):
     for file_type, count in file_type_counts.items():
         print(f"{file_type.upper()} files scanned: {count}")
     print(f"Total time taken: {total_time:.2f} seconds")
- 
-    # Pause at the end
+
     input("Press Enter to exit...")
- 
-# Run the renaming process
-rename_files(directory)
+
+# Function to sort files in the downloads directory into their respective categories
+def sort_files_to_hub(hub_directory):
+    directories = {
+        'pictures': {'.png', '.jpg', '.jpeg'},
+        'documents': {'.pdf', '.doc', '.docx', '.txt', '.odt'},
+        'videos': {'.mp4', '.avi', '.mov', '.mkv'},
+        'music': {'.mp3', '.wav', '.flac'}
+    }
+
+    downloads_directory = os.path.join(hub_directory, 'downloads')
+    if not os.path.exists(downloads_directory):
+        print(f"The downloads directory '{downloads_directory}' does not exist.")
+        return
+
+    for subdir, extensions in directories.items():
+        subdir_path = os.path.join(hub_directory, subdir)
+        create_directory_if_not_exists(subdir_path)
+
+    for filename in os.listdir(downloads_directory):
+        file_path = os.path.join(downloads_directory, filename)
+        if os.path.isfile(file_path):
+            file_extension = os.path.splitext(filename)[1].lower()
+            for subdir, extensions in directories.items():
+                if file_extension in extensions:
+                    destination = os.path.join(hub_directory, subdir, filename)
+                    shutil.move(file_path, destination)
+                    print(f'Moved "{filename}" to "{subdir}" directory.')
+                    break
+
+# Function to process a directory by renaming files based on their type
+def process_directory(directory):
+    directories = {
+        'pictures': {'.png', '.jpg', '.jpeg'},
+        'documents': {'.pdf', '.doc', '.docx', '.txt', '.odt'},
+        'videos': {'.mp4', '.avi', '.mov', '.mkv'},
+        'music': {'.mp3', '.wav', '.flac'}
+    }
+
+    for subdir, extensions in directories.items():
+        subdir_path = os.path.join(directory, subdir)
+        if os.path.exists(subdir_path):
+            print(f"Processing {subdir_path}...")
+            rename_files(subdir_path, extensions)
+
+# Main function to handle command-line arguments and execute the corresponding action
+def main():
+    parser = argparse.ArgumentParser(description='Rename and sort files in a directory.')
+    parser.add_argument('action', choices=['tidy', 'sort'], help='Action to perform (tidy for renaming files, sort for sorting files into hub)')
+    parser.add_argument('directory', type=str, help='The directory to process')
+    args = parser.parse_args()
+
+    if args.action == 'tidy':
+        if args.directory.endswith('downloads'):
+            print("Cannot run tidy on downloads directory directly. Use 'sort' action for that.")
+            return
+        process_directory(args.directory)
+
+    elif args.action == 'sort':
+        sort_files_to_hub(args.directory)
+
+if __name__ == '__main__':
+    main()
