@@ -143,7 +143,7 @@ command -v doas >/dev/null && \
     news="newsboat"                                                           \
     gifview="gifview -a"                                                      \
     feh="feh -g 640x480"                                                      \
-    tidy="~/.local/bin/tidy"
+    tidy="python3 ~/.local/bin/tidy"
 
 # ▓▓▒░ fun(ctions)
 
