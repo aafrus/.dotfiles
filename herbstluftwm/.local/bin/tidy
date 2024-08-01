@@ -23,14 +23,6 @@ import shutil
 #    - Supports images, videos, music, and documents, allowing flexible management and organization
 #      of diverse file types.
 
-import os
-import random
-import string
-import hashlib
-import time
-import argparse
-import shutil
-
 # Function to generate a random filename of a given length (default 6 characters)
 def generate_random_filename(length=6):
     characters = string.ascii_uppercase + string.digits
