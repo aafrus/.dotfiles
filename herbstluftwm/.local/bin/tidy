@@ -3,14 +3,9 @@ import random
 import string
 import hashlib
 import time
-import logging
-import concurrent.futures
-from pathlib import Path
-import argparse
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger()
+# Directory containing the files
+directory = '/home/username/pictures'
 
 # Function to generate a random filename
 def generate_random_filename(length=6):
@@ -26,16 +21,11 @@ def calculate_hash(file_path):
                 hasher.update(chunk)
         return hasher.hexdigest()
     except Exception as e:
-        logger.error(f"Error calculating hash for {file_path}: {e}")
+        print(f"Error calculating hash for {file_path}: {e}")
         return None
 
-# Function to process each file
-def process_file(file_path):
-    file_hash = calculate_hash(file_path)
-    return file_path, file_hash
-
 # Function to rename files in the directory
-def rename_files(directory, file_types):
+def rename_files(directory):
     start_time = time.time()
     scanned_count = 0
     skipped_count = 0
@@ -47,7 +37,7 @@ def rename_files(directory, file_types):
     new_files = []
 
     # Step 1: Scan the directory and identify all the files in it
-    logger.info("Scanning directory and identifying files...")
+    print("Scanning directory and identifying files...")
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
         if os.path.isfile(file_path):
@@ -56,8 +46,6 @@ def rename_files(directory, file_types):
 
             # Count file types
             file_extension = file_extension.lower()
-            if file_types and file_extension not in file_types:
-                continue
             if file_extension not in file_type_counts:
                 file_type_counts[file_extension] = 0
             file_type_counts[file_extension] += 1
@@ -72,7 +60,7 @@ def rename_files(directory, file_types):
                     else:
                         old_files_hashes[file_hash] = [filename]
                     skipped_count += 1
-                    logger.info(f'Skipping "{filename}" (already 6 characters long) Hash: {file_hash}')
+                    print(f'Skipping "{filename}" (already 6 characters long) Hash: {file_hash}')
             else:
                 # Step 3: Calculate hashes for new files
                 file_hash = calculate_hash(file_path)
@@ -86,11 +74,11 @@ def rename_files(directory, file_types):
     # Check for conflicts among old files
     conflict_files = [(hash, files) for hash, files in old_files_hashes.items() if len(files) > 1]
     if conflict_files:
-        logger.info(f"\nDetected {len(conflict_files)} conflicts among old files:")
+        print(f"\nDetected {len(conflict_files)} conflicts among old files:")
         for hash, files in conflict_files:
-            logger.info(f"Hash: {hash}")
+            print(f"Hash: {hash}")
             for file in files:
-                logger.info(f" - {file}")
+                print(f" - {file}")
 
         user_input = input("Do you want to delete these duplicates? (y/n): ").strip().lower()
         if user_input == 'y':
@@ -98,26 +86,26 @@ def rename_files(directory, file_types):
                 for file in files[1:]:  # Keep the first file, delete the rest
                     os.remove(os.path.join(directory, file))
                     duplicate_count += 1
-                    logger.info(f'Deleting "{file}" (duplicate content found among old files)')
+                    print(f'Deleting "{file}" (duplicate content found among old files)')
 
     # Step 4: Delete new files with hashes that match old files
-    logger.info("Checking for duplicates and deleting if found...")
+    print("Checking for duplicates and deleting if found...")
     remaining_new_files = []
     for filename, file_path, file_hash in new_files:
         if file_hash in old_files_hashes:
             duplicate_count += 1
             os.remove(file_path)
-            logger.info(f'Deleting "{filename}" (duplicate content found with existing 6-character filename)')
+            print(f'Deleting "{filename}" (duplicate content found with existing 6-character filename)')
         elif len(new_files_hashes[file_hash]) > 1:
             duplicate_count += 1
             new_files_hashes[file_hash].remove(filename)
             os.remove(file_path)
-            logger.info(f'Deleting "{filename}" (duplicate content found with another new file)')
+            print(f'Deleting "{filename}" (duplicate content found with another new file)')
         else:
             remaining_new_files.append((filename, file_path, file_hash))
 
     # Step 5: Rename remaining new files
-    logger.info("Renaming remaining new files...")
+    print("Renaming remaining new files...")
     for filename, file_path, file_hash in remaining_new_files:
         file_name, file_extension = os.path.splitext(filename)
 
@@ -130,32 +118,23 @@ def rename_files(directory, file_types):
 
         os.rename(file_path, new_file_path)
         renamed_count += 1
-        logger.info(f'Renaming "{filename}" to "{new_filename}"')
+        print(f'Renaming "{filename}" to "{new_filename}"')
 
     end_time = time.time()
     total_time = end_time - start_time
 
     # Summary
-    logger.info("\nSummary:")
-    logger.info(f"Total files scanned: {scanned_count}")
-    logger.info(f"Files skipped: {skipped_count}")
-    logger.info(f"Files renamed: {renamed_count}")
-    logger.info(f"Duplicates deleted: {duplicate_count}")
+    print("\nSummary:")
+    print(f"Total files scanned: {scanned_count}")
+    print(f"Files skipped: {skipped_count}")
+    print(f"Files renamed: {renamed_count}")
+    print(f"Duplicates deleted: {duplicate_count}")
     for file_type, count in file_type_counts.items():
-        logger.info(f"{file_type.upper()} files scanned: {count}")
-    logger.info(f"Total time taken: {total_time:.2f} seconds")
+        print(f"{file_type.upper()} files scanned: {count}")
+    print(f"Total time taken: {total_time:.2f} seconds")
 
-def main():
-    parser = argparse.ArgumentParser(description="Rename files in a directory to random 6-character alphanumeric filenames.")
-    parser.add_argument('directory', type=str, help="The directory containing the files to be renamed.")
-    parser.add_argument('--types', type=str, nargs='+', help="Specific file types to include (e.g., .jpg .png .txt).")
-    args = parser.parse_args()
+    # Pause at the end
+    input("Press Enter to exit...")
 
-    if not os.path.isdir(args.directory):
-        logger.error(f"The directory {args.directory} does not exist.")
-        return
-
-    rename_files(args.directory, args.types)
-
-if __name__ == "__main__":
-    main()
+# Run the renaming process
+rename_files(directory)
