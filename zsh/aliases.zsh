@@ -130,6 +130,21 @@ command -v doas >/dev/null && \
                                                                               \
     kc="KUBECONFIG=./kubeconfig.yml kubectl"
 
+# ▓▓▒░ suffix
+                                                                     alias -s \
+    md=nvim                                                                   \
+    {png,jpg,jpeg}=sxiv                                                       \
+    pdf=zathura                                                               \
+    mp4=mpv
+
+# ▓▓▒░ misc
+                                                                        alias \
+    mixer="alsamixer"                                                         \
+    news="newsboat"                                                           \
+    gifview="gifview -a"                                                      \
+    feh="feh -g 640x480"                                                      \
+    tidy="~/.local/bin/tidy"
+
 # ▓▓▒░ fun(ctions)
 
     email() {
