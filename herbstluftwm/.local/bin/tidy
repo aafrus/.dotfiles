@@ -5,6 +5,20 @@ import hashlib
 import time
 import argparse
 
+# This script provides functionalities for managing files in directories.
+# 1. **Renaming Files**:
+#    - When run with `python3 script.py rename <directory>`, it renames files within
+#      the specified directory based on their file type. Files are renamed to unique
+#      6-character alphanumeric names to avoid conflicts.
+#    - The script supports various file types including pictures, documents, videos,
+#      and music.
+# 2. **Sorting Files**:
+#    - When run with `python3 script.py sort <hub_directory>`, it sorts files from the
+#      'downloads' subdirectory of the specified hub directory into appropriate
+#      subdirectories such as 'pictures', 'documents', 'videos', and 'music' based on
+#      their file extensions.
+#    - If these subdirectories do not already exist, the script will create them.
+
 # Function to generate a random filename of a given length (default 6 characters)
 def generate_random_filename(length=6):
     characters = string.ascii_uppercase + string.digits
@@ -139,15 +153,44 @@ def rename_files(directory):
 
     input("Press Enter to exit...")
 
+# Function to sort files in the downloads directory into their respective categories
+def sort_files_to_hub(hub_directory):
+    directories = {
+        'pictures': {'.png', '.jpg', '.jpeg'},
+        'documents': {'.pdf', '.doc', '.docx', '.txt', '.odt'},
+        'videos': {'.mp4', '.avi', '.mov', '.mkv'},
+        'music': {'.mp3', '.wav', '.flac'}
+    }
+
+    downloads_directory = os.path.join(hub_directory, 'downloads')
+    if not os.path.exists(downloads_directory):
+        print(f"The downloads directory '{downloads_directory}' does not exist.")
+        return
+
+    for subdir, extensions in directories.items():
+        subdir_path = os.path.join(hub_directory, subdir)
+        create_directory_if_not_exists(subdir_path)
+
+    for filename in os.listdir(downloads_directory):
+        file_path = os.path.join(downloads_directory, filename)
+        if os.path.isfile(file_path):
+            file_extension = os.path.splitext(filename)[1].lower()
+            for subdir, extensions in directories.items():
+                if file_extension in extensions:
+                    destination = os.path.join(hub_directory, subdir, filename)
+                    shutil.move(file_path, destination)
+                    print(f'Moved "{filename}" to "{subdir}" directory.')
+                    break
+
 # Main function to handle command-line arguments and execute the corresponding action
 def main():
     parser = argparse.ArgumentParser(description='Rename and sort files in a directory.')
-    parser.add_argument('action', choices=['tidy', 'sort'], help='Action to perform')
+    parser.add_argument('action', choices=['rename', 'sort'], help='Action to perform')
     parser.add_argument('directory', type=str, help='The directory to process')
     
     args = parser.parse_args()
 
-    if args.action == 'tidy':
+    if args.action == 'rename':
         rename_files(args.directory)
 
     elif args.action == 'sort':
