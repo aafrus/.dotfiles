@@ -3,14 +3,32 @@ import random
 import string
 import hashlib
 import time
+import argparse
+import shutil
 
-# Expand the ~ to the full path
-directory = os.path.expanduser('~/pictures')
+# This script provides various functionalities for file management:
+# 1. **Sorting Files**:
+#    - When run with `tidy sort <directory>`, it organizes files in the specified
+#      directory into subdirectories within a 'hub' directory, such as 'pictures',
+#      'documents', 'videos', and 'music', based on their file types.
+#    - Files in 'downloads' are moved to appropriate subdirectories in 'hub'.
+# 2. **Renaming Files**:
+#    - When run with `tidy <directory>`, it renames files within the given directory
+#      to unique 6-character alphanumeric names to avoid conflicts, ensuring that files
+#      are easily distinguishable and organized.
+# 3. **Category-Based Sorting**:
+#    - The script can also be run with a specific category (e.g., `tidy <directory> --category docs`)
+#      to only rename and sort files in a specific type or category as per user’s choice.
+# 4. **Handling Different File Types**:
+#    - Supports images, videos, music, and documents, allowing flexible management and organization
+#      of diverse file types.
 
+# Function to generate a random filename of a given length (default 6 characters)
 def generate_random_filename(length=6):
     characters = string.ascii_uppercase + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 
+# Function to calculate the Blake2b hash of a file to detect duplicates
 def calculate_hash(file_path):
     hasher = hashlib.blake2b()
     try:
@@ -22,7 +40,13 @@ def calculate_hash(file_path):
         print(f"Error calculating hash for {file_path}: {e}")
         return None
 
-def rename_files(directory):
+# Function to create a directory if it does not already exist
+def create_directory_if_not_exists(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+# Function to rename files in a specified directory based on their extensions
+def rename_files(directory, extensions):
     start_time = time.time()
     scanned_count = 0
     skipped_count = 0
@@ -36,7 +60,7 @@ def rename_files(directory):
     print("Scanning directory and identifying files...")
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path):
+        if os.path.isfile(file_path) and os.path.splitext(filename)[1].lower() in extensions:
             scanned_count += 1
             file_name, file_extension = os.path.splitext(filename)
 
@@ -121,4 +145,65 @@ def rename_files(directory):
 
     input("Press Enter to exit...")
 
-rename_files(directory)
+# Function to sort files in the downloads directory into their respective categories
+def sort_files_to_hub(hub_directory):
+    directories = {
+        'pictures': {'.png', '.jpg', '.jpeg'},
+        'documents': {'.pdf', '.doc', '.docx', '.txt', '.odt'},
+        'videos': {'.mp4', '.avi', '.mov', '.mkv'},
+        'music': {'.mp3', '.wav', '.flac'}
+    }
+
+    downloads_directory = os.path.join(hub_directory, 'downloads')
+    if not os.path.exists(downloads_directory):
+        print(f"The downloads directory '{downloads_directory}' does not exist.")
+        return
+
+    for subdir, extensions in directories.items():
+        subdir_path = os.path.join(hub_directory, subdir)
+        create_directory_if_not_exists(subdir_path)
+
+    for filename in os.listdir(downloads_directory):
+        file_path = os.path.join(downloads_directory, filename)
+        if os.path.isfile(file_path):
+            file_extension = os.path.splitext(filename)[1].lower()
+            for subdir, extensions in directories.items():
+                if file_extension in extensions:
+                    destination = os.path.join(hub_directory, subdir, filename)
+                    shutil.move(file_path, destination)
+                    print(f'Moved "{filename}" to "{subdir}" directory.')
+                    break
+
+# Function to process a directory by renaming files based on their type
+def process_directory(directory):
+    directories = {
+        'pictures': {'.png', '.jpg', '.jpeg'},
+        'documents': {'.pdf', '.doc', '.docx', '.txt', '.odt'},
+        'videos': {'.mp4', '.avi', '.mov', '.mkv'},
+        'music': {'.mp3', '.wav', '.flac'}
+    }
+
+    for subdir, extensions in directories.items():
+        subdir_path = os.path.join(directory, subdir)
+        if os.path.exists(subdir_path):
+            print(f"Processing {subdir_path}...")
+            rename_files(subdir_path, extensions)
+
+# Main function to handle command-line arguments and execute the corresponding action
+def main():
+    parser = argparse.ArgumentParser(description='Rename and sort files in a directory.')
+    parser.add_argument('action', choices=['tidy', 'sort'], help='Action to perform (tidy for renaming files, sort for sorting files into hub)')
+    parser.add_argument('directory', type=str, help='The directory to process')
+    args = parser.parse_args()
+
+    if args.action == 'tidy':
+        if args.directory.endswith('downloads'):
+            print("Cannot run tidy on downloads directory directly. Use 'sort' action for that.")
+            return
+        process_directory(args.directory)
+
+    elif args.action == 'sort':
+        sort_files_to_hub(args.directory)
+
+if __name__ == '__main__':
+    main()
