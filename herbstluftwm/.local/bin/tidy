@@ -5,7 +5,7 @@ import hashlib
 import time
 
 # Directory containing the files
-directory = '/home/username/pictures'
+directory = "~/local/pictures"
 
 # Function to generate a random filename
 def generate_random_filename(length=6):
