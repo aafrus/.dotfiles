@@ -11,15 +11,20 @@ hc set frame_bg_transparent 1
 hc set frame_transparent_width 0
 hc set frame_gap 2
 
-hc attr theme.active.color '#78824b'
-hc attr theme.normal.color '#1c1c1c'
-hc attr theme.inner_width 2
-hc attr theme.border_width 2
+# Aktiverade fönster har en grön ram
+hc attr theme.active.color '#78824b'  # Grön färg för aktiva fönster
+hc attr theme.active.inner_color '#78824b'  # Inre färg för aktiva fönster
+hc attr theme.active.outer_color '#78824b'  # Yttre färg för aktiva fönster
+
+# Inaktiva fönster har ingen ram
+hc attr theme.normal.color '#1c1c1c'  # Standardfärg för inaktiva fönster
+hc attr theme.inner_width 0  # Ingen inre ram för inaktiva fönster
+hc attr theme.border_width 0  # Ingen yttre ram för inaktiva fönster
 hc attr theme.floating.border_width 3
-hc attr theme.floating.outer_width 1
-hc attr theme.floating.outer_color black
-hc attr theme.active.inner_color '#78824b'
-hc attr theme.active.outer_color '#131313'
+hc attr theme.floating.outer_width 0  # Ingen yttre ram för flytande fönster
+hc attr theme.floating.outer_color '#080808'  # Transparent svart färg för yttre ram, kan vara densamma som bakgrunden
+
+# Bakgrundsfärg
 hc attr theme.background_color '#1e1b1c'
 
 hc set window_gap 10
