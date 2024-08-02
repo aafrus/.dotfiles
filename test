@@ -11,7 +11,7 @@ hc attr theme.normal.inner_color '#00000000'  # Transparent inre ram
 hc attr theme.normal.outer_color '#00000000'  # Transparent yttre ram
 
 # Ramar och breddar
-hc attr theme.border_width 0      # Ta bort den svarta ramens bredd
+hc attr theme.border_width 0      # Ta bort den extra svarta ramens bredd
 hc attr theme.inner_width 2       # Bredd på inre ram
 hc attr theme.outer_width 2       # Bredd på yttre ram
 
