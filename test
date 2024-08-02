@@ -1,22 +1,49 @@
-# Återställ till standard tema
 hc attr theme.tiling.reset 1
 hc attr theme.floating.reset 1
 
-# Grön ram för aktiva fönster
-hc attr theme.active.inner_color '#78824b'  # Grön färg för inre ramen
-hc attr theme.active.outer_color '#78824b'  # Grön färg för yttre ramen
+hc set always_show_frame off
+hc set frame_border_width 4
+hc set frame_bg_transparent on
+hc set frame_transparent_width 0
+hc set frame_gap 10
 
-# Transparent ram för inaktiva fönster
-hc attr theme.normal.inner_color '#00000000'  # Transparent inre ram
-hc attr theme.normal.outer_color '#00000000'  # Transparent yttre ram
+hc set frame_border_active_color '#EEEEEE'
+hc set frame_border_normal_color '#262626'
+hc set frame_bg_normal_color '#262626'
+hc set frame_bg_active_color '#EEEEEE'
 
-# Ramar och breddar
-hc attr theme.border_width 0      # Ta bort den extra svarta ramens bredd
-hc attr theme.inner_width 2       # Bredd på inre ram
-hc attr theme.outer_width 2       # Bredd på yttre ram
+hc attr theme.title_font
+hc attr theme.title_height 34
+hc attr theme.padding_top 12  
+hc attr theme.padding_bottom 3
+hc attr theme.padding_left 3
+hc attr theme.padding_right 3
+hc attr theme.inner_width 0
+hc attr theme.active.outer_width 0
+hc attr theme.inner_color black
+hc attr theme.border_width 0
+hc attr theme.floating.border_width 0
+hc attr theme.floating.outer_width 0
 
-# Övriga inställningar
+hc attr theme.active.color '#25292e'
+hc attr theme.title_color '#25292e'
+hc attr theme.normal.color '#161719'
+hc attr theme.urgent.color '#D34651'
+hc attr theme.normal.title_color '#161719'
+hc attr theme.urgent.title_color '#D34651'
+hc attr theme.floating.outer_color black
+hc attr theme.active.inner_color '#EEEEEE'
+hc attr theme.urgent.inner_color '#D34651'
+hc attr theme.normal.inner_color '#DADADA'
+hc attr theme.background_color '#262626'
+
+for state in active urgent normal ; do
+    hc substitute C theme.${state}.inner_color \
+        attr theme.${state}.outer_color C
+done
+
 hc set window_gap 10
+hc set frame_padding 0
 hc set smart_window_surroundings 0
 hc set smart_frame_surroundings 1
 hc set mouse_recenter_gap 0
