@@ -22,7 +22,7 @@ hc attr theme.normal.inner_color '#1c1c1c'  # Inre färg för inaktiva fönster
 hc attr theme.normal.outer_color '#1c1c1c'  # Yttre färg för inaktiva fönster
 hc attr theme.inner_width 0  # Ingen inre ram för inaktiva fönster
 hc attr theme.border_width 0  # Ingen yttre ram för inaktiva fönster
-hc attr theme.floating.border_width 3
+hc attr theme.floating.border_width 0
 hc attr theme.floating.outer_width 0  # Ingen yttre ram för flytande fönster
 hc attr theme.floating.outer_color '#080808'  # Transparent svart färg för yttre ram, kan vara densamma som bakgrunden
 
