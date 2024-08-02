@@ -1,10 +1,21 @@
-# theme
+# Återställ till standard tema
 hc attr theme.tiling.reset 1
 hc attr theme.floating.reset 1
 
-hc attr theme.active.color '#78824b'  # Grön färg för aktiva fönster
-hc attr theme.border_width 2  # Bredd på den yttre ramen för aktiva fönster
+# Grön ram för aktiva fönster
+hc attr theme.active.inner_color '#78824b'  # Grön färg för inre ramen
+hc attr theme.active.outer_color '#78824b'  # Grön färg för yttre ramen
 
+# Transparent ram för inaktiva fönster
+hc attr theme.normal.inner_color '#00000000'  # Transparent inre ram
+hc attr theme.normal.outer_color '#00000000'  # Transparent yttre ram
+
+# Ramar och breddar
+hc attr theme.border_width 0      # Ta bort den svarta ramens bredd
+hc attr theme.inner_width 2       # Bredd på inre ram
+hc attr theme.outer_width 2       # Bredd på yttre ram
+
+# Övriga inställningar
 hc set window_gap 10
 hc set smart_window_surroundings 0
 hc set smart_frame_surroundings 1
