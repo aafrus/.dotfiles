@@ -1,29 +1,29 @@
-# theme
-hc attr theme.tiling.reset 1
-hc attr theme.floating.reset 1
-hc set frame_border_active_color '#807b64'
-hc set frame_border_normal_color '#131313'
-hc set frame_bg_normal_color '#202020'
-hc set frame_bg_active_color '#131313'
-hc set frame_border_width 0
+#theme
+hc set frame_border_width 2
+hc set frame_transparent_width 0
+hc set window_border_width 2
+hc set window_border_inner_width 0
+
 hc set always_show_frame 0
 hc set frame_bg_transparent 1
-hc set frame_transparent_width 0
-hc set frame_gap 2
+hc set smart_window_surroundings 0
+hc set smart_frame_surroundings 0
+hc set mouse_recenter_gap 0
 
-hc attr theme.active.color '#78824b'
-hc attr theme.normal.color '#1c1c1c'
-hc attr theme.inner_width 2
-hc attr theme.border_width 2
-hc attr theme.floating.border_width 3
-hc attr theme.floating.outer_width 1
-hc attr theme.floating.outer_color black
-hc attr theme.active.inner_color '#78824b'
-hc attr theme.active.outer_color '#131313'
-hc attr theme.background_color '#1e1b1c'
+hc set frame_border_active_color  '#78824b'
+hc set frame_border_normal_color  '#262626'
+hc set frame_bg_active_color      '#78824b'
+hc set frame_bg_normal_color      '#262626'
+hc set window_border_active_color '#78824b'
+hc set window_border_normal_color '#262626'
 
 hc set window_gap 10
 hc set frame_padding 0
 hc set smart_window_surroundings 0
 hc set smart_frame_surroundings 1
 hc set mouse_recenter_gap 0
+
+hc set default_frame_layout 3
+hc set pseudotile_center_threshold 14
+hc set snap_distance 14
+hc set snap_gap 9
