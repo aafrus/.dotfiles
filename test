@@ -1,5 +1,8 @@
-# Loop through all tags and set layout 3 (grid)
-for tag in $(herbstclient tag_status | awk '{print $2}' | tr -d '[]'); do
-    herbstclient use "$tag"
-    herbstclient set_layout 3
-done
+# Set default frame layout to grid (3)
+hc set default_frame_layout 3
+
+# Apply the default frame layout to existing tags
+hc substitute 3 settings.default_frame_layout \
+    foreach T tags.by-name. \
+    sprintf ATTR '%c.tiling.root.algorithm' T \
+    set_attr ATTR 3
