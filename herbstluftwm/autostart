@@ -188,7 +188,6 @@ hc set smart_window_surroundings 0
 hc set smart_frame_surroundings 1
 hc set mouse_recenter_gap 0
 
-hc set default_frame_layout 3
 hc set snap_distance 14
 hc set snap_gap 9
 
