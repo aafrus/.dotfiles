@@ -189,9 +189,17 @@ hc set smart_frame_surroundings 1
 hc set mouse_recenter_gap 0
 
 hc set default_frame_layout 3
-hc set pseudotile_center_threshold 14
 hc set snap_distance 14
 hc set snap_gap 9
+
+# Set default frame layout to grid (3)
+hc set default_frame_layout 3
+
+# Apply the default frame layout to existing tags
+hc substitute 3 settings.default_frame_layout \
+    foreach T tags.by-name. \
+    sprintf ATTR '%c.tiling.root.algorithm' T \
+    set_attr ATTR 3
 
 # rules
 hc unrule -F
