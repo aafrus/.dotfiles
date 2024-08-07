@@ -1,5 +1,15 @@
-# Set layout 3 (grid) on all existing tags
-layout=3
+# Apply layout 3 on every new window
+hc --idle | while read -r line; do
+    case "$line" in
+        *client_new*)
+            hc split explode
+            hc set default_frame_layout 3
+            ;;
+    esac
+done
+
+# Apply default layout on every tag
 for tag in $(herbstclient tag_status | cut -d' ' -f2- | tr -d '[]'); do
-    hc use "$tag" && hc load "$tag" "$layout"
+    hc use "$tag"
+    hc load "$tag" 3
 done
