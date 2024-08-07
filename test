@@ -1,7 +1,5 @@
-# Define the layout you want (3 is grid layout)
+# Set layout 3 (grid) on all existing tags
 layout=3
-
-# Apply the layout to all tags
 for tag in $(herbstclient tag_status | cut -d' ' -f2- | tr -d '[]'); do
-    hc load "$tag" "$layout"
+    hc use "$tag" && hc load "$tag" "$layout"
 done
