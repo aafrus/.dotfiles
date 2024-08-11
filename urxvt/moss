@@ -7,7 +7,6 @@
 *.mouseBackground: #CCC5AD
 *.mouseForeground: #CCC098
 *.highlight:    #38362F
-*.borderColor:  #2D2B26
 
 ! Black
 *.color0:       #33312B
