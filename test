@@ -1,32 +1,24 @@
- # theme
+# theme
  hc attr theme.tiling.reset 1
  hc attr theme.floating.reset 1
- hc set frame_border_active_color '#8b9e70'
- hc set frame_border_normal_color '#8b9e70'
- hc set frame_bg_normal_color '#8b9e70'
- hc set frame_bg_active_color '#8b9e70'
  hc set frame_border_width 0
- hc set always_show_frame on
- hc set frame_bg_transparent on
+ hc set always_show_frame 1
+ hc set frame_bg_transparent 1
  hc set frame_gap 30
 
  hc attr theme.title_height 0
  hc attr theme.padding_right 0
  hc attr theme.padding_left 0
  hc attr theme.padding_bottom 0
- hc attr theme.active.color '#8b9e70'
- hc attr theme.normal.color '#8b9e70'
- hc attr theme.border_width 0
- hc attr theme.border.color '#ffffff'
- hc attr theme.floating.border_width 0
- hc attr theme.inner_width.top 0
- hc attr theme.padding_top 35
- hc attr theme.floating.outer_color '#8b9e70'
- hc attr theme.active.inner_color '#8b9e70'
- hc attr theme.active.outer_color '#8b9e70'
- hc attr theme.background_color '#8b9e70'
+ hc attr theme.active.color '#b8b265'
+ hc attr theme.normal.color '#1f1f19'
+ hc attr theme.padding_top 15
 
  hc set window_gap 50
- hc set smart_window_surroundings off
- hc set smart_frame_surroundings off
+ hc set smart_window_surroundings 0
+ hc set smart_frame_surroundings 1
  hc set mouse_recenter_gap 0
+
+hc set snap_distance 14
+hc set snap_gap 9
+hc set snap_to_edge 1
