@@ -20,18 +20,13 @@
 	--arrowpanel-border-radius: 0px !important;
 	--arrowpanel-menuitem-border-radius: 0px !important;
 	--toolbarbutton-border-radius: 0px !important;
-	--toolbarbutton-inner-padding: 0px 2px !important;
+	--toolbarbutton-inner-padding: 0px 0px !important;
 }
 
 /* --- GENERAL DEBLOAT ---------------------------------- */
 
 /* Bottom left page loading status or url preview */
 #statuspanel { display: none !important; }
-
-/* Hide dropdown that appears when you type in search bar */
-/*.autocomplete-history-popup, panel[type=autocomplete-richlistbox], panel[type=autocomplete] {*/
-/*	display: none !important;*/
-/*}*/
 
 /* --- DEBLOAT NAVBAR ----------------------------------- */
 
@@ -73,9 +68,12 @@ toolbar .toolbarbutton-1 { padding: 0 0 !important; }
 #urlbar {
 	--urlbar-height: var(--urlbar-height-setting) !important;
 	--urlbar-toolbar-height: var(--urlbar-height-setting) !important;
+	color: #ccc5ad !important; /* Ändra till din önskade färg */
 	min-height: var(--urlbar-height-setting) !important;
 	border-color: var(--lwt-toolbar-field-border-color, hsla(240,5%,5%,.25)) !important;
 }
+
+
 
 #urlbar-input {
 	margin-left: 0.8em !important;
@@ -88,7 +86,7 @@ toolbar .toolbarbutton-1 { padding: 0 0 !important; }
 
 #nav-bar, #navigator-toolbox {
 	border-width: 0 !important;
-	--toolbar-field-focus-border-color: #262639;
+	--toolbar-field-focus-border-color: #080808;
 }
 
 /* weird hack to keep pop-up menus from overlapping with navbar */
@@ -150,8 +148,8 @@ toolbar .toolbarbutton-1 { padding: 0 0 !important; }
 #star-button-box:hover { background: inherit !important; }
 
 /* this will remove the invisible box at the end of urlbar but also will
- * disable the Ctrl+D shortcut */
-/*#star-button-box { display: none; }*/
+ disable the Ctrl+D shortcut */
+#star-button-box { display: none; }*/
 
 /* Go to arrow button at the end of the urlbar when searching */
 #urlbar-go-button { display: none; }
@@ -262,7 +260,7 @@ tab {
 /* active tab border color */
 #tabbrowser-tabs tab.tabbrowser-tab[selected="true"],
 #tabbrowser-tabs tab.tabbrowser-tab[multiselected="true"] {
-  border-bottom: 3px solid rgb(112, 119, 70) !important;
+  border-bottom: 2px solid rgb(112, 119, 70) !important;
 }
 
 /* Verified by Google Trust Service */
@@ -292,6 +290,17 @@ tab {
   opacity: 1; /* Visible on hover */
 }
 
+/* Toolbar bakgrundsfärg */
+.toolbarbutton-icon {
+    background-color: #080808 !important;
+}
+
+/* Ändra ikonernas färg */
+.toolbarbutton-icon,
+#unified-extensions-button .toolbarbutton-icon {
+    fill: #ccc5ad !important; /* Ändra till önskad färg */
+}
+
 /* Application Menu Button */
 #PanelUI-menu-button {
   opacity: 0; /* Initially hidden */
@@ -300,6 +309,17 @@ tab {
 #PanelUI-menu-button:hover {
   opacity: 1; /* Visible on hover */
 }
+
+/* Downloads Button */
+#downloads-button {
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.2s ease-in-out; /* Smooth transition */
+}
+#downloads-button:hover {
+  opacity: 1; /* Visible on hover */
+}
+
+
 
 /* Remove magnifying glass in URL bar */
 #urlbar-input-box::before {
@@ -316,10 +336,22 @@ tab {
   display: none !important;
 }
 
-/* Remove Bookmark */
-hbox#star-button-box {
-  display: none !important;
+/* Ändra bakgrundsfärgen på permissions */
+html#main-window body toolbox#navigator-toolbox toolbar#nav-bar.browser-toolbar.chromeclass-location hbox#nav-bar-customization-target.customization-target toolbaritem#urlbar-container hbox#urlbar hbox.urlbar-input-container box#identity-box.verifiedDomain box#identity-permission-box.identity-box-button {
+    background-color: #080808 !important; /* Byt till den färg du vill använda */
 }
+
+/* bakgrundsfärg på Trust Service */
+html#main-window body toolbox#navigator-toolbox toolbar#nav-bar.browser-toolbar.chromeclass-location hbox#nav-bar-customization-target.customization-target toolbaritem#urlbar-container hbox#urlbar hbox.urlbar-input-container box#identity-box.verifiedDomain box#identity-icon-box.identity-box-button {
+    background-color: #080808 !important;
+}
+
+/* Ändra bakgrundsfärg på tracking-protection */
+#urlbar-container .urlbar-input-container #tracking-protection-icon-container {
+    background-color: #080808 !important;
+}
+
+
 
 /* Grundstil för .urlbar-input-container */
 .urlbar-input-container {
@@ -348,6 +380,19 @@ hbox#star-button-box {
   color: #ffffff; /* Textfärg för kontextmenyn */
 }
 
+/* Styla URL-fältets fokusindikator */
+.urlbar-input:focus {
+  border-color: #080808 !important; /* Ändra färgen till #080808 */
+  outline: none; /* Ta bort standardfokusindikatorn om du vill */
+}
+
+
+/* Exempel på styling för pseudo-element */
+.urlbar-input:focus::after {
+  border-color: #080808 !important; /* Ändra färgen till #080808 */
+}
+
+
 /* Specifika variabler för toolbar-stilar */
 :root {
   --toolbar-field-border-color: transparent; /* Gränsfärg är transparent */
@@ -367,8 +412,15 @@ hbox#star-button-box {
   color: var(--toolbar-field-focus-color); /* Textfärg vid fokus */
 }
 
+/* Ta bort andra label-barnet i #private-browsing-indicator-with-label */
+#private-browsing-indicator-with-label > label:nth-child(2) {
+  display: none !important;
+}
 
-
+/* Ändra bakgrundsfärgen för TabsToolbar till #080808 */
+#main-window #navigator-toolbox #titlebar #TabsToolbar.browser-toolbar.titlebar-color {
+	background-color: #080808 !important;
+  }
 
 /* Title bar in inactive windows should keep full opacity */
 
@@ -380,4 +432,34 @@ hbox#star-button-box {
 	border-inline-start: 0 !important;
 	padding-inline-start: 0 !important;
 	margin-inline-start: 0 !important;
+}
+
+/* Ta bort pilknappen vid slutet av URL-fältet */
+#urlbar-container .urlbar-go-button {
+    display: none !important;
+}
+
+/* Remove shadow under url bar */
+#urlbar[breakout][breakout-extend] > #urlbar-background {
+	box-shadow: none !important;
+  }
+  
+  #urlbar[breakout][breakout-extend][open] > #urlbar-background {
+	box-shadow: none !important;
+  }
+
+/* Changes loading screen color for most pages */
+  #browser vbox#appcontent tabbrowser, #content, #tabbrowser-tabpanels, browser[type=content-primary], 
+  browser[type=content] > html { background: #080808 !important;
+	 background-color: #080808 !important; color: #080808 !important; }
+
+/* Highlight color of url */
+	 *::-moz-selection { 
+		background: #333333 !important; /* the background color of the highlight */ 
+		color: #79acf4 !important; /* the color of the text within the highlight */ }
+
+
+/* Ta bort den privata webbläsarindikatorn */
+#private-browsing-indicator-with-label {
+    display: none !important;
 }
