@@ -114,7 +114,7 @@ toolbar .toolbarbutton-1 {
 	padding-top: 0 !important;
 	padding-bottom: 0 !important;
 	font-family: var(--urlbar-font, 'monospace');
-	font-size: 14px;
+	font-size: 11px;
 }
 
 #urlbar {
@@ -240,6 +240,11 @@ panelview .toolbarbutton-1,
 #userContext-indicator {
 	display: none !important;
 }
+
+/* Center align text in URL Bar */
+#urlbar {
+	text-align: center !important;
+  }
 
 /* --- STYLE TAB TOOLBAR -------------------------------- */
 
