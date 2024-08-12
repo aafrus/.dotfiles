@@ -246,6 +246,39 @@ panelview .toolbarbutton-1,
 	text-align: center !important;
   }
 
+/* Fade effect on Download */
+#downloads-button {
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+  }
+
+/* Fade effect on extensions */
+#nav-bar #unified-extensions-button {
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+  }
+
+/* Hide URL Bar View */
+.urlbarView {
+	display: none !important;
+  }
+
+/* Styling for tabs and tab colors */
+#tabbrowser-tabs:not([movingtab])
+  > #tabbrowser-arrowscrollbox
+  > .tabbrowser-tab
+  > .tab-stack
+  > .tab-background[multiselected='true'],
+#tabbrowser-tabs:not([movingtab])
+  > #tabbrowser-arrowscrollbox
+  > .tabbrowser-tab
+  > .tab-stack
+  > .tab-background[selected='true'] {
+  background-image: none !important;
+  background-color: var(--toolbar-bgcolor) !important;
+}
+
+
 /* --- STYLE TAB TOOLBAR -------------------------------- */
 
 #titlebar {
