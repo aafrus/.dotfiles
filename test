@@ -6,10 +6,10 @@
 	--urlbar-bg-color: #080808;		/* background color of url bar */
   --toolbar-bgcolor: var(--sfsecondary) !important;
   --tabs-border-color: var(--sfsecondary) !important;
-  --lwt-sidebar-background-color: var(--sfwindow) !important;
+  --lwt-sidebar-background-color: var(--sfsecondary) !important;
   --lwt-toolbar-field-focus: var(--sfsecondary) !important;
   --sfsecondary: #080808;  
-  --sfwindow: #080808;
+  --sfmain: #d1d1d1;
 
 	/* try increasing if you encounter problems */
 	--urlbar-height-setting: 25px;
@@ -292,7 +292,7 @@ tab {
 
 /* Toolbar bakgrundsfärg */
 .toolbarbutton-icon {
-    background-color: #080808 !important;
+    background-color: transparent !important;
 }
 
 /* Ändra ikonernas färg */
@@ -319,7 +319,7 @@ tab {
   opacity: 1; /* Visible on hover */
 }
 
-
+/* förösk att fixa download button
 
 /* Remove magnifying glass in URL bar */
 #urlbar-input-box::before {
@@ -350,8 +350,6 @@ html#main-window body toolbox#navigator-toolbox toolbar#nav-bar.browser-toolbar.
 #urlbar-container .urlbar-input-container #tracking-protection-icon-container {
     background-color: #080808 !important;
 }
-
-
 
 /* Grundstil för .urlbar-input-container */
 .urlbar-input-container {
@@ -396,8 +394,8 @@ html#main-window body toolbox#navigator-toolbox toolbar#nav-bar.browser-toolbar.
 /* Specifika variabler för toolbar-stilar */
 :root {
   --toolbar-field-border-color: transparent; /* Gränsfärg är transparent */
-  --toolbar-field-background-color: #080808; /* Bakgrundsfärg är #080808 */
-  --toolbar-field-focus-background-color: #080808; /* Bakgrundsfärg vid fokus */
+  --toolbar-field-background-color: transparent; /* Bakgrundsfärg är #080808 */
+  --toolbar-field-focus-background-color: transparent; /* Bakgrundsfärg vid fokus */
   --toolbar-field-focus-color: #ffffff; /* Textfärg vid fokus */
 }
 
@@ -419,7 +417,7 @@ html#main-window body toolbox#navigator-toolbox toolbar#nav-bar.browser-toolbar.
 
 /* Ändra bakgrundsfärgen för TabsToolbar till #080808 */
 #main-window #navigator-toolbox #titlebar #TabsToolbar.browser-toolbar.titlebar-color {
-	background-color: #080808 !important;
+	background-color: transparent !important;
   }
 
 /* Title bar in inactive windows should keep full opacity */
@@ -463,3 +461,22 @@ html#main-window body toolbox#navigator-toolbox toolbar#nav-bar.browser-toolbar.
 #private-browsing-indicator-with-label {
     display: none !important;
 }
+
+/* The horrid downloads button, complex hatred */
+
+#downloads-indicator-icon {
+    fill: #d1cab1 !important; /* Färg för normal status */
+}
+
+ #downloads-button > .toolbarbutton-badge-stack > #downloads-indicator-anchor::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px; /* Justera storleken efter ikonen */
+    height: 24px;
+    background-color: #080808; /* Bakgrundsfärg */
+    border-radius: 50%; /* För en rund bakgrund */
+    transform: translate(-50%, -50%);
+    z-index: -1; /* Sätt bakgrunden bakom ikonen */
+} 
