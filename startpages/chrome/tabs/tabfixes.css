@@ -1,4 +1,25 @@
-@import "../style/animation.css";
+@import "../styling/animations.css";
+
+
+/* Black url bar */
+@-moz-document url(chrome://browser/content/browser.xul),
+               url(chrome://browser/content/browser.xhtml) {
+    #urlbar-background{
+        background-color: #080808 !important;
+    }
+}
+
+/* toolbar background */
+#nav-bar, #PersonalToolbar{ background-color: #080808 !important }
+
+
+
+/* focus on url bar */
+
+#urlbar[focused]:not([suppress-focus-border]) > #urlbar-background, #searchbar:focus-within { outline: none !important; } 
+
+/* Remove tooltip */
+tooltip{ display: none !important; }
 
 /* Add a colored overlay to urlbar based on the type of the connection */
 /* For normal pages */
@@ -6,34 +27,14 @@
   animation: colorCycle 20s linear infinite;
 }
 
-/* Mixed content including neterror */
-#identity-box[pageproxystate="valid"].unknownIdentity ~ .urlbar-input-box {
-  color: orange;
-}
-
-/* http: and potentially some other insecure connections like ftp: */
-#identity-box[pageproxystate="valid"].notSecure ~ .urlbar-input-box {
-  color: orangered;
-}
-
-/* Extension pages */
-#identity-box[pageproxystate="valid"].extensionPage ~ .urlbar-input-box {
-  color: violet;
-}
-
-/* Internal about: and chrome:// urls (includes reader-view) */
-#identity-box[pageproxystate="valid"].localResource ~ .urlbar-input-box,
-#identity-box[pageproxystate="valid"].chromeUI ~ .urlbar-input-box {
-  color: dodgerblue;
-}
 
 
 
 :root {
 --tab-active-bg-color: #080808;		/* background color of an active tab */
 --tab-inactive-bg-color: #080808;		/* background color of an inactive tab */
---tab-active-fg-fallback-color: #c1c1d1;	/* color of text in an active tab without a container */
---tab-inactive-fg-fallback-color: #6c6c93;	/* color of text in an inactive tab without a container */
+--tab-active-fg-fallback-color: #d1cab1;	/* color of text in an active tab without a container */
+--tab-inactive-fg-fallback-color: #837e5e;	/* color of text in an inactive tab without a container */
 
 /* height */
 --urlbar-height-setting: 25px;
