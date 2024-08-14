@@ -11,6 +11,10 @@
     }
 }
 
+.tabbrowser-tab[selected] {
+    position: relative;
+}
+
 .tabbrowser-tab[selected] > .tab-stack::before {
     content: "";
     display: block;
@@ -30,7 +34,6 @@
     background-size: 200% 100%;
     animation: slide 8s infinite ease-in-out;
     z-index: 2;
-    transform: translateY(0); /* Fixera i Y-led */
     pointer-events: none;
 }
 
@@ -38,6 +41,5 @@
     border: none !important;
     outline: none !important;
     background-clip: padding-box !important;
-    position: relative;
-    overflow: visible; /* Se till att inget klipps bort */
+    overflow: hidden;
 }
