@@ -11,16 +11,14 @@
     }
 }
 
-.tabbrowser-tab[selected] > .tab-stack::after {
+.tabbrowser-tab[selected] > .tab-stack::before {
     content: "";
     display: block;
     position: absolute;
-    bottom: 0px; /* Ändrad från 0 till 0px för tydligare specifikation */
+    bottom: 0;
     left: 0;
     right: 0;
-    height: 4px; /* Kontrollera att höjden är exakt */
-    margin: 0; /* Ingen extra marginal */
-    padding: 0; /* Ingen extra padding */
+    height: 4px;
     background-image: linear-gradient(
         90deg,
         #707746, /* Mörkgrön */
@@ -29,10 +27,11 @@
         #837E5E, /* Varmgrå */
         #65694A  /* Mörk Mossgrön */
     );
-    background-size: 200% 100%; /* Endast horisontell rörelse */
-    animation: slide 8s infinite ease-in-out; /* Jämn fram och tillbaka rörelse */
+    background-size: 200% 100%;
+    animation: slide 8s infinite ease-in-out;
     z-index: 2;
-    pointer-events: none; /* Förhindra att elementet påverkar musinteraktion */
+    transform: translateY(0); /* Fixera i Y-led */
+    pointer-events: none;
 }
 
 .tab-background[selected] {
@@ -40,4 +39,5 @@
     outline: none !important;
     background-clip: padding-box !important;
     position: relative;
+    overflow: visible; /* Se till att inget klipps bort */
 }
