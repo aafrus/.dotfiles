@@ -15,10 +15,12 @@
     content: "";
     display: block;
     position: absolute;
-    bottom: 0;
+    bottom: 0px; /* Ändrad från 0 till 0px för tydligare specifikation */
     left: 0;
     right: 0;
-    height: 4px;
+    height: 4px; /* Kontrollera att höjden är exakt */
+    margin: 0; /* Ingen extra marginal */
+    padding: 0; /* Ingen extra padding */
     background-image: linear-gradient(
         90deg,
         #707746, /* Mörkgrön */
