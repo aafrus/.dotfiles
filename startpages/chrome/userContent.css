@@ -1,18 +1,36 @@
-*/
+@import "style/fonts.css";
+@import "browser/tweaks.css";
+@import "style/colors.css";
 
-:root {
-  scrollbar-width: none !important;
-}
+/* Per site styles */
+@import "sites/browser.css";
+@import "sites/mozilla.css";
+@import "sites/youtube.css";
 
-@-moz-document url(about:privatebrowsing) {
-  :root {
-    scrollbar-width: none !important;
+/* Text Highlight color in webpages */
+@-moz-document regexp("http(s)?:.*") {
+  ::selection {
+    background-color: #8fc3b8;
+    color: #ffffff;
   }
 }
 
-/* Private Window */
+/* Removes discover Sections */
+/* Remove Recommendations page/section from about:addons */
+.category[name="discover"] {
+  display: none !important;
+}
 
-html.private {background-color: rgb(0, 0, 0) !important;}
+/* Hide specific elements in Private Window */
+@-moz-document url("about:privatebrowsing") {
+  html.private body div.showPrivate.showSearch.container div.info-border div.info,
+  html.private body div.showPrivate.showSearch.container div.logo-and-wordmark div.wordmark,
+  html.private body div.showPrivate.showSearch.container div.logo-and-wordmark div#about-private-browsing-logo.logo,
+  #private-browsing-indicator-with-label {
+    display: none !important;
+  }
+}
+
 
 
 #search-handoff-button {
@@ -92,7 +110,7 @@ button.icon-settings {
     position: fixed;
     bottom: 0; /* Justerad för att placera i det nedre hörnet */
     right: 0; /* Justerad för att placera i det nedre hörnet */
-    background: rgb(0, 0, 0) no-repeat url(img/dexter.jpg) center;
+/*    background: rgb(0, 0, 0) no-repeat url(img/dexter.jpg) center;
     background-size: cover;
     width: 500px; /* Anpassa bredden efter behov */
     height: 500px; /* Anpassa höjden efter behov */
