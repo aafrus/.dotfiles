@@ -1,4 +1,8 @@
-#tabbrowser-tabs tab.tabbrowser-tab[selected="true"],
-#tabbrowser-tabs tab.tabbrowser-tab[multiselected="true"] {
-  border-bottom: 3px solid rgb(144, 154, 73) !important;
+input:focus, input.form-control:focus {
+
+    outline:none !important;
+    outline-width: 0 !important;
+    box-shadow: none;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
 }
