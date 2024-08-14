@@ -1,0 +1,121 @@
+/* Remove white flash when reloading a page */
+body,
+html,
+.browserContainer,
+#mainPopupSet:not(url("about:config")),
+#main-window:not(url("about:config")),
+#tabbrowser-tabbox:not(url("about:config")) {
+  background-color: #080808 !important;
+}
+.browserContainer,
+#tabbrowser-tabpanels {
+  background: #080808 !important;
+}
+
+/* --- UNIFIED EXTENSIONS BUTTON ------------------------ */
+
+/* make extension icons smaller */
+#unified-extensions-view {
+	--uei-icon-size: 16px;
+}
+
+/* hide bloat */
+.unified-extensions-item-message-deck,
+#unified-extensions-view > .panel-header,
+#unified-extensions-view > toolbarseparator,
+#unified-extensions-manage-extensions {
+	display: none !important;
+}
+
+/* add 3px padding on the top and the bottom of the box */
+.panel-subview-body {
+	padding: 3px 0px !important;
+}
+
+#unified-extensions-view .toolbarbutton-icon {
+	padding: 0 !important;
+}
+
+.unified-extensions-item-contents {
+	line-height: 1 !important;
+	white-space: nowrap !important;
+}
+
+#unified-extensions-panel .unified-extensions-item {
+	margin-block: 0 !important;
+}
+
+.toolbar-menupopup :is(menu, menuitem), .subview-subheader, panelview
+.toolbarbutton-1, .subviewbutton, .widget-overflow-list .toolbarbutton-1 {
+	padding: 4px !important;
+}
+
+/* Icons only in extensions menu */
+
+#unified-extensions-panel #unified-extensions-view {
+  /*  For firefox v115.x */
+  width: 100% !important;
+}
+
+#unified-extensions-view {
+  --uei-icon-size: 20px;
+  --firefoxcss-number-of-extensions-in-a-row: 6;
+}
+
+#unified-extensions-view .panel-header,
+#unified-extensions-view .panel-header + toolbarseparator,
+#unified-extensions-view .panel-subview-body + toolbarseparator,
+#unified-extensions-view #unified-extensions-manage-extensions,
+#unified-extensions-view .unified-extensions-item-menu-button.subviewbutton,
+#unified-extensions-view
+  .unified-extensions-item-action-button
+  .unified-extensions-item-contents {
+  display: none !important;
+}
+
+#unified-extensions-view .panel-subview-body {
+  padding: 2px !important;
+}
+
+#unified-extensions-view .unified-extensions-item .unified-extensions-item-icon,
+#unified-extensions-view .unified-extensions-item .toolbarbutton-badge-stack {
+  margin-inline-end: 0px !important;
+}
+
+#unified-extensions-view #overflowed-extensions-list,
+#unified-extensions-view #unified-extensions-area,
+#unified-extensions-view .unified-extensions-list {
+  display: grid !important;
+  grid-template-columns: repeat(
+    var(--firefoxcss-number-of-extensions-in-a-row),
+    auto
+  );
+  justify-items: left !important;
+  align-items: left !important;
+}
+
+#unified-extensions-view .unified-extensions-list .unified-extensions-item,
+#unified-extensions-view .unified-extensions-list {
+  max-width: max-content;
+}
+
+#unified-extensions-view #unified-extensions-area {
+  padding-bottom: 2px !important;
+  border-bottom: 1px solid #aeaeae33 !important;
+}
+
+#unified-extensions-view .unified-extensions-list {
+  border-top: 0px solid #aeaeae33 !important;
+}
+
+#wrapper-edit-controls:is([place="palette"], [place="panel"]) > #edit-controls,
+#wrapper-zoom-controls:is([place="palette"], [place="panel"]) > #zoom-controls,
+:is(panelview, #widget-overflow-fixed-list) .toolbaritem-combined-buttons {
+  margin: 0px !important;
+}
+
+
+/* square menu bars */
+menupopup,
+.menupopup-arrowscrollbox{ border-radius: 0 !important; }
+:root{ --arrowpanel-border-radius:0px !important }
