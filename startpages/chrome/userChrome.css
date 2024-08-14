@@ -1,9 +1,10 @@
+@import "tabs/tabfixes.css";
+@import "tabs/tabborder.css";
 @import "browser/icons.css";
-@import "bar/urlbar.css";
-@import "menu/contextmenu.css";
-@import "browser/navigation.css";
-@import "panel/statuspanel.css";
-@import "browser/indicators.css";
-@import "styling/fonts.css";
 @import "browser/tweaks.css";
-@import "styling/colors.css";
+@import "browser/loadingindicator.css";
+@import "browser/navigation.css";
+@import "menu/contextmenu.css";
+@import "panel/statuspanel.css";
+@import "style/fonts.css";
+@import "style/colors.css";
