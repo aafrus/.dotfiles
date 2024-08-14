@@ -11,7 +11,7 @@
     }
 }
 
-.tab-background[selected]::after {
+.tabbrowser-tab[selected] > .tab-stack::before {
     content: "";
     display: block;
     position: absolute;
@@ -27,18 +27,14 @@
         #837E5E, /* Varmgrå */
         #65694A  /* Mörk Mossgrön */
     );
-    background-size: 200%; /* Gör gradienten större för att skapa rörelse */
+    background-size: 200% 100%; /* Ändrat till att endast animera horisontellt */
     animation: slide 8s infinite ease-in-out; /* Jämn fram och tillbaka rörelse */
-    z-index: 2;
+    z-index: 1;
 }
 
-/* Tar bort standardramen för aktiva flikar */
 .tab-background[selected] {
     border: none !important;
     outline: none !important;
-    position: relative;
-}
-
-.tab-stack {
+    background-clip: padding-box !important;
     position: relative;
 }
