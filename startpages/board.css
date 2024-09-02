@@ -1,7 +1,7 @@
 /* 
 Not organized, big mess.
 First install 4chanX: https://github.com/ccd0/4chan-x
-Then import this file into 4chan X: https://www.dropbox.com/s/e4o8nl37jy55zmx/4chinX.zip?dl=0
+Then import the board.json file into 4chan X
 Options/Settings > Import > Refresh
 Uncomment line 48 (header-bar) to bring back the header image.
 Comment line 57 (boardTitle) to show the header title.
