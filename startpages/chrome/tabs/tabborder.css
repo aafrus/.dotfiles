@@ -1,4 +1,0 @@
-#tabbrowser-tabs tab.tabbrowser-tab[selected="true"],
-#tabbrowser-tabs tab.tabbrowser-tab[multiselected="true"] {
-  border-bottom: 2px solid rgb(144, 154, 73) !important;
-}
