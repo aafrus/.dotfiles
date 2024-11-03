@@ -1,0 +1,8 @@
+@-moz-document url("about:newtab"), url("about:home") {
+
+    /* Ställ in svart bakgrund för new tab-sidan */
+    body {
+      background-color: #000000 !important; /* Svart bakgrund */
+    }
+  
+  }

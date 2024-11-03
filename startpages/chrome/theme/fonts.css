@@ -1,0 +1,20 @@
+/* Global font and font size, excluding common icon elements */
+/* Note: Exclusions added to prevent overriding icon fonts */
+*:not([class*="icon"]):not([class*="glyph"]):not([class*="fa"]):not(i):not(
+    span
+  ) {
+  font-family: "Tamzen" !important;
+  font-size: 11pt !important;
+}
+
+/* about:* pages */
+@-moz-document url-prefix("about:") {
+  :root {
+    font-family: "Tamzen" !important;
+  }
+}
+
+/* App menu */
+#appMenu-popup {
+  font-family: "Tamzen" !important;
+}

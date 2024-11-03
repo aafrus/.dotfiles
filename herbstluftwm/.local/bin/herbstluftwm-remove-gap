@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+filename="/tmp/herbstluftwm-gap"
+gap=$(cat "$filename")
+
+if [ "$gap" -ge 7 ]; then
+    gap=$((gap - 7))
+    herbstclient set window_gap "$gap"
+    echo "$gap" > "$filename"
+fi

@@ -1,0 +1,6 @@
+# Encodes full query and launches search via terminal.
+
+# Encodes query and searches DuckDuckGo
+emulate -L zsh
+query=$(php -r 'echo urlencode($argv[1]);' "$*")
+(firefox "https://duckduckgo.com/?q=$query" > /dev/null 2>&1 &)
