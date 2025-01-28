@@ -1,14 +1,131 @@
-# History settings
-export HISTFILE="$XDG_STATE_HOME/zsh/history"
-export HISTSIZE=130000
-export SAVEHIST=100000
-export HIST_STAMPS="yyyy-mm-dd"
-setopt INC_APPEND_HISTORY
-setopt EXTENDED_HISTORY
-setopt HIST_EXPIRE_DUPS_FIRST
+import os
+import random
+import string
+import hashlib
+import time
+import argparse
+import shutil
 
-# Directory paths
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CACHE_HOME="$HOME/.local/cache"
-export XDG_STATE_HOME="$HOME/.local/state"
+# Constants for file categories and extensions
+FILE_CATEGORIES = {
+    'pictures': {'.png', '.jpg', '.jpeg'},
+    'documents': {'.pdf', '.doc', '.docx', '.txt', '.odt'},
+    'videos': {'.mp4', '.avi', '.mov', '.mkv'},
+    'music': {'.mp3', '.wav', '.flac'}
+}
+
+# Generate a random alphanumeric filename
+def generate_random_filename(length=6):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+# Calculate the Blake2b hash of a file
+def calculate_hash(file_path):
+    hasher = hashlib.blake2b()
+    try:
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+    except Exception as e:
+        print(f"Error calculating hash for {file_path}: {e}")
+        return None
+
+# Ensure a directory exists
+def create_directory_if_not_exists(directory):
+    os.makedirs(directory, exist_ok=True)
+
+# Rename files in a directory to unique random names
+def rename_files(directory):
+    start_time = time.time()
+    scanned_count, skipped_count, renamed_count, duplicate_count = 0, 0, 0, 0
+    file_type_counts = {}
+    file_hashes = {}
+
+    print("Scanning directory and processing files...")
+
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        if os.path.isfile(file_path):
+            scanned_count += 1
+            file_name, file_extension = os.path.splitext(filename)
+            file_extension = file_extension.lower()
+
+            file_type_counts[file_extension] = file_type_counts.get(file_extension, 0) + 1
+
+            # Skip files that already have a 6-character name
+            if len(file_name) == 6:
+                skipped_count += 1
+                continue
+
+            file_hash = calculate_hash(file_path)
+            if not file_hash:
+                continue
+
+            if file_hash in file_hashes:
+                duplicate_count += 1
+                os.remove(file_path)
+                print(f"Deleted duplicate: {filename}")
+            else:
+                new_filename = generate_random_filename() + file_extension
+                new_file_path = os.path.join(directory, new_filename)
+
+                while os.path.exists(new_file_path):
+                    new_filename = generate_random_filename() + file_extension
+                    new_file_path = os.path.join(directory, new_filename)
+
+                os.rename(file_path, new_file_path)
+                renamed_count += 1
+                file_hashes[file_hash] = new_filename
+                print(f"Renamed: {filename} -> {new_filename}")
+
+    total_time = time.time() - start_time
+
+    # Summary
+    print("\nSummary:")
+    print(f"Total files scanned: {scanned_count}")
+    print(f"Files skipped: {skipped_count}")
+    print(f"Files renamed: {renamed_count}")
+    print(f"Duplicates deleted: {duplicate_count}")
+    for ext, count in file_type_counts.items():
+        print(f"{ext.upper()} files: {count}")
+    print(f"Total time taken: {total_time:.2f} seconds")
+
+# Sort files into categorized subdirectories
+def sort_files_to_hub(hub_directory):
+    downloads_directory = os.path.join(hub_directory, 'downloads')
+    if not os.path.exists(downloads_directory):
+        print(f"The downloads directory '{downloads_directory}' does not exist.")
+        return
+
+    for category, extensions in FILE_CATEGORIES.items():
+        create_directory_if_not_exists(os.path.join(hub_directory, category))
+
+    for filename in os.listdir(downloads_directory):
+        file_path = os.path.join(downloads_directory, filename)
+        if os.path.isfile(file_path):
+            file_extension = os.path.splitext(filename)[1].lower()
+            for category, extensions in FILE_CATEGORIES.items():
+                if file_extension in extensions:
+                    destination = os.path.join(hub_directory, category, filename)
+                    shutil.move(file_path, destination)
+                    print(f"Moved: {filename} -> {category}/")
+                    break
+
+# Main entry point
+def main():
+    parser = argparse.ArgumentParser(description='Manage and organize files in a directory.')
+    parser.add_argument('action', choices=['rename', 'sort'], help='Action to perform: rename files or sort files.')
+    parser.add_argument('directory', type=str, help='Directory to process.')
+    args = parser.parse_args()
+
+    if not os.path.exists(args.directory):
+        print(f"Error: The specified directory '{args.directory}' does not exist.")
+        return
+
+    if args.action == 'rename':
+        rename_files(args.directory)
+    elif args.action == 'sort':
+        sort_files_to_hub(args.directory)
+
+if __name__ == '__main__':
+    main()
