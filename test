@@ -1,4 +1,1 @@
-volumes:
-  - type: bind
-    source: /home/$USER/hub/documents/sakila
-    target: /sakila
+
