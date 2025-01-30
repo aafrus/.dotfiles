@@ -1,1 +1,26 @@
+CREATE TABLE Genre (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+);
 
+CREATE TABLE Movie (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    release_year INTEGER NOT NULL,
+    letterboxd_uri TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE MovieGenre (
+    movie_id INTEGER NOT NULL,
+    genre_id INTEGER NOT NULL,
+    PRIMARY KEY (movie_id, genre_id),
+    FOREIGN KEY (movie_id) REFERENCES Movie(id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES Genre(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Watchlist (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    movie_id INTEGER NOT NULL,
+    watch_date DATE NOT NULL,
+    FOREIGN KEY (movie_id) REFERENCES Movie(id) ON DELETE CASCADE
+);
