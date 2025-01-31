@@ -1,41 +1,42 @@
-! █▓▒░ moss
+! █▓▒░ Moss
 
 ! Special
-*.cursorColor:  #CCC5AD
+*.cursorColor:  #D9D2B5
 *.background:   #080808
-*.foreground:   #CCC5AD
-*.mouseBackground: #CCC5AD
-*.mouseForeground: #CCC098
-*.highlight:    #38362F
+*.foreground:   #D9D2B5
+*.mouseBackground: #D9D2B5
+*.mouseForeground: #CBBF98
+*.highlight:    #4A4739
+*.highlightTextColor: #FFFCE1
 
 ! Black
 *.color0:       #33312B
-*.color8:       #38362F
+*.color8:       #3D3A34
 
 ! Red
-*.color1:       #BEC35C
-*.color9:       #C7CC60
+*.color1:       #D7DC6B
+*.color9:       #E1E66F
 
 ! Green
-*.color2:       #707746
-*.color10:      #7A824D
+*.color2:       #818A4F
+*.color10:      #8B9556
 
 ! Yellow
-*.color3:       #A09F73
-*.color11:      #ABAA7B
+*.color3:       #B4B37D
+*.color11:      #BEBE86
 
 ! Blue
-*.color4:       #909A49
-*.color12:      #99A34D
+*.color4:       #A2AE58
+*.color12:      #ADB963
 
 ! Magenta
-*.color5:       #65694A
-*.color13:      #6E7351
+*.color5:       #777B55
+*.color13:      #828760
 
 ! Cyan
-*.color6:       #837E5E
-*.color14:      #8C8765
+*.color6:       #9A946F
+*.color14:      #A59E7A
 
 ! White
-*.color7:       #D1CAB1
-*.color15:      #D6CFB5
+*.color7:       #E2DBBE
+*.color15:      #E8E2C5
