@@ -1,35 +1,36 @@
-! █▓▒░ eon
-*.foreground:   #D0D0D0  
-*.background:   #080808  
-*.cursorColor:  #B0B0B0  
+! special
+*.foreground:   #d0d0d0
+*.background:   #080808
+*.cursorColor:  #d0d0d0
 
 ! black
-*.color0:       #1C1C1C  
-*.color8:       #333333  
+*.color0:       #1c1c1c
+*.color8:       #333333
+
 ! red
-*.color1:       #5C5C5C  
-*.color9:       #7F7F7F 
+*.color1:       #5c5c5c
+*.color9:       #7f7f7f
 
 ! green
-*.color2:       #4F6E6E  
-*.color10:      #4F6E6E  
+*.color2:       #4f6e6e
+*.color10:      #4f6e6e
 
 ! yellow
-*.color3:       #777777  
-*.color11:      #8A8A8A  
+*.color3:       #777777
+*.color11:      #8a8a8a
 
 ! blue
-*.color4:       #7F8C8D  
-*.color12:      #9FAAB8  
+*.color4:       #7f8c8d
+*.color12:      #9faab8
 
 ! magenta
-*.color5:       #6A8B9E  
-*.color13:      #8A9FBD  
+*.color5:       #6a8b9e
+*.color13:      #8a9fbd
 
 ! cyan
-*.color6:       #8A9FBD  
-*.color14:      #9FAAB8  
+*.color6:       #8a9fbd
+*.color14:      #9faab8
 
 ! white
-*.color7:       #D0D0D0  
-*.color15:      #C8C8C8  
+*.color7:       #d0d0d0
+*.color15:      #c8c8c8
