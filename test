@@ -1,32 +1,205 @@
- # theme
- hc attr theme.tiling.reset 1
- hc attr theme.floating.reset 1
- hc set frame_border_active_color '#8b9e70'
- hc set frame_border_normal_color '#8b9e70'
- hc set frame_bg_normal_color '#8b9e70'
- hc set frame_bg_active_color '#8b9e70'
- hc set frame_border_width 0
- hc set always_show_frame on
- hc set frame_bg_transparent on
- hc set frame_gap 30
+-- Create Users Table
+CREATE TABLE Users (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    Username VARCHAR(255) UNIQUE NOT NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Email VARCHAR(255) UNIQUE NOT NULL,
+    EmailConfirmed BOOLEAN DEFAULT FALSE,
+    BillingAddress TEXT,
+    DeliveryAddress TEXT
+);
 
- hc attr theme.title_height 0
- hc attr theme.padding_right 0
- hc attr theme.padding_left 0
- hc attr theme.padding_bottom 0
- hc attr theme.active.color '#8b9e70'
- hc attr theme.normal.color '#8b9e70'
- hc attr theme.border_width 0
- hc attr theme.border.color '#ffffff'
- hc attr theme.floating.border_width 0
- hc attr theme.inner_width.top 0
- hc attr theme.padding_top 35
- hc attr theme.floating.outer_color '#8b9e70'
- hc attr theme.active.inner_color '#8b9e70'
- hc attr theme.active.outer_color '#8b9e70'
- hc attr theme.background_color '#8b9e70'
+-- Create Species Table
+CREATE TABLE Species (
+    SpeciesID INT AUTO_INCREMENT PRIMARY KEY,
+    CommonName VARCHAR(255) NOT NULL,
+    LatinName VARCHAR(255) NOT NULL,
+    UNIQUE (CommonName, LatinName)
+);
 
- hc set window_gap 50
- hc set smart_window_surroundings off
- hc set smart_frame_surroundings off
- hc set mouse_recenter_gap 0
+-- Create Pets Table
+CREATE TABLE Pets (
+    PetID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT,
+    SpeciesID INT,
+    PetName VARCHAR(255) NOT NULL,
+    DateOfBirth DATE,
+    Description TEXT,
+    IsAlive BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (SpeciesID) REFERENCES Species(SpeciesID)
+);
+
+-- Create Manufacturers Table
+CREATE TABLE Manufacturers (
+    ManufacturerID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    Address TEXT,
+    ContactPerson VARCHAR(255),
+    ContactInfo TEXT
+);
+
+-- Create ProductCategories Table
+CREATE TABLE ProductCategories (
+    CategoryID INT AUTO_INCREMENT PRIMARY KEY,
+    CategoryName VARCHAR(255) NOT NULL
+);
+
+-- Create Products Table
+CREATE TABLE Products (
+    ProductID INT AUTO_INCREMENT PRIMARY KEY,
+    SKU VARCHAR(255) UNIQUE NOT NULL,
+    Name VARCHAR(255) NOT NULL,
+    ManufacturerID INT,
+    CategoryID INT,
+    BuyingPrice DECIMAL(10, 2),
+    SellingPrice DECIMAL(10, 2),
+    Description TEXT,
+    FOREIGN KEY (ManufacturerID) REFERENCES Manufacturers(ManufacturerID),
+    FOREIGN KEY (CategoryID) REFERENCES ProductCategories(CategoryID)
+);
+
+-- Create Orders Table
+CREATE TABLE Orders (
+    OrderID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT,
+    OrderStatus ENUM('awaiting', 'fulfilled', 'cancelled') DEFAULT 'awaiting',
+    OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+-- Create OrderItems Table
+CREATE TABLE OrderItems (
+    OrderItemID INT AUTO_INCREMENT PRIMARY KEY,
+    OrderID INT,
+    ProductID INT,
+    Quantity INT,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+-- Create Warehouses Table
+CREATE TABLE Warehouses (
+    WarehouseID INT AUTO_INCREMENT PRIMARY KEY,
+    Location VARCHAR(255) NOT NULL
+);
+
+-- Create Inventory Table
+CREATE TABLE Inventory (
+    InventoryID INT AUTO_INCREMENT PRIMARY KEY,
+    WarehouseID INT,
+    ProductID INT,
+    Quantity INT,
+    FOREIGN KEY (WarehouseID) REFERENCES Warehouses(WarehouseID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+-- Create Messages Table
+CREATE TABLE Messages (
+    MessageID INT AUTO_INCREMENT PRIMARY KEY,
+    SenderID INT,
+    ReceiverID INT,
+    ParentMessageID INT NULL,
+    MessageText TEXT,
+    SentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (SenderID) REFERENCES Users(UserID),
+    FOREIGN KEY (ReceiverID) REFERENCES Users(UserID),
+    FOREIGN KEY (ParentMessageID) REFERENCES Messages(MessageID)
+);
+
+-- Create Log Tables and Triggers for INSERT, UPDATE, DELETE
+CREATE TABLE UserLogs (
+    LogID INT AUTO_INCREMENT PRIMARY KEY,
+    Action VARCHAR(50),
+    UserID INT,
+    Username VARCHAR(255),
+    Email VARCHAR(255),
+    ActionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER after_user_insert AFTER INSERT ON Users
+FOR EACH ROW
+BEGIN
+    INSERT INTO UserLogs (Action, UserID, Username, Email)
+    VALUES ('INSERT', NEW.UserID, NEW.Username, NEW.Email);
+END;
+
+CREATE TRIGGER after_user_update AFTER UPDATE ON Users
+FOR EACH ROW
+BEGIN
+    INSERT INTO UserLogs (Action, UserID, Username, Email)
+    VALUES ('UPDATE', NEW.UserID, NEW.Username, NEW.Email);
+END;
+
+CREATE TRIGGER after_user_delete AFTER DELETE ON Users
+FOR EACH ROW
+BEGIN
+    INSERT INTO UserLogs (Action, UserID, Username, Email)
+    VALUES ('DELETE', OLD.UserID, OLD.Username, OLD.Email);
+END;
+
+-- Similar triggers can be created for other tables as needed.
+
+
+
+
+
+
+
+
+Python Script for Warehouse Inventory Check
+
+
+
+
+
+import mysql.connector
+
+def check_warehouse_inventory(warehouse_id):
+    # Database connection
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="yourusername",
+        password="yourpassword",
+        database="yourdatabase"
+    )
+    cursor = conn.cursor()
+
+    # Query to get all pending orders for the warehouse
+    cursor.execute("""
+        SELECT ProductID, SUM(Quantity) AS TotalQuantity
+        FROM OrderItems
+        JOIN Orders ON OrderItems.OrderID = Orders.OrderID
+        WHERE Orders.OrderStatus = 'awaiting' AND Orders.WarehouseID = %s
+        GROUP BY ProductID
+    """, (warehouse_id,))
+    pending_orders = cursor.fetchall()
+
+    # Query to get current inventory for the warehouse
+    cursor.execute("""
+        SELECT ProductID, Quantity
+        FROM Inventory
+        WHERE WarehouseID = %s
+    """, (warehouse_id,))
+    inventory = {row[0]: row[1] for row in cursor.fetchall()}
+
+    # Check if all orders can be fulfilled
+    shortage = {}
+    for product_id, required_quantity in pending_orders:
+        available_quantity = inventory.get(product_id, 0)
+        if available_quantity < required_quantity:
+            shortage[product_id] = required_quantity - available_quantity
+
+    if not shortage:
+        print("All orders can be fulfilled with the current inventory.")
+    else:
+        print("Shortage detected. Additional products needed:")
+        for product_id, quantity in shortage.items():
+            print(f"Product ID: {product_id}, Additional Quantity Needed: {quantity}")
+
+    cursor.close()
+    conn.close()
+
+# Example usage
+warehouse_id = int(input("Enter Warehouse ID: "))
+check_warehouse_inventory(warehouse_id)
