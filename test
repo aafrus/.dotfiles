@@ -1,36 +1,60 @@
--- Create database
-CREATE DATABASE IF NOT EXISTS pet_platform;
-USE pet_platform;
+version: '3.8'
 
--- Users table
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: petshop-mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: petshop
+      MYSQL_USER: petuser
+      MYSQL_PASSWORD: petpassword
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./db_init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+
+volumes:
+  mariadb_data:
+
+
+
+
+
+schema.sql
+
+-- Använd rätt databas
+USE petshop;
+
+-- Skapa användartabellen
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    confirmed BOOLEAN DEFAULT FALSE
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Addresses table
+-- Skapa tabell för adresser
 CREATE TABLE addresses (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    type ENUM('billing', 'delivery') NOT NULL,
-    street VARCHAR(255) NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    zip_code VARCHAR(20) NOT NULL,
-    country VARCHAR(100) NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    user_id INT,
+    address_type ENUM('billing', 'delivery'),
+    address TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Species table
+-- Skapa tabell för arter (species)
 CREATE TABLE species (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    common_name VARCHAR(100) NOT NULL,
-    latin_name VARCHAR(100) NOT NULL
+    common_name VARCHAR(100),
+    latin_name VARCHAR(100),
+    UNIQUE (common_name, latin_name)
 );
 
--- Pets table
+-- Skapa tabell för husdjur
 CREATE TABLE pets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -38,106 +62,110 @@ CREATE TABLE pets (
     name VARCHAR(100),
     birth_date DATE,
     description TEXT,
-    is_alive BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (species_id) REFERENCES species(id)
+    status ENUM('alive', 'deceased') DEFAULT 'alive',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (species_id) REFERENCES species(id) ON DELETE CASCADE
 );
 
--- Manufacturers table
-CREATE TABLE manufacturers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    address TEXT NOT NULL,
-    contact_person VARCHAR(100),
-    contact_email VARCHAR(100)
-);
-
--- Products table
+-- Skapa tabell för produkter
 CREATE TABLE products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sku VARCHAR(50) UNIQUE NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    manufacturer_id INT NOT NULL,
-    buy_price DECIMAL(10,2) NOT NULL,
-    sell_price DECIMAL(10,2) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    manufacturer VARCHAR(100),
     description TEXT,
-    FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(id)
+    buy_price DECIMAL(10,2),
+    sell_price DECIMAL(10,2)
 );
 
--- Warehouses table
-CREATE TABLE warehouses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    city VARCHAR(100) NOT NULL
-);
-
--- Inventory table
-CREATE TABLE inventory (
-    warehouse_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT DEFAULT 0,
-    PRIMARY KEY (warehouse_id, product_id),
-    FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
-    FOREIGN KEY (product_id) REFERENCES products(id)
-);
-
--- Orders table
+-- Skapa tabell för ordrar
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     warehouse_id INT NOT NULL,
     status ENUM('awaiting', 'fulfilled', 'cancelled') DEFAULT 'awaiting',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
 );
 
--- Order items table
-CREATE TABLE order_items (
-    order_id INT NOT NULL,
+-- Skapa tabell för lagerhus
+CREATE TABLE warehouses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    city VARCHAR(100) NOT NULL
+);
+
+-- Skapa tabell för lagerhantering
+CREATE TABLE inventory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    warehouse_id INT NOT NULL,
     product_id INT NOT NULL,
-    quantity INT NOT NULL,
-    PRIMARY KEY (order_id, product_id),
-    FOREIGN KEY (order_id) REFERENCES orders(id),
+    stock INT DEFAULT 0,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
--- Messages table
+-- Skapa tabell för meddelanden mellan användare
 CREATE TABLE messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT NOT NULL,
     receiver_id INT NOT NULL,
-    parent_id INT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES users(id),
-    FOREIGN KEY (receiver_id) REFERENCES users(id),
-    FOREIGN KEY (parent_id) REFERENCES messages(id)
+    parent_id INT DEFAULT NULL,
+    message TEXT NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES messages(id) ON DELETE CASCADE
 );
-
--- Log table for tracking changes
-CREATE TABLE log_table (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    table_name VARCHAR(100) NOT NULL,
-    operation ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
-    operation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data TEXT NOT NULL
-);
-
--- Example trigger for logging changes in products
-DELIMITER //
-CREATE TRIGGER product_changes AFTER INSERT ON products
-FOR EACH ROW
-BEGIN
-    INSERT INTO log_table (table_name, operation, data)
-    VALUES ('products', 'INSERT', CONCAT('SKU: ', NEW.sku, ', Name: ', NEW.name));
-END;
-//
-DELIMITER ;
-
-
-
-
 
 
 script 
 
+import mysql.connector
 
+# Anslut till databasen
+conn = mysql.connector.connect(
+    host="localhost",
+    user="petuser",
+    password="petpassword",
+    database="petshop"
+)
+cursor = conn.cursor()
+
+# Hämta lista över lagerhus
+cursor.execute("SELECT id, city FROM warehouses;")
+warehouses = cursor.fetchall()
+
+print("Available Warehouses:")
+for wid, city in warehouses:
+    print(f"{wid}: {city}")
+
+warehouse_id = input("Enter warehouse ID to check inventory: ")
+
+# Hämta beställningar som inte är fullföljda
+cursor.execute("""
+    SELECT o.id, p.name, oi.quantity, i.stock 
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN products p ON oi.product_id = p.id
+    LEFT JOIN inventory i ON oi.product_id = i.product_id AND i.warehouse_id = o.warehouse_id
+    WHERE o.warehouse_id = %s AND o.status = 'awaiting';
+""", (warehouse_id,))
+
+orders = cursor.fetchall()
+
+# Kontrollera lagersaldo
+needed_items = {}
+for order_id, product, quantity, stock in orders:
+    if stock is None or stock < quantity:
+        needed_items[product] = needed_items.get(product, 0) + (quantity - (stock or 0))
+
+if needed_items:
+    print("\nNot enough stock to fulfill all orders. Missing items:")
+    for product, qty in needed_items.items():
+        print(f"{product}: {qty}")
+else:
+    print("\nAll orders can be fulfilled.")
+
+cursor.close()
+conn.close()
