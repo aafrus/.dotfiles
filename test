@@ -1,205 +1,143 @@
--- Create Users Table
-CREATE TABLE Users (
-    UserID INT AUTO_INCREMENT PRIMARY KEY,
-    Username VARCHAR(255) UNIQUE NOT NULL,
-    PasswordHash VARCHAR(255) NOT NULL,
-    Email VARCHAR(255) UNIQUE NOT NULL,
-    EmailConfirmed BOOLEAN DEFAULT FALSE,
-    BillingAddress TEXT,
-    DeliveryAddress TEXT
+-- Create database
+CREATE DATABASE IF NOT EXISTS pet_platform;
+USE pet_platform;
+
+-- Users table
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    confirmed BOOLEAN DEFAULT FALSE
 );
 
--- Create Species Table
-CREATE TABLE Species (
-    SpeciesID INT AUTO_INCREMENT PRIMARY KEY,
-    CommonName VARCHAR(255) NOT NULL,
-    LatinName VARCHAR(255) NOT NULL,
-    UNIQUE (CommonName, LatinName)
+-- Addresses table
+CREATE TABLE addresses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type ENUM('billing', 'delivery') NOT NULL,
+    street VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    zip_code VARCHAR(20) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Create Pets Table
-CREATE TABLE Pets (
-    PetID INT AUTO_INCREMENT PRIMARY KEY,
-    UserID INT,
-    SpeciesID INT,
-    PetName VARCHAR(255) NOT NULL,
-    DateOfBirth DATE,
-    Description TEXT,
-    IsAlive BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (SpeciesID) REFERENCES Species(SpeciesID)
+-- Species table
+CREATE TABLE species (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    common_name VARCHAR(100) NOT NULL,
+    latin_name VARCHAR(100) NOT NULL
 );
 
--- Create Manufacturers Table
-CREATE TABLE Manufacturers (
-    ManufacturerID INT AUTO_INCREMENT PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL,
-    Address TEXT,
-    ContactPerson VARCHAR(255),
-    ContactInfo TEXT
+-- Pets table
+CREATE TABLE pets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    species_id INT NOT NULL,
+    name VARCHAR(100),
+    birth_date DATE,
+    description TEXT,
+    is_alive BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (species_id) REFERENCES species(id)
 );
 
--- Create ProductCategories Table
-CREATE TABLE ProductCategories (
-    CategoryID INT AUTO_INCREMENT PRIMARY KEY,
-    CategoryName VARCHAR(255) NOT NULL
+-- Manufacturers table
+CREATE TABLE manufacturers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
+    contact_person VARCHAR(100),
+    contact_email VARCHAR(100)
 );
 
--- Create Products Table
-CREATE TABLE Products (
-    ProductID INT AUTO_INCREMENT PRIMARY KEY,
-    SKU VARCHAR(255) UNIQUE NOT NULL,
-    Name VARCHAR(255) NOT NULL,
-    ManufacturerID INT,
-    CategoryID INT,
-    BuyingPrice DECIMAL(10, 2),
-    SellingPrice DECIMAL(10, 2),
-    Description TEXT,
-    FOREIGN KEY (ManufacturerID) REFERENCES Manufacturers(ManufacturerID),
-    FOREIGN KEY (CategoryID) REFERENCES ProductCategories(CategoryID)
+-- Products table
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sku VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    manufacturer_id INT NOT NULL,
+    buy_price DECIMAL(10,2) NOT NULL,
+    sell_price DECIMAL(10,2) NOT NULL,
+    description TEXT,
+    FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(id)
 );
 
--- Create Orders Table
-CREATE TABLE Orders (
-    OrderID INT AUTO_INCREMENT PRIMARY KEY,
-    UserID INT,
-    OrderStatus ENUM('awaiting', 'fulfilled', 'cancelled') DEFAULT 'awaiting',
-    OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+-- Warehouses table
+CREATE TABLE warehouses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    city VARCHAR(100) NOT NULL
 );
 
--- Create OrderItems Table
-CREATE TABLE OrderItems (
-    OrderItemID INT AUTO_INCREMENT PRIMARY KEY,
-    OrderID INT,
-    ProductID INT,
-    Quantity INT,
-    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+-- Inventory table
+CREATE TABLE inventory (
+    warehouse_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT DEFAULT 0,
+    PRIMARY KEY (warehouse_id, product_id),
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
--- Create Warehouses Table
-CREATE TABLE Warehouses (
-    WarehouseID INT AUTO_INCREMENT PRIMARY KEY,
-    Location VARCHAR(255) NOT NULL
+-- Orders table
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    warehouse_id INT NOT NULL,
+    status ENUM('awaiting', 'fulfilled', 'cancelled') DEFAULT 'awaiting',
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
 );
 
--- Create Inventory Table
-CREATE TABLE Inventory (
-    InventoryID INT AUTO_INCREMENT PRIMARY KEY,
-    WarehouseID INT,
-    ProductID INT,
-    Quantity INT,
-    FOREIGN KEY (WarehouseID) REFERENCES Warehouses(WarehouseID),
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+-- Order items table
+CREATE TABLE order_items (
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    PRIMARY KEY (order_id, product_id),
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
--- Create Messages Table
-CREATE TABLE Messages (
-    MessageID INT AUTO_INCREMENT PRIMARY KEY,
-    SenderID INT,
-    ReceiverID INT,
-    ParentMessageID INT NULL,
-    MessageText TEXT,
-    SentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (SenderID) REFERENCES Users(UserID),
-    FOREIGN KEY (ReceiverID) REFERENCES Users(UserID),
-    FOREIGN KEY (ParentMessageID) REFERENCES Messages(MessageID)
+-- Messages table
+CREATE TABLE messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    parent_id INT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id),
+    FOREIGN KEY (receiver_id) REFERENCES users(id),
+    FOREIGN KEY (parent_id) REFERENCES messages(id)
 );
 
--- Create Log Tables and Triggers for INSERT, UPDATE, DELETE
-CREATE TABLE UserLogs (
-    LogID INT AUTO_INCREMENT PRIMARY KEY,
-    Action VARCHAR(50),
-    UserID INT,
-    Username VARCHAR(255),
-    Email VARCHAR(255),
-    ActionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Log table for tracking changes
+CREATE TABLE log_table (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    table_name VARCHAR(100) NOT NULL,
+    operation ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    operation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data TEXT NOT NULL
 );
 
-CREATE TRIGGER after_user_insert AFTER INSERT ON Users
+-- Example trigger for logging changes in products
+DELIMITER //
+CREATE TRIGGER product_changes AFTER INSERT ON products
 FOR EACH ROW
 BEGIN
-    INSERT INTO UserLogs (Action, UserID, Username, Email)
-    VALUES ('INSERT', NEW.UserID, NEW.Username, NEW.Email);
+    INSERT INTO log_table (table_name, operation, data)
+    VALUES ('products', 'INSERT', CONCAT('SKU: ', NEW.sku, ', Name: ', NEW.name));
 END;
-
-CREATE TRIGGER after_user_update AFTER UPDATE ON Users
-FOR EACH ROW
-BEGIN
-    INSERT INTO UserLogs (Action, UserID, Username, Email)
-    VALUES ('UPDATE', NEW.UserID, NEW.Username, NEW.Email);
-END;
-
-CREATE TRIGGER after_user_delete AFTER DELETE ON Users
-FOR EACH ROW
-BEGIN
-    INSERT INTO UserLogs (Action, UserID, Username, Email)
-    VALUES ('DELETE', OLD.UserID, OLD.Username, OLD.Email);
-END;
-
--- Similar triggers can be created for other tables as needed.
+//
+DELIMITER ;
 
 
 
 
 
 
+script 
 
 
-Python Script for Warehouse Inventory Check
-
-
-
-
-
-import mysql.connector
-
-def check_warehouse_inventory(warehouse_id):
-    # Database connection
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="yourusername",
-        password="yourpassword",
-        database="yourdatabase"
-    )
-    cursor = conn.cursor()
-
-    # Query to get all pending orders for the warehouse
-    cursor.execute("""
-        SELECT ProductID, SUM(Quantity) AS TotalQuantity
-        FROM OrderItems
-        JOIN Orders ON OrderItems.OrderID = Orders.OrderID
-        WHERE Orders.OrderStatus = 'awaiting' AND Orders.WarehouseID = %s
-        GROUP BY ProductID
-    """, (warehouse_id,))
-    pending_orders = cursor.fetchall()
-
-    # Query to get current inventory for the warehouse
-    cursor.execute("""
-        SELECT ProductID, Quantity
-        FROM Inventory
-        WHERE WarehouseID = %s
-    """, (warehouse_id,))
-    inventory = {row[0]: row[1] for row in cursor.fetchall()}
-
-    # Check if all orders can be fulfilled
-    shortage = {}
-    for product_id, required_quantity in pending_orders:
-        available_quantity = inventory.get(product_id, 0)
-        if available_quantity < required_quantity:
-            shortage[product_id] = required_quantity - available_quantity
-
-    if not shortage:
-        print("All orders can be fulfilled with the current inventory.")
-    else:
-        print("Shortage detected. Additional products needed:")
-        for product_id, quantity in shortage.items():
-            print(f"Product ID: {product_id}, Additional Quantity Needed: {quantity}")
-
-    cursor.close()
-    conn.close()
-
-# Example usage
-warehouse_id = int(input("Enter Warehouse ID: "))
-check_warehouse_inventory(warehouse_id)
