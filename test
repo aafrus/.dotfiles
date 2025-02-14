@@ -1,171 +1,160 @@
-version: '3.8'
-
-services:
-  mariadb:
-    image: mariadb:11
-    container_name: petshop-mariadb
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: petshop
-      MYSQL_USER: petuser
-      MYSQL_PASSWORD: petpassword
-    volumes:
-      - mariadb_data:/var/lib/mysql
-      - ./db_init:/docker-entrypoint-initdb.d
-    ports:
-      - "3306:3306"
-
-volumes:
-  mariadb_data:
-
-
-
-
-
-schema.sql
-
--- Använd rätt databas
-USE petshop;
-
--- Skapa användartabellen
+-- Skapa tabell för användare
 CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    confirmed BOOLEAN DEFAULT FALSE
 );
 
 -- Skapa tabell för adresser
 CREATE TABLE addresses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    address_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    address_type ENUM('billing', 'delivery'),
-    address TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Skapa tabell för arter (species)
-CREATE TABLE species (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    common_name VARCHAR(100),
-    latin_name VARCHAR(100),
-    UNIQUE (common_name, latin_name)
+    address VARCHAR(255) NOT NULL,
+    type ENUM('billing', 'delivery') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
 -- Skapa tabell för husdjur
 CREATE TABLE pets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    species_id INT NOT NULL,
-    name VARCHAR(100),
+    pet_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    species_id INT,
+    name VARCHAR(255),
     birth_date DATE,
     description TEXT,
-    status ENUM('alive', 'deceased') DEFAULT 'alive',
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (species_id) REFERENCES species(id) ON DELETE CASCADE
+    status ENUM('alive', 'deceased') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (species_id) REFERENCES species(species_id)
+);
+
+-- Skapa tabell för arter
+CREATE TABLE species (
+    species_id INT AUTO_INCREMENT PRIMARY KEY
+);
+
+-- Skapa tabell för arter namn
+CREATE TABLE species_names (
+    species_name_id INT AUTO_INCREMENT PRIMARY KEY,
+    species_id INT,
+    name VARCHAR(255) NOT NULL,
+    name_type ENUM('common', 'latin') NOT NULL,
+    FOREIGN KEY (species_id) REFERENCES species(species_id)
+);
+
+-- Skapa tabell för tillverkare
+CREATE TABLE manufacturers (
+    manufacturer_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    contact_person VARCHAR(255),
+    contact_details VARCHAR(255)
 );
 
 -- Skapa tabell för produkter
 CREATE TABLE products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    sku VARCHAR(50) UNIQUE NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    manufacturer VARCHAR(100),
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    sku VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    manufacturer_id INT,
+    buy_price DECIMAL(10,2) NOT NULL,
+    sell_price DECIMAL(10,2) NOT NULL,
     description TEXT,
-    buy_price DECIMAL(10,2),
-    sell_price DECIMAL(10,2)
+    FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(manufacturer_id)
+);
+
+-- Skapa tabell för produktkategorier
+CREATE TABLE product_categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+-- Kopplingstabell mellan produkter och kategorier
+CREATE TABLE product_category_relation (
+    product_id INT,
+    category_id INT,
+    PRIMARY KEY (product_id, category_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (category_id) REFERENCES product_categories(category_id)
+);
+
+-- Skapa tabell för lager
+CREATE TABLE warehouse (
+    warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
+    warehouse_name VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL
+);
+
+-- Skapa tabell för lagersaldo
+CREATE TABLE inventory (
+    warehouse_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
+    PRIMARY KEY (warehouse_id, product_id),
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
 -- Skapa tabell för ordrar
 CREATE TABLE orders (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    warehouse_id INT NOT NULL,
-    status ENUM('awaiting', 'fulfilled', 'cancelled') DEFAULT 'awaiting',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    warehouse_id INT,
+    status ENUM('pending', 'fulfilled', 'cancelled') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id)
 );
 
--- Skapa tabell för lagerhus
-CREATE TABLE warehouses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    city VARCHAR(100) NOT NULL
+-- Skapa tabell för orderrader
+CREATE TABLE order_items (
+    order_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
+    PRIMARY KEY (order_id, product_id),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
--- Skapa tabell för lagerhantering
-CREATE TABLE inventory (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    warehouse_id INT NOT NULL,
-    product_id INT NOT NULL,
-    stock INT DEFAULT 0,
-    FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
-    FOREIGN KEY (product_id) REFERENCES products(id)
-);
-
--- Skapa tabell för meddelanden mellan användare
+-- Skapa tabell för meddelanden
 CREATE TABLE messages (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    sender_id INT NOT NULL,
-    receiver_id INT NOT NULL,
-    parent_id INT DEFAULT NULL,
-    message TEXT NOT NULL,
-    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (parent_id) REFERENCES messages(id) ON DELETE CASCADE
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT,
+    receiver_id INT,
+    parent_message_id INT NULL,
+    content TEXT NOT NULL,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id),
+    FOREIGN KEY (receiver_id) REFERENCES users(user_id),
+    FOREIGN KEY (parent_message_id) REFERENCES messages(message_id)
 );
 
+-- Loggtabell för förändringar
+CREATE TABLE logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    table_name VARCHAR(255) NOT NULL,
+    operation VARCHAR(10) NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    old_data TEXT,
+    new_data TEXT
+);
 
-script 
+-- Trigger för att logga INSERT
+CREATE TRIGGER log_insert AFTER INSERT ON inventory
+FOR EACH ROW
+INSERT INTO logs (table_name, operation, new_data)
+VALUES ('inventory', 'INSERT', CONCAT('warehouse_id=', NEW.warehouse_id, ', product_id=', NEW.product_id, ', quantity=', NEW.quantity));
 
-import mysql.connector
+-- Trigger för att logga UPDATE
+CREATE TRIGGER log_update AFTER UPDATE ON inventory
+FOR EACH ROW
+INSERT INTO logs (table_name, operation, old_data, new_data)
+VALUES ('inventory', 'UPDATE', 
+    CONCAT('warehouse_id=', OLD.warehouse_id, ', product_id=', OLD.product_id, ', quantity=', OLD.quantity),
+    CONCAT('warehouse_id=', NEW.warehouse_id, ', product_id=', NEW.product_id, ', quantity=', NEW.quantity));
 
-# Anslut till databasen
-conn = mysql.connector.connect(
-    host="localhost",
-    user="petuser",
-    password="petpassword",
-    database="petshop"
-)
-cursor = conn.cursor()
-
-# Hämta lista över lagerhus
-cursor.execute("SELECT id, city FROM warehouses;")
-warehouses = cursor.fetchall()
-
-print("Available Warehouses:")
-for wid, city in warehouses:
-    print(f"{wid}: {city}")
-
-warehouse_id = input("Enter warehouse ID to check inventory: ")
-
-# Hämta beställningar som inte är fullföljda
-cursor.execute("""
-    SELECT o.id, p.name, oi.quantity, i.stock 
-    FROM orders o
-    JOIN order_items oi ON o.id = oi.order_id
-    JOIN products p ON oi.product_id = p.id
-    LEFT JOIN inventory i ON oi.product_id = i.product_id AND i.warehouse_id = o.warehouse_id
-    WHERE o.warehouse_id = %s AND o.status = 'awaiting';
-""", (warehouse_id,))
-
-orders = cursor.fetchall()
-
-# Kontrollera lagersaldo
-needed_items = {}
-for order_id, product, quantity, stock in orders:
-    if stock is None or stock < quantity:
-        needed_items[product] = needed_items.get(product, 0) + (quantity - (stock or 0))
-
-if needed_items:
-    print("\nNot enough stock to fulfill all orders. Missing items:")
-    for product, qty in needed_items.items():
-        print(f"{product}: {qty}")
-else:
-    print("\nAll orders can be fulfilled.")
-
-cursor.close()
-conn.close()
+-- Trigger för att logga DELETE
+CREATE TRIGGER log_delete AFTER DELETE ON inventory
+FOR EACH ROW
+INSERT INTO logs (table_name, operation, old_data)
+VALUES ('inventory', 'DELETE', CONCAT('warehouse_id=', OLD.warehouse_id, ', product_id=', OLD.product_id, ', quantity=', OLD.quantity));
