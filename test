@@ -207,3 +207,71 @@ SET @order_id = LAST_INSERT_ID();
 
 -- Lägg till en orderrad kopplad till ordern och produkten
 INSERT INTO order_items (order_id, product_id, quantity) VALUES (@order_id, @product_id, 2);
+
+
+
+skript 
+
+
+import sqlite3
+
+def get_warehouses(conn):
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name FROM warehouses")
+    return cursor.fetchall()
+
+def get_orders_for_warehouse(conn, warehouse_id):
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT product_id, SUM(quantity) 
+        FROM orders 
+        WHERE warehouse_id = ? AND status NOT IN ('fulfilled', 'cancelled')
+        GROUP BY product_id
+    """, (warehouse_id,))
+    return dict(cursor.fetchall())
+
+def get_inventory(conn, warehouse_id):
+    cursor = conn.cursor()
+    cursor.execute("SELECT product_id, quantity FROM inventory WHERE warehouse_id = ?", (warehouse_id,))
+    return dict(cursor.fetchall())
+
+def check_inventory(orders, inventory):
+    missing = {}
+    for product_id, needed in orders.items():
+        available = inventory.get(product_id, 0)
+        if available < needed:
+            missing[product_id] = needed - available
+    return missing
+
+def main():
+    conn = sqlite3.connect('database.db')  # Ändra till din DB
+    warehouses = get_warehouses(conn)
+    
+    if not warehouses:
+        print("Inga lager hittades.")
+        return
+    
+    print("Välj ett lager:")
+    for idx, (w_id, name) in enumerate(warehouses, start=1):
+        print(f"{idx}. {name}")
+    
+    choice = int(input("Ange nummer: ")) - 1
+    warehouse_id, warehouse_name = warehouses[choice]
+    
+    orders = get_orders_for_warehouse(conn, warehouse_id)
+    inventory = get_inventory(conn, warehouse_id)
+    
+    missing_products = check_inventory(orders, inventory)
+    
+    print(f"\nLager: {warehouse_name}")
+    if not missing_products:
+        print("Alla ordrar kan uppfyllas!")
+    else:
+        print("Följande produkter saknas:")
+        for product_id, qty in missing_products.items():
+            print(f"Produkt ID {product_id}: {qty} st")
+    
+    conn.close()
+    
+if __name__ == "__main__":
+    main()
