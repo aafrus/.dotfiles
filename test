@@ -158,3 +158,18 @@ CREATE TRIGGER log_delete AFTER DELETE ON inventory
 FOR EACH ROW
 INSERT INTO logs (table_name, operation, old_data)
 VALUES ('inventory', 'DELETE', CONCAT('warehouse_id=', OLD.warehouse_id, ', product_id=', OLD.product_id, ', quantity=', OLD.quantity));
+
+-- Infoga testdata
+INSERT INTO users (username, email, password_hash, confirmed) VALUES ('testuser', 'test@example.com', 'hash123', TRUE);
+INSERT INTO addresses (user_id, address, type) VALUES (1, '123 Test Street', 'billing');
+INSERT INTO species (species_id) VALUES (1);
+INSERT INTO species_names (species_id, name, name_type) VALUES (1, 'Dog', 'common');
+INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES (1, 1, 'Buddy', '2020-05-01', 'alive');
+INSERT INTO manufacturers (name, address, contact_person, contact_details) VALUES ('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com');
+INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price) VALUES ('P123', 'Dog Food', 1, 10.00, 20.00);
+INSERT INTO product_categories (name) VALUES ('Pet Supplies');
+INSERT INTO product_category_relation (product_id, category_id) VALUES (1, 1);
+INSERT INTO warehouse (warehouse_name, location) VALUES ('Main Warehouse', 'City Center');
+INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (1, 1, 100);
+INSERT INTO orders (user_id, warehouse_id, status) VALUES (1, 1, 'pending');
+INSERT INTO order_items (order_id, product_id, quantity) VALUES (1, 1, 2);
