@@ -173,3 +173,59 @@ INSERT INTO warehouse (warehouse_name, location) VALUES ('Main Warehouse', 'City
 INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (1, 1, 100);
 INSERT INTO orders (user_id, warehouse_id, status) VALUES (1, 1, 'pending');
 INSERT INTO order_items (order_id, product_id, quantity) VALUES (1, 1, 2);
+
+
+skript
+
+
+import mysql.connector
+
+def check_warehouse_orders(warehouse_id):
+    conn = mysql.connector.connect(
+        host="your_host",
+        user="your_user",
+        password="your_password",
+        database="your_database"
+    )
+    cursor = conn.cursor(dictionary=True)
+    
+    # Hämta aktuella orderrader för icke-fullföljda och icke-avbrutna ordrar
+    cursor.execute("""
+        SELECT oi.product_id, SUM(oi.quantity) AS required_quantity
+        FROM orders o
+        JOIN order_items oi ON o.order_id = oi.order_id
+        WHERE o.warehouse_id = %s AND o.status = 'pending'
+        GROUP BY oi.product_id
+    """, (warehouse_id,))
+    pending_orders = cursor.fetchall()
+    
+    # Hämta lagersaldo
+    cursor.execute("""
+        SELECT product_id, quantity
+        FROM inventory
+        WHERE warehouse_id = %s
+    """, (warehouse_id,))
+    inventory = {row["product_id"]: row["quantity"] for row in cursor.fetchall()}
+    
+    missing_products = {}
+    for order in pending_orders:
+        product_id = order["product_id"]
+        required_quantity = order["required_quantity"]
+        available_quantity = inventory.get(product_id, 0)
+        
+        if available_quantity < required_quantity:
+            missing_products[product_id] = required_quantity - available_quantity 
+    
+    if missing_products:
+        print("The following products are missing to fulfill all pending orders:")
+        for product_id, quantity in missing_products.items():
+            print(f"Product ID {product_id}: {quantity} more needed")
+    else:
+        print("All pending orders can be fulfilled with current inventory.")
+    
+    cursor.close()
+    conn.close()
+
+if __name__ == "__main__":
+    warehouse_id = input("Enter warehouse ID: ")
+    check_warehouse_orders(int(warehouse_id))
