@@ -36,11 +36,49 @@ CREATE TABLE species (
 
 -- Skapa tabell för arter namn
 CREATE TABLE species_names (
+    species_name_id INT AUTO_INCREMENT PRIMARY KEY,-- Skapa tabell för användare
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    confirmed BOOLEAN DEFAULT FALSE
+);
+
+-- Skapa tabell för adresser
+CREATE TABLE addresses (
+    address_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    address VARCHAR(255) NOT NULL,
+    type ENUM('billing', 'delivery') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Skapa tabell för arter
+CREATE TABLE species (
+    species_id INT AUTO_INCREMENT PRIMARY KEY
+);
+
+-- Skapa tabell för husdjur
+CREATE TABLE pets (
+    pet_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    species_id INT,
+    name VARCHAR(255),
+    birth_date DATE,
+    description TEXT,
+    status ENUM('alive', 'deceased') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
+);
+
+-- Skapa tabell för artnamn
+CREATE TABLE species_names (
     species_name_id INT AUTO_INCREMENT PRIMARY KEY,
     species_id INT,
     name VARCHAR(255) NOT NULL,
     name_type ENUM('common', 'latin') NOT NULL,
-    FOREIGN KEY (species_id) REFERENCES species(species_id)
+    FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
 );
 
 -- Skapa tabell för tillverkare
@@ -61,7 +99,7 @@ CREATE TABLE products (
     buy_price DECIMAL(10,2) NOT NULL,
     sell_price DECIMAL(10,2) NOT NULL,
     description TEXT,
-    FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(manufacturer_id)
+    FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(manufacturer_id) ON DELETE SET NULL
 );
 
 -- Skapa tabell för produktkategorier
@@ -75,8 +113,8 @@ CREATE TABLE product_category_relation (
     product_id INT,
     category_id INT,
     PRIMARY KEY (product_id, category_id),
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (category_id) REFERENCES product_categories(category_id)
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES product_categories(category_id) ON DELETE CASCADE
 );
 
 -- Skapa tabell för lager
@@ -92,8 +130,8 @@ CREATE TABLE inventory (
     product_id INT,
     quantity INT NOT NULL,
     PRIMARY KEY (warehouse_id, product_id),
-    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
-    FOREIGN KEY (product_id) REFERENCES products(product_id)
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
 -- Skapa tabell för ordrar
@@ -102,8 +140,8 @@ CREATE TABLE orders (
     user_id INT,
     warehouse_id INT,
     status ENUM('pending', 'fulfilled', 'cancelled') NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE SET NULL
 );
 
 -- Skapa tabell för orderrader
@@ -112,8 +150,8 @@ CREATE TABLE order_items (
     product_id INT,
     quantity INT NOT NULL,
     PRIMARY KEY (order_id, product_id),
-    FOREIGN KEY (order_id) REFERENCES orders(order_id),
-    FOREIGN KEY (product_id) REFERENCES products(product_id)
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
 -- Skapa tabell för meddelanden
@@ -124,9 +162,9 @@ CREATE TABLE messages (
     parent_message_id INT NULL,
     content TEXT NOT NULL,
     sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES users(user_id),
-    FOREIGN KEY (receiver_id) REFERENCES users(user_id),
-    FOREIGN KEY (parent_message_id) REFERENCES messages(message_id)
+    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_message_id) REFERENCES messages(message_id) ON DELETE SET NULL
 );
 
 -- Loggtabell för förändringar
@@ -143,89 +181,73 @@ CREATE TABLE logs (
 CREATE TRIGGER log_insert AFTER INSERT ON inventory
 FOR EACH ROW
 INSERT INTO logs (table_name, operation, new_data)
-VALUES ('inventory', 'INSERT', CONCAT('warehouse_id=', NEW.warehouse_id, ', product_id=', NEW.product_id, ', quantity=', NEW.quantity));
+VALUES ('inventory', 'INSERT', JSON_OBJECT('warehouse_id', NEW.warehouse_id, 'product_id', NEW.product_id, 'quantity', NEW.quantity));
 
 -- Trigger för att logga UPDATE
 CREATE TRIGGER log_update AFTER UPDATE ON inventory
 FOR EACH ROW
 INSERT INTO logs (table_name, operation, old_data, new_data)
 VALUES ('inventory', 'UPDATE', 
-    CONCAT('warehouse_id=', OLD.warehouse_id, ', product_id=', OLD.product_id, ', quantity=', OLD.quantity),
-    CONCAT('warehouse_id=', NEW.warehouse_id, ', product_id=', NEW.product_id, ', quantity=', NEW.quantity));
+    JSON_OBJECT('warehouse_id', OLD.warehouse_id, 'product_id', OLD.product_id, 'quantity', OLD.quantity),
+    JSON_OBJECT('warehouse_id', NEW.warehouse_id, 'product_id', NEW.product_id, 'quantity', NEW.quantity));
 
 -- Trigger för att logga DELETE
 CREATE TRIGGER log_delete AFTER DELETE ON inventory
 FOR EACH ROW
 INSERT INTO logs (table_name, operation, old_data)
-VALUES ('inventory', 'DELETE', CONCAT('warehouse_id=', OLD.warehouse_id, ', product_id=', OLD.product_id, ', quantity=', OLD.quantity));
+VALUES ('inventory', 'DELETE', JSON_OBJECT('warehouse_id', OLD.warehouse_id, 'product_id', OLD.product_id, 'quantity', OLD.quantity));
 
--- Infoga testdata
+
+-- Skapa en användare och hämta ID:t
 INSERT INTO users (username, email, password_hash, confirmed) VALUES ('testuser', 'test@example.com', 'hash123', TRUE);
-INSERT INTO addresses (user_id, address, type) VALUES (1, '123 Test Street', 'billing');
-INSERT INTO species (species_id) VALUES (1);
-INSERT INTO species_names (species_id, name, name_type) VALUES (1, 'Dog', 'common');
-INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES (1, 1, 'Buddy', '2020-05-01', 'alive');
-INSERT INTO manufacturers (name, address, contact_person, contact_details) VALUES ('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com');
-INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price) VALUES ('P123', 'Dog Food', 1, 10.00, 20.00);
+SET @user_id = LAST_INSERT_ID();
+
+-- Lägg till en adress kopplad till användaren
+INSERT INTO addresses (user_id, address, type) VALUES (@user_id, '123 Test Street', 'billing');
+
+-- Lägg till en art och hämta ID:t
+INSERT INTO species () VALUES ();
+SET @species_id = LAST_INSERT_ID();
+
+-- Lägg till artens namn kopplat till species_id
+INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Dog', 'common');
+
+-- Lägg till ett husdjur kopplat till användaren
+INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES (@user_id, @species_id, 'Buddy', '2020-05-01', 'alive');
+
+-- Lägg till en tillverkare och hämta ID:t
+INSERT INTO manufacturers (name, address, contact_person, contact_details) 
+VALUES ('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com');
+SET @manufacturer_id = LAST_INSERT_ID();
+
+-- Lägg till en produkt kopplad till tillverkaren och hämta ID:t
+INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price) 
+VALUES ('P123', 'Dog Food', @manufacturer_id, 10.00, 20.00);
+SET @product_id = LAST_INSERT_ID();
+
+-- Lägg till en produktkategori och hämta ID:t
 INSERT INTO product_categories (name) VALUES ('Pet Supplies');
-INSERT INTO product_category_relation (product_id, category_id) VALUES (1, 1);
+SET @category_id = LAST_INSERT_ID();
+
+-- Koppla produkten till kategorin
+INSERT INTO product_category_relation (product_id, category_id) VALUES (@product_id, @category_id);
+
+-- Lägg till ett lager och hämta ID:t
 INSERT INTO warehouse (warehouse_name, location) VALUES ('Main Warehouse', 'City Center');
-INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (1, 1, 100);
-INSERT INTO orders (user_id, warehouse_id, status) VALUES (1, 1, 'pending');
-INSERT INTO order_items (order_id, product_id, quantity) VALUES (1, 1, 2);
+SET @warehouse_id = LAST_INSERT_ID();
+
+-- Lägg till lagersaldo
+INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@warehouse_id, @product_id, 100);
+
+-- Lägg till en order och hämta ID:t
+INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @warehouse_id, 'pending');
+SET @order_id = LAST_INSERT_ID();
+
+-- Lägg till en orderrad kopplad till ordern och produkten
+INSERT INTO order_items (order_id, product_id, quantity) VALUES (@order_id, @product_id, 2);
+
 
 
 skript
 
 
-import mysql.connector
-
-def check_warehouse_orders(warehouse_id):
-    conn = mysql.connector.connect(
-        host="your_host",
-        user="your_user",
-        password="your_password",
-        database="your_database"
-    )
-    cursor = conn.cursor(dictionary=True)
-    
-    # Hämta aktuella orderrader för icke-fullföljda och icke-avbrutna ordrar
-    cursor.execute("""
-        SELECT oi.product_id, SUM(oi.quantity) AS required_quantity
-        FROM orders o
-        JOIN order_items oi ON o.order_id = oi.order_id
-        WHERE o.warehouse_id = %s AND o.status = 'pending'
-        GROUP BY oi.product_id
-    """, (warehouse_id,))
-    pending_orders = cursor.fetchall()
-    
-    # Hämta lagersaldo
-    cursor.execute("""
-        SELECT product_id, quantity
-        FROM inventory
-        WHERE warehouse_id = %s
-    """, (warehouse_id,))
-    inventory = {row["product_id"]: row["quantity"] for row in cursor.fetchall()}
-    
-    missing_products = {}
-    for order in pending_orders:
-        product_id = order["product_id"]
-        required_quantity = order["required_quantity"]
-        available_quantity = inventory.get(product_id, 0)
-        
-        if available_quantity < required_quantity:
-            missing_products[product_id] = required_quantity - available_quantity 
-    
-    if missing_products:
-        print("The following products are missing to fulfill all pending orders:")
-        for product_id, quantity in missing_products.items():
-            print(f"Product ID {product_id}: {quantity} more needed")
-    else:
-        print("All pending orders can be fulfilled with current inventory.")
-    
-    cursor.close()
-    conn.close()
-
-if __name__ == "__main__":
-    warehouse_id = input("Enter warehouse ID: ")
-    check_warehouse_orders(int(warehouse_id))
