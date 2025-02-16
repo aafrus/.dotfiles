@@ -234,7 +234,7 @@ import sys
 
 # Anslutningsuppgifter från docker-compose.yml
 DB_CONFIG = {
-    "host": "localhost",
+    "host": "127.0.0.1",  # Ändrat från localhost
     "port": 3306,
     "user": "user",
     "password": "123",
@@ -251,24 +251,27 @@ def connect_to_db():
 
 def get_orders_for_warehouse(warehouse_id):
     conn = connect_to_db()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     query = """
-        SELECT o.order_id, o.customer_id, oi.product_id, oi.quantity
+        SELECT o.order_id, o.user_id, oi.product_id, oi.quantity
         FROM orders o
         JOIN order_items oi ON o.order_id = oi.order_id
         WHERE o.warehouse_id = %s AND o.status = 'pending';
     """
     cursor.execute(query, (warehouse_id,))
-    orders = cursor.fetchall()
+    orders = [
+        {"order_id": row[0], "user_id": row[1], "product_id": row[2], "quantity": row[3]}
+        for row in cursor.fetchall()
+    ]
     conn.close()
     return orders
 
 def get_inventory(warehouse_id):
     conn = connect_to_db()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     query = "SELECT product_id, quantity FROM inventory WHERE warehouse_id = %s;"
     cursor.execute(query, (warehouse_id,))
-    inventory = {row["product_id"]: row["quantity"] for row in cursor.fetchall()}
+    inventory = {row[0]: row[1] for row in cursor.fetchall()}
     conn.close()
     return inventory
 
@@ -281,25 +284,30 @@ def fulfill_orders(warehouse_id):
     
     missing_products = {}
 
-    for order in orders:
-        order_id = order["order_id"]
-        product_id = order["product_id"]
-        required_quantity = order["quantity"]
+    try:
+        for order in orders:
+            order_id = order["order_id"]
+            product_id = order["product_id"]
+            required_quantity = order["quantity"]
 
-        available_quantity = inventory.get(product_id, 0)
+            available_quantity = inventory.get(product_id, 0)
 
-        if available_quantity < required_quantity:
-            missing_products[product_id] = required_quantity - available_quantity
-        else:
-            # Minska lagersaldo och uppdatera orderstatus
-            cursor.execute(
-                "UPDATE inventory SET quantity = quantity - %s WHERE warehouse_id = %s AND product_id = %s;",
-                (required_quantity, warehouse_id, product_id)
-            )
-            cursor.execute("UPDATE orders SET status = 'fulfilled' WHERE order_id = %s;", (order_id,))
-    
-    conn.commit()
-    conn.close()
+            if available_quantity < required_quantity:
+                missing_products[product_id] = required_quantity - available_quantity
+            else:
+                # Minska lagersaldo och uppdatera orderstatus
+                cursor.execute(
+                    "UPDATE inventory SET quantity = quantity - %s WHERE warehouse_id = %s AND product_id = %s;",
+                    (required_quantity, warehouse_id, product_id)
+                )
+                cursor.execute("UPDATE orders SET status = 'fulfilled' WHERE order_id = %s;", (order_id,))
+
+        conn.commit()
+    except mariadb.Error:
+        conn.rollback()
+        print("Fel vid commit, rollback utförd")
+    finally:
+        conn.close()
 
     # Skriva ut saknade produkter om lagret inte räcker
     if missing_products:
