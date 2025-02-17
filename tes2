@@ -1,0 +1,234 @@
+-- Infoga testanvändare
+INSERT INTO users (username, email, password_hash, confirmed) VALUES
+('testuser', 'test@example.com', 'hash123', TRUE),
+('johndoe', 'john@example.com', 'hash456', TRUE),
+('janedoe', 'jane@example.com', 'hash789', FALSE);
+
+-- Infoga adresser kopplade till användare
+INSERT INTO addresses (user_id, address, type) VALUES
+(1, '123 Test Street', 'billing'),
+(2, '456 Example Road', 'delivery'),
+(3, '789 Sample Ave', 'billing');
+
+-- Infoga arter
+INSERT INTO species VALUES (NULL), (NULL);
+
+-- Infoga artnamn
+INSERT INTO species_names (species_id, name, name_type) VALUES
+(1, 'Dog', 'common'),
+(1, 'Canis lupus familiaris', 'latin'),
+(2, 'Cat', 'common'),
+(2, 'Felis catus', 'latin');
+
+-- Infoga husdjur kopplade till användare
+INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES
+(1, 1, 'Buddy', '2020-05-01', 'alive'),
+(2, 2, 'Whiskers', '2018-11-15', 'alive');
+
+-- Infoga tillverkare
+INSERT INTO manufacturers (name, address, contact_person, contact_details) VALUES
+('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com'),
+('PetCare Ltd.', 'Animal Street 10', 'Jane Smith', 'support@petcare.com');
+
+-- Infoga produkter
+INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price, description) VALUES
+('P123', 'Dog Food', 1, 10.00, 20.00, 'High-quality dog food'),
+('P456', 'Cat Toy', 2, 3.00, 7.50, 'Fun toy for cats');
+
+-- Infoga produktkategorier
+INSERT INTO product_categories (name) VALUES
+('Pet Supplies'), ('Toys');
+
+-- Koppla produkter till kategorier
+INSERT INTO product_category_relation (product_id, category_id) VALUES
+(1, 1),
+(2, 2);
+
+-- Infoga lager
+INSERT INTO warehouse (warehouse_name, location) VALUES
+('Main Warehouse', 'City Center'),
+('Small Warehouse', 'Suburb');
+
+-- Infoga lagersaldo
+INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES
+(1, 1, 100),
+(1, 2, 50),
+(2, 1, 5);
+
+-- Infoga ordrar
+INSERT INTO orders (user_id, warehouse_id, status) VALUES
+(1, 1, 'pending'),
+(2, 2, 'pending');
+
+-- Infoga orderrader
+INSERT INTO order_items (order_id, product_id, quantity) VALUES
+(1, 1, 2),
+(2, 1, 10);
+
+-- Infoga testmeddelanden
+INSERT INTO messages (sender_id, receiver_id, content) VALUES
+(1, 2, 'Hello, how are you?'),
+(2, 1, 'I am fine, thanks!');
+
+
+
+
+---
+
+
+
+import mariadb
+import sys
+
+# Anslutningsuppgifter från docker-compose.yml
+DB_CONFIG = {
+    "host": "localhost",
+    "port": 3306,
+    "user": "user",
+    "password": "123",
+    "database": "petshop"
+}
+
+def connect_to_db():
+    try:
+        conn = mariadb.connect(**DB_CONFIG)
+        return conn
+    except mariadb.Error as e:
+        print(f"Error connecting to MariaDB: {e}")
+        sys.exit(1)
+
+def get_orders_for_warehouse(warehouse_id):
+    conn = connect_to_db()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+        SELECT o.order_id, o.customer_id, oi.product_id, oi.quantity
+        FROM orders o
+        JOIN order_items oi ON o.order_id = oi.order_id
+        WHERE o.warehouse_id = %s AND o.status = 'pending';
+    """
+    cursor.execute(query, (warehouse_id,))
+    orders = cursor.fetchall()
+    conn.close()
+    return orders
+
+def get_inventory(warehouse_id):
+    conn = connect_to_db()
+    cursor = conn.cursor(dictionary=True)
+    query = "SELECT product_id, quantity FROM inventory WHERE warehouse_id = %s;"
+    cursor.execute(query, (warehouse_id,))
+    inventory = {row["product_id"]: row["quantity"] for row in cursor.fetchall()}
+    conn.close()
+    return inventory
+
+def fulfill_orders(warehouse_id):
+    orders = get_orders_for_warehouse(warehouse_id)
+    inventory = get_inventory(warehouse_id)
+    
+    conn = connect_to_db()
+    cursor = conn.cursor()
+    
+    missing_products = {}
+
+    for order in orders:
+        order_id = order["order_id"]
+        product_id = order["product_id"]
+        required_quantity = order["quantity"]
+
+        available_quantity = inventory.get(product_id, 0)
+
+        if available_quantity < required_quantity:
+            missing_products[product_id] = required_quantity - available_quantity
+        else:
+            # Minska lagersaldo och uppdatera orderstatus
+            cursor.execute(
+                "UPDATE inventory SET quantity = quantity - %s WHERE warehouse_id = %s AND product_id = %s;",
+                (required_quantity, warehouse_id, product_id)
+            )
+            cursor.execute("UPDATE orders SET status = 'fulfilled' WHERE order_id = %s;", (order_id,))
+    
+    conn.commit()
+    conn.close()
+
+    # Skriva ut saknade produkter om lagret inte räcker
+    if missing_products:
+        print("Ordern kan inte uppfyllas. Följande produkter saknas:")
+        for product_id, needed in missing_products.items():
+            print(f"- Produkt-ID: {product_id}, Saknas: {needed} enheter")
+    else:
+        print("Alla ordrar kunde uppfyllas.")
+
+if __name__ == "__main__":
+    warehouse_id = 2  # Ange ID för Small Warehouse
+    fulfill_orders(warehouse_id)
+
+
+
+---
+
+
+-- Skapa en användare och hämta ID:t
+INSERT INTO users (username, email, password_hash, confirmed) VALUES ('testuser', 'test@example.com', 'hash123', TRUE);
+SET @user_id = LAST_INSERT_ID();
+
+-- Lägg till en adress kopplad till användaren
+INSERT INTO addresses (user_id, address, type) VALUES (@user_id, '123 Test Street', 'billing');
+
+-- Lägg till en art och hämta ID:t
+INSERT INTO species () VALUES ();
+SET @species_id = LAST_INSERT_ID();
+
+-- Lägg till artens namn kopplat till species_id
+INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Dog', 'common');
+INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Canis lupus familiaris', 'scientific');
+
+-- Lägg till ett husdjur kopplat till användaren
+INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES (@user_id, @species_id, 'Buddy', '2020-05-01', 'alive');
+
+-- Lägg till en tillverkare och hämta ID:t
+INSERT INTO manufacturers (name, address, contact_person, contact_details) 
+VALUES ('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com');
+SET @manufacturer_id = LAST_INSERT_ID();
+
+-- Lägg till en produkt kopplad till tillverkaren och hämta ID:t
+INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price) 
+VALUES ('P123', 'Dog Food', @manufacturer_id, 10.00, 20.00);
+SET @product_id = LAST_INSERT_ID();
+
+-- Lägg till en produktkategori och hämta ID:t
+INSERT INTO product_categories (name) VALUES ('Pet Supplies');
+SET @category_id = LAST_INSERT_ID();
+
+-- Koppla produkten till kategorin
+INSERT INTO product_category_relation (product_id, category_id) VALUES (@product_id, @category_id);
+
+-- Lägg till ett lager och hämta ID:t
+INSERT INTO warehouse (warehouse_name, location) VALUES ('Main Warehouse', 'City Center');
+SET @warehouse_id = LAST_INSERT_ID();
+
+-- Lägg till lagersaldo
+INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@warehouse_id, @product_id, 100);
+
+-- Lägg till en order och hämta ID:t
+INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @warehouse_id, 'pending');
+SET @order_id = LAST_INSERT_ID();
+
+-- Lägg till en orderrad kopplad till ordern och produkten
+INSERT INTO order_items (order_id, product_id, quantity) VALUES (@order_id, @product_id, 2);
+
+-- ========================
+-- LÄGG TILL "SMALL WAREHOUSE" SOM INTE KAN UPPFYLLA ORDERN
+-- ========================
+
+-- Skapa ett nytt lager med för lite produkter
+INSERT INTO warehouse (warehouse_name, location) VALUES ('Small Warehouse', 'Suburb');
+SET @small_warehouse_id = LAST_INSERT_ID();
+
+-- Lägg till en order som kräver mer än vad lagret har
+INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @small_warehouse_id, 'pending');
+SET @small_order_id = LAST_INSERT_ID();
+
+-- Lägg till en orderrad som kräver fler produkter än vad som finns i lagret
+INSERT INTO order_items (order_id, product_id, quantity) VALUES (@small_order_id, @product_id, 10);
+
+-- Lägg till en inventariepost med färre produkter än vad som krävs
+INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@small_warehouse_id, @product_id, 5);
