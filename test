@@ -10,7 +10,7 @@ CREATE TABLE users (
 -- Skapa tabell för adresser
 CREATE TABLE addresses (
     address_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT,
     address VARCHAR(255) NOT NULL,
     type ENUM('billing', 'delivery') NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -24,12 +24,12 @@ CREATE TABLE species (
 -- Skapa tabell för husdjur
 CREATE TABLE pets (
     pet_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    species_id INT NOT NULL,
+    user_id INT,
+    species_id INT,
     name VARCHAR(255),
     birth_date DATE,
     description TEXT,
-    status ENUM('alive', 'deceased') NOT NULL DEFAULT 'alive',
+    status ENUM('alive', 'deceased') NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
 );
@@ -37,9 +37,9 @@ CREATE TABLE pets (
 -- Skapa tabell för artnamn
 CREATE TABLE species_names (
     species_name_id INT AUTO_INCREMENT PRIMARY KEY,
-    species_id INT NOT NULL,
+    species_id INT,
     name VARCHAR(255) NOT NULL,
-    name_type ENUM('common', 'scientific') NOT NULL,
+    name_type ENUM('common', 'latin') NOT NULL,
     FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
 );
 
@@ -58,8 +58,8 @@ CREATE TABLE products (
     sku VARCHAR(255) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     manufacturer_id INT,
-    buy_price DECIMAL(10,2) NOT NULL CHECK (buy_price >= 0),
-    sell_price DECIMAL(10,2) NOT NULL CHECK (sell_price >= buy_price),
+    buy_price DECIMAL(10,2) NOT NULL,
+    sell_price DECIMAL(10,2) NOT NULL,
     description TEXT,
     FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(manufacturer_id) ON DELETE SET NULL
 );
@@ -67,13 +67,13 @@ CREATE TABLE products (
 -- Skapa tabell för produktkategorier
 CREATE TABLE product_categories (
     category_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE
+    name VARCHAR(255) NOT NULL
 );
 
 -- Kopplingstabell mellan produkter och kategorier
 CREATE TABLE product_category_relation (
-    product_id INT NOT NULL,
-    category_id INT NOT NULL,
+    product_id INT,
+    category_id INT,
     PRIMARY KEY (product_id, category_id),
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES product_categories(category_id) ON DELETE CASCADE
@@ -82,15 +82,15 @@ CREATE TABLE product_category_relation (
 -- Skapa tabell för lager
 CREATE TABLE warehouse (
     warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
-    warehouse_name VARCHAR(255) NOT NULL UNIQUE,
+    warehouse_name VARCHAR(255) NOT NULL,
     location VARCHAR(255) NOT NULL
 );
 
 -- Skapa tabell för lagersaldo
 CREATE TABLE inventory (
-    warehouse_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL CHECK (quantity >= 0),
+    warehouse_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
     PRIMARY KEY (warehouse_id, product_id),
     FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
@@ -99,18 +99,18 @@ CREATE TABLE inventory (
 -- Skapa tabell för ordrar
 CREATE TABLE orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT,
     warehouse_id INT,
-    status ENUM('pending', 'fulfilled', 'cancelled') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'fulfilled', 'cancelled') NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE SET NULL
 );
 
 -- Skapa tabell för orderrader
 CREATE TABLE order_items (
-    order_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL CHECK (quantity > 0),
+    order_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
     PRIMARY KEY (order_id, product_id),
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
@@ -119,8 +119,8 @@ CREATE TABLE order_items (
 -- Skapa tabell för meddelanden
 CREATE TABLE messages (
     message_id INT AUTO_INCREMENT PRIMARY KEY,
-    sender_id INT NOT NULL,
-    receiver_id INT NOT NULL,
+    sender_id INT,
+    receiver_id INT,
     parent_message_id INT NULL,
     content TEXT NOT NULL,
     sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -133,7 +133,7 @@ CREATE TABLE messages (
 CREATE TABLE logs (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     table_name VARCHAR(255) NOT NULL,
-    operation ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    operation VARCHAR(10) NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     old_data TEXT,
     new_data TEXT
@@ -159,42 +159,71 @@ FOR EACH ROW
 INSERT INTO logs (table_name, operation, old_data)
 VALUES ('inventory', 'DELETE', JSON_OBJECT('warehouse_id', OLD.warehouse_id, 'product_id', OLD.product_id, 'quantity', OLD.quantity));
 
--- Exempeldata
+
+-- Skapa en användare och hämta ID:t
 INSERT INTO users (username, email, password_hash, confirmed) VALUES ('testuser', 'test@example.com', 'hash123', TRUE);
 SET @user_id = LAST_INSERT_ID();
 
+-- Lägg till en adress kopplad till användaren
 INSERT INTO addresses (user_id, address, type) VALUES (@user_id, '123 Test Street', 'billing');
 
+-- Lägg till en art och hämta ID:t
 INSERT INTO species () VALUES ();
 SET @species_id = LAST_INSERT_ID();
 
+-- Lägg till artens namn kopplat till species_id
 INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Dog', 'common');
 INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Canis lupus familiaris', 'scientific');
 
+-- Lägg till ett husdjur kopplat till användaren
 INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES (@user_id, @species_id, 'Buddy', '2020-05-01', 'alive');
 
+-- Lägg till en tillverkare och hämta ID:t
 INSERT INTO manufacturers (name, address, contact_person, contact_details) 
 VALUES ('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com');
 SET @manufacturer_id = LAST_INSERT_ID();
 
+-- Lägg till en produkt kopplad till tillverkaren och hämta ID:t
 INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price) 
 VALUES ('P123', 'Dog Food', @manufacturer_id, 10.00, 20.00);
 SET @product_id = LAST_INSERT_ID();
 
+-- Lägg till en produktkategori och hämta ID:t
 INSERT INTO product_categories (name) VALUES ('Pet Supplies');
 SET @category_id = LAST_INSERT_ID();
 
+-- Koppla produkten till kategorin
 INSERT INTO product_category_relation (product_id, category_id) VALUES (@product_id, @category_id);
 
+-- Lägg till ett lager och hämta ID:t
 INSERT INTO warehouse (warehouse_name, location) VALUES ('Main Warehouse', 'City Center');
 SET @warehouse_id = LAST_INSERT_ID();
 
+-- Lägg till lagersaldo
 INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@warehouse_id, @product_id, 100);
 
+-- Lägg till en order och hämta ID:t
 INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @warehouse_id, 'pending');
 SET @order_id = LAST_INSERT_ID();
 
+-- Lägg till en orderrad kopplad till ordern och produkten
 INSERT INTO order_items (order_id, product_id, quantity) VALUES (@order_id, @product_id, 2);
+
+-- LÄGG TILL "SMALL WAREHOUSE" SOM INTE KAN UPPFYLLA ORDERN
+
+-- Skapa ett nytt lager med för lite produkter
+INSERT INTO warehouse (warehouse_name, location) VALUES ('Small Warehouse', 'Suburb');
+SET @small_warehouse_id = LAST_INSERT_ID();
+
+-- Lägg till en order som kräver mer än vad lagret har
+INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @small_warehouse_id, 'pending');
+SET @small_order_id = LAST_INSERT_ID();
+
+-- Lägg till en orderrad som kräver fler produkter än vad som finns i lagret
+INSERT INTO order_items (order_id, product_id, quantity) VALUES (@small_order_id, @product_id, 10);
+
+-- Lägg till en inventariepost med färre produkter än vad som krävs
+INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@small_warehouse_id, @product_id, 5);
 
 
 
