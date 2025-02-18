@@ -1,3 +1,8 @@
+-- Skapa databasen
+DROP DATABASE IF EXISTS petshop;
+CREATE DATABASE petshop;
+USE petshop;
+
 -- Skapa tabell för användare
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -159,7 +164,7 @@ FOR EACH ROW
 INSERT INTO logs (table_name, operation, old_data)
 VALUES ('inventory', 'DELETE', JSON_OBJECT('warehouse_id', OLD.warehouse_id, 'product_id', OLD.product_id, 'quantity', OLD.quantity));
 
-
+-- Testdata
 -- Skapa en användare och hämta ID:t
 INSERT INTO users (username, email, password_hash, confirmed) VALUES ('testuser', 'test@example.com', 'hash123', TRUE);
 SET @user_id = LAST_INSERT_ID();
@@ -209,8 +214,6 @@ SET @order_id = LAST_INSERT_ID();
 -- Lägg till en orderrad kopplad till ordern och produkten
 INSERT INTO order_items (order_id, product_id, quantity) VALUES (@order_id, @product_id, 2);
 
--- LÄGG TILL "SMALL WAREHOUSE" SOM INTE KAN UPPFYLLA ORDERN
-
 -- Skapa ett nytt lager med för lite produkter
 INSERT INTO warehouse (warehouse_name, location) VALUES ('Small Warehouse', 'Suburb');
 SET @small_warehouse_id = LAST_INSERT_ID();
@@ -227,8 +230,7 @@ INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@small_wareho
 
 
 
-SKRIPT
-
+-- Skript 
 
 import mariadb
 import sys
@@ -237,8 +239,8 @@ import sys
 DB_CONFIG = {
     "host": "localhost",
     "port": 3306,
-    "user": "user",
-    "password": "123",
+    "user": "root",  # Ändra till din användare
+    "password": "",  # Ändra till ditt lösenord
     "database": "petshop"
 }
 
@@ -296,7 +298,6 @@ def check_order_fulfillment(warehouse_id):
         if available_quantity < required_quantity:
             missing_products[product_name] = missing_products.get(product_name, 0) + (required_quantity - available_quantity)
 
-    # Skriva ut saknade produkter om lagret inte räcker
     if missing_products:
         print("\nOrdern kan inte uppfyllas. Följande produkter saknas:")
         for product, needed in missing_products.items():
