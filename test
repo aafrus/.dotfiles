@@ -3,7 +3,7 @@ DROP DATABASE IF EXISTS petshop;
 CREATE DATABASE petshop;
 USE petshop;
 
--- Skapa tabell för användare
+-- Tabell för användare
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) UNIQUE NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE users (
     confirmed BOOLEAN DEFAULT FALSE
 );
 
--- Skapa tabell för adresser
+-- Tabell för adresser
 CREATE TABLE addresses (
     address_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -21,12 +21,21 @@ CREATE TABLE addresses (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- Skapa tabell för arter
+-- Tabell för arter
 CREATE TABLE species (
     species_id INT AUTO_INCREMENT PRIMARY KEY
 );
 
--- Skapa tabell för husdjur
+-- Tabell för artnamn (flera namn per art)
+CREATE TABLE species_names (
+    species_name_id INT AUTO_INCREMENT PRIMARY KEY,
+    species_id INT,
+    name VARCHAR(255) NOT NULL,
+    name_type ENUM('common', 'latin') NOT NULL,
+    FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
+);
+
+-- Tabell för husdjur
 CREATE TABLE pets (
     pet_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -39,16 +48,7 @@ CREATE TABLE pets (
     FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
 );
 
--- Skapa tabell för artnamn
-CREATE TABLE species_names (
-    species_name_id INT AUTO_INCREMENT PRIMARY KEY,
-    species_id INT,
-    name VARCHAR(255) NOT NULL,
-    name_type ENUM('common', 'latin') NOT NULL,
-    FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
-);
-
--- Skapa tabell för tillverkare
+-- Tabell för tillverkare
 CREATE TABLE manufacturers (
     manufacturer_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE manufacturers (
     contact_details VARCHAR(255)
 );
 
--- Skapa tabell för produkter
+-- Tabell för produkter
 CREATE TABLE products (
     product_id INT AUTO_INCREMENT PRIMARY KEY,
     sku VARCHAR(255) UNIQUE NOT NULL,
@@ -69,13 +69,13 @@ CREATE TABLE products (
     FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(manufacturer_id) ON DELETE SET NULL
 );
 
--- Skapa tabell för produktkategorier
+-- Tabell för produktkategorier
 CREATE TABLE product_categories (
     category_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL
 );
 
--- Kopplingstabell mellan produkter och kategorier
+-- Kopplingstabell för produkter och kategorier
 CREATE TABLE product_category_relation (
     product_id INT,
     category_id INT,
@@ -84,14 +84,14 @@ CREATE TABLE product_category_relation (
     FOREIGN KEY (category_id) REFERENCES product_categories(category_id) ON DELETE CASCADE
 );
 
--- Skapa tabell för lager
+-- Tabell för lager
 CREATE TABLE warehouse (
     warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
     warehouse_name VARCHAR(255) NOT NULL,
     location VARCHAR(255) NOT NULL
 );
 
--- Skapa tabell för lagersaldo
+-- Tabell för lagersaldo
 CREATE TABLE inventory (
     warehouse_id INT,
     product_id INT,
@@ -101,7 +101,7 @@ CREATE TABLE inventory (
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
--- Skapa tabell för ordrar
+-- Tabell för ordrar
 CREATE TABLE orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -111,7 +111,7 @@ CREATE TABLE orders (
     FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE SET NULL
 );
 
--- Skapa tabell för orderrader
+-- Tabell för orderrader
 CREATE TABLE order_items (
     order_id INT,
     product_id INT,
@@ -121,7 +121,7 @@ CREATE TABLE order_items (
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
--- Skapa tabell för meddelanden
+-- Tabell för meddelanden
 CREATE TABLE messages (
     message_id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT,
@@ -134,7 +134,7 @@ CREATE TABLE messages (
     FOREIGN KEY (parent_message_id) REFERENCES messages(message_id) ON DELETE SET NULL
 );
 
--- Loggtabell
+-- Loggtabell för ändringar
 CREATE TABLE logs (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     table_name VARCHAR(255) NOT NULL,
@@ -144,13 +144,13 @@ CREATE TABLE logs (
     new_data TEXT
 );
 
--- Trigger INSERT
+-- Trigger för INSERT
 CREATE TRIGGER log_insert AFTER INSERT ON inventory
 FOR EACH ROW
 INSERT INTO logs (table_name, operation, new_data)
 VALUES ('inventory', 'INSERT', JSON_OBJECT('warehouse_id', NEW.warehouse_id, 'product_id', NEW.product_id, 'quantity', NEW.quantity));
 
--- Trigger UPDATE
+-- Trigger för UPDATE
 CREATE TRIGGER log_update AFTER UPDATE ON inventory
 FOR EACH ROW
 INSERT INTO logs (table_name, operation, old_data, new_data)
@@ -158,79 +158,78 @@ VALUES ('inventory', 'UPDATE',
     JSON_OBJECT('warehouse_id', OLD.warehouse_id, 'product_id', OLD.product_id, 'quantity', OLD.quantity),
     JSON_OBJECT('warehouse_id', NEW.warehouse_id, 'product_id', NEW.product_id, 'quantity', NEW.quantity));
 
--- Trigger DELETE
+-- Trigger för DELETE
 CREATE TRIGGER log_delete AFTER DELETE ON inventory
 FOR EACH ROW
 INSERT INTO logs (table_name, operation, old_data)
 VALUES ('inventory', 'DELETE', JSON_OBJECT('warehouse_id', OLD.warehouse_id, 'product_id', OLD.product_id, 'quantity', OLD.quantity));
 
 -- Testdata
--- Skapa en användare och hämta ID:t
+-- Lägg till en användare
 INSERT INTO users (username, email, password_hash, confirmed) VALUES ('testuser', 'test@example.com', 'hash123', TRUE);
 SET @user_id = LAST_INSERT_ID();
 
--- Lägg till en adress kopplad till användaren
+-- Lägg till en adress
 INSERT INTO addresses (user_id, address, type) VALUES (@user_id, '123 Test Street', 'billing');
 
--- Lägg till en art och hämta ID:t
+-- Lägg till en art
 INSERT INTO species () VALUES ();
 SET @species_id = LAST_INSERT_ID();
 
--- Lägg till artens namn kopplat till species_id
+-- Lägg till artnamn
 INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Dog', 'common');
-INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Canis lupus familiaris', 'scientific');
+INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Canis lupus familiaris', 'latin');
 
--- Lägg till ett husdjur kopplat till användaren
+-- Lägg till ett husdjur
 INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES (@user_id, @species_id, 'Buddy', '2020-05-01', 'alive');
 
--- Lägg till en tillverkare och hämta ID:t
+-- Lägg till en tillverkare
 INSERT INTO manufacturers (name, address, contact_person, contact_details) 
 VALUES ('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com');
 SET @manufacturer_id = LAST_INSERT_ID();
 
--- Lägg till en produkt kopplad till tillverkaren och hämta ID:t
+-- Lägg till en produkt
 INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price) 
 VALUES ('P123', 'Dog Food', @manufacturer_id, 10.00, 20.00);
 SET @product_id = LAST_INSERT_ID();
 
--- Lägg till en produktkategori och hämta ID:t
+-- Lägg till en produktkategori
 INSERT INTO product_categories (name) VALUES ('Pet Supplies');
 SET @category_id = LAST_INSERT_ID();
 
 -- Koppla produkten till kategorin
 INSERT INTO product_category_relation (product_id, category_id) VALUES (@product_id, @category_id);
 
--- Lägg till ett lager och hämta ID:t
+-- Lägg till ett lager
 INSERT INTO warehouse (warehouse_name, location) VALUES ('Main Warehouse', 'City Center');
 SET @warehouse_id = LAST_INSERT_ID();
 
 -- Lägg till lagersaldo
 INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@warehouse_id, @product_id, 100);
 
--- Lägg till en order och hämta ID:t
+-- Lägg till en order
 INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @warehouse_id, 'pending');
 SET @order_id = LAST_INSERT_ID();
 
--- Lägg till en orderrad kopplad till ordern och produkten
+-- Lägg till en orderrad
 INSERT INTO order_items (order_id, product_id, quantity) VALUES (@order_id, @product_id, 2);
 
--- Skapa ett nytt lager med för lite produkter
+-- Lägg till ett litet lager med otillräckligt lager
 INSERT INTO warehouse (warehouse_name, location) VALUES ('Small Warehouse', 'Suburb');
 SET @small_warehouse_id = LAST_INSERT_ID();
 
--- Lägg till en order som kräver mer än vad lagret har
+-- Lägg till en order som inte kan uppfyllas
 INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @small_warehouse_id, 'pending');
 SET @small_order_id = LAST_INSERT_ID();
 
--- Lägg till en orderrad som kräver fler produkter än vad som finns i lagret
+-- Lägg till en orderrad som kräver fler produkter än vad som finns
 INSERT INTO order_items (order_id, product_id, quantity) VALUES (@small_order_id, @product_id, 10);
 
--- Lägg till en inventariepost med färre produkter än vad som krävs
+-- Lägg till lagersaldo för det lilla lagret
 INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@small_warehouse_id, @product_id, 5);
 
 
-
--- Skript 
+--- Skript 
 
 import mariadb
 import sys
