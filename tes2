@@ -1,234 +1,195 @@
--- Infoga testanvändare
-INSERT INTO users (username, email, password_hash, confirmed) VALUES
-('testuser', 'test@example.com', 'hash123', TRUE),
-('johndoe', 'john@example.com', 'hash456', TRUE),
-('janedoe', 'jane@example.com', 'hash789', FALSE);
+3. Testa arter och husdjur (Species och Pets)
+SQL-frågor:
 
--- Infoga adresser kopplade till användare
-INSERT INTO addresses (user_id, address, type) VALUES
-(1, '123 Test Street', 'billing'),
-(2, '456 Example Road', 'delivery'),
-(3, '789 Sample Ave', 'billing');
+    Lägg till en ny art:
+    sql
+    Copy
 
--- Infoga arter
-INSERT INTO species VALUES (NULL), (NULL);
+    INSERT INTO species () VALUES ();
+    SET @new_species_id = LAST_INSERT_ID();
 
--- Infoga artnamn
-INSERT INTO species_names (species_id, name, name_type) VALUES
-(1, 'Dog', 'common'),
-(1, 'Canis lupus familiaris', 'latin'),
-(2, 'Cat', 'common'),
-(2, 'Felis catus', 'latin');
+    Lägg till artnamn för den nya arten:
+    sql
+    Copy
 
--- Infoga husdjur kopplade till användare
-INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES
-(1, 1, 'Buddy', '2020-05-01', 'alive'),
-(2, 2, 'Whiskers', '2018-11-15', 'alive');
+    INSERT INTO species_names (species_id, name, name_type)
+    VALUES (@new_species_id, 'Cat', 'common'),
+           (@new_species_id, 'Felis catus', 'latin');
 
--- Infoga tillverkare
-INSERT INTO manufacturers (name, address, contact_person, contact_details) VALUES
-('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com'),
-('PetCare Ltd.', 'Animal Street 10', 'Jane Smith', 'support@petcare.com');
+    Lägg till ett husdjur för en användare:
+    sql
+    Copy
 
--- Infoga produkter
-INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price, description) VALUES
-('P123', 'Dog Food', 1, 10.00, 20.00, 'High-quality dog food'),
-('P456', 'Cat Toy', 2, 3.00, 7.50, 'Fun toy for cats');
+    INSERT INTO pets (user_id, species_id, name, birth_date, status)
+    VALUES (1, @new_species_id, 'Whiskers', '2019-03-15', 'alive');
 
--- Infoga produktkategorier
-INSERT INTO product_categories (name) VALUES
-('Pet Supplies'), ('Toys');
+    Hämta alla husdjur för en användare:
+    sql
+    Copy
 
--- Koppla produkter till kategorier
-INSERT INTO product_category_relation (product_id, category_id) VALUES
-(1, 1),
-(2, 2);
+    SELECT * FROM pets WHERE user_id = 1;
 
--- Infoga lager
-INSERT INTO warehouse (warehouse_name, location) VALUES
-('Main Warehouse', 'City Center'),
-('Small Warehouse', 'Suburb');
+Förväntat resultat:
 
--- Infoga lagersaldo
-INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES
-(1, 1, 100),
-(1, 2, 50),
-(2, 1, 5);
+    En ny art ska läggas till i species-tabellen.
 
--- Infoga ordrar
-INSERT INTO orders (user_id, warehouse_id, status) VALUES
-(1, 1, 'pending'),
-(2, 2, 'pending');
+    Två namn ska läggas till i species_names-tabellen.
 
--- Infoga orderrader
-INSERT INTO order_items (order_id, product_id, quantity) VALUES
-(1, 1, 2),
-(2, 1, 10);
+    Ett nytt husdjur ska läggas till i pets-tabellen.
 
--- Infoga testmeddelanden
-INSERT INTO messages (sender_id, receiver_id, content) VALUES
-(1, 2, 'Hello, how are you?'),
-(2, 1, 'I am fine, thanks!');
+    Du bör se två husdjur för user_id = 1: "Buddy" och "Whiskers".
 
+4. Testa tillverkare och produkter (Manufacturers och Products)
+SQL-frågor:
 
+    Lägg till en ny tillverkare:
+    sql
+    Copy
 
+    INSERT INTO manufacturers (name, address, contact_person, contact_details)
+    VALUES ('Pet Supplies Co.', '123 Pet Street', 'Jane Doe', 'contact@petsupplies.com');
 
----
+    Lägg till en ny produkt:
+    sql
+    Copy
 
+    INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price, description)
+    VALUES ('P456', 'Cat Food', 1, 8.00, 15.00, 'High-quality cat food');
 
+    Hämta alla produkter:
+    sql
+    Copy
 
-import mariadb
-import sys
+    SELECT * FROM products;
 
-# Anslutningsuppgifter från docker-compose.yml
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "user",
-    "password": "123",
-    "database": "petshop"
-}
+Förväntat resultat:
 
-def connect_to_db():
-    try:
-        conn = mariadb.connect(**DB_CONFIG)
-        return conn
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB: {e}")
-        sys.exit(1)
+    En ny tillverkare ska läggas till i manufacturers-tabellen.
 
-def get_orders_for_warehouse(warehouse_id):
-    conn = connect_to_db()
-    cursor = conn.cursor(dictionary=True)
-    query = """
-        SELECT o.order_id, o.customer_id, oi.product_id, oi.quantity
-        FROM orders o
-        JOIN order_items oi ON o.order_id = oi.order_id
-        WHERE o.warehouse_id = %s AND o.status = 'pending';
-    """
-    cursor.execute(query, (warehouse_id,))
-    orders = cursor.fetchall()
-    conn.close()
-    return orders
+    En ny produkt ska läggas till i products-tabellen.
 
-def get_inventory(warehouse_id):
-    conn = connect_to_db()
-    cursor = conn.cursor(dictionary=True)
-    query = "SELECT product_id, quantity FROM inventory WHERE warehouse_id = %s;"
-    cursor.execute(query, (warehouse_id,))
-    inventory = {row["product_id"]: row["quantity"] for row in cursor.fetchall()}
-    conn.close()
-    return inventory
+    Du bör se två produkter: "Dog Food" och "Cat Food".
 
-def fulfill_orders(warehouse_id):
-    orders = get_orders_for_warehouse(warehouse_id)
-    inventory = get_inventory(warehouse_id)
-    
-    conn = connect_to_db()
-    cursor = conn.cursor()
-    
-    missing_products = {}
+5. Testa lager och inventarie (Warehouse och Inventory)
+SQL-frågor:
 
-    for order in orders:
-        order_id = order["order_id"]
-        product_id = order["product_id"]
-        required_quantity = order["quantity"]
+    Lägg till ett nytt lager:
+    sql
+    Copy
 
-        available_quantity = inventory.get(product_id, 0)
+    INSERT INTO warehouse (warehouse_name, location)
+    VALUES ('Second Warehouse', 'Downtown');
 
-        if available_quantity < required_quantity:
-            missing_products[product_id] = required_quantity - available_quantity
-        else:
-            # Minska lagersaldo och uppdatera orderstatus
-            cursor.execute(
-                "UPDATE inventory SET quantity = quantity - %s WHERE warehouse_id = %s AND product_id = %s;",
-                (required_quantity, warehouse_id, product_id)
-            )
-            cursor.execute("UPDATE orders SET status = 'fulfilled' WHERE order_id = %s;", (order_id,))
-    
-    conn.commit()
-    conn.close()
+    Lägg till lagersaldo för det nya lagret:
+    sql
+    Copy
 
-    # Skriva ut saknade produkter om lagret inte räcker
-    if missing_products:
-        print("Ordern kan inte uppfyllas. Följande produkter saknas:")
-        for product_id, needed in missing_products.items():
-            print(f"- Produkt-ID: {product_id}, Saknas: {needed} enheter")
-    else:
-        print("Alla ordrar kunde uppfyllas.")
+    INSERT INTO inventory (warehouse_id, product_id, quantity)
+    VALUES (2, 1, 50);  -- 50 enheter av Dog Food i Second Warehouse
 
-if __name__ == "__main__":
-    warehouse_id = 2  # Ange ID för Small Warehouse
-    fulfill_orders(warehouse_id)
+    Hämta lagersaldo för ett lager:
+    sql
+    Copy
 
+    SELECT * FROM inventory WHERE warehouse_id = 2;
 
+Förväntat resultat:
 
----
+    Ett nytt lager ska läggas till i warehouse-tabellen.
 
+    Lagersaldo ska läggas till i inventory-tabellen.
 
--- Skapa en användare och hämta ID:t
-INSERT INTO users (username, email, password_hash, confirmed) VALUES ('testuser', 'test@example.com', 'hash123', TRUE);
-SET @user_id = LAST_INSERT_ID();
+    Du bör se lagersaldo för "Dog Food" i "Second Warehouse".
 
--- Lägg till en adress kopplad till användaren
-INSERT INTO addresses (user_id, address, type) VALUES (@user_id, '123 Test Street', 'billing');
+6. Testa ordrar och orderrader (Orders och Order Items)
+SQL-frågor:
 
--- Lägg till en art och hämta ID:t
-INSERT INTO species () VALUES ();
-SET @species_id = LAST_INSERT_ID();
+    Lägg till en ny order:
+    sql
+    Copy
 
--- Lägg till artens namn kopplat till species_id
-INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Dog', 'common');
-INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Canis lupus familiaris', 'scientific');
+    INSERT INTO orders (user_id, warehouse_id, status)
+    VALUES (1, 1, 'pending');
 
--- Lägg till ett husdjur kopplat till användaren
-INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES (@user_id, @species_id, 'Buddy', '2020-05-01', 'alive');
+    Lägg till en orderrad:
+    sql
+    Copy
 
--- Lägg till en tillverkare och hämta ID:t
-INSERT INTO manufacturers (name, address, contact_person, contact_details) 
-VALUES ('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com');
-SET @manufacturer_id = LAST_INSERT_ID();
+    INSERT INTO order_items (order_id, product_id, quantity)
+    VALUES (2, 1, 3);  -- 3 enheter av Dog Food
 
--- Lägg till en produkt kopplad till tillverkaren och hämta ID:t
-INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price) 
-VALUES ('P123', 'Dog Food', @manufacturer_id, 10.00, 20.00);
-SET @product_id = LAST_INSERT_ID();
+    Hämta alla ordrar för en användare:
+    sql
+    Copy
 
--- Lägg till en produktkategori och hämta ID:t
-INSERT INTO product_categories (name) VALUES ('Pet Supplies');
-SET @category_id = LAST_INSERT_ID();
+    SELECT * FROM orders WHERE user_id = 1;
 
--- Koppla produkten till kategorin
-INSERT INTO product_category_relation (product_id, category_id) VALUES (@product_id, @category_id);
+Förväntat resultat:
 
--- Lägg till ett lager och hämta ID:t
-INSERT INTO warehouse (warehouse_name, location) VALUES ('Main Warehouse', 'City Center');
-SET @warehouse_id = LAST_INSERT_ID();
+    En ny order ska läggas till i orders-tabellen.
 
--- Lägg till lagersaldo
-INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@warehouse_id, @product_id, 100);
+    En orderrad ska läggas till i order_items-tabellen.
 
--- Lägg till en order och hämta ID:t
-INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @warehouse_id, 'pending');
-SET @order_id = LAST_INSERT_ID();
+    Du bör se två ordrar för user_id = 1.
 
--- Lägg till en orderrad kopplad till ordern och produkten
-INSERT INTO order_items (order_id, product_id, quantity) VALUES (@order_id, @product_id, 2);
+7. Testa meddelanden (Messages)
+SQL-frågor:
 
--- ========================
--- LÄGG TILL "SMALL WAREHOUSE" SOM INTE KAN UPPFYLLA ORDERN
--- ========================
+    Skicka ett meddelande från en användare till en annan:
+    sql
+    Copy
 
--- Skapa ett nytt lager med för lite produkter
-INSERT INTO warehouse (warehouse_name, location) VALUES ('Small Warehouse', 'Suburb');
-SET @small_warehouse_id = LAST_INSERT_ID();
+    INSERT INTO messages (sender_id, receiver_id, content)
+    VALUES (1, 2, 'Hej, hur mår din hund?');
 
--- Lägg till en order som kräver mer än vad lagret har
-INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @small_warehouse_id, 'pending');
-SET @small_order_id = LAST_INSERT_ID();
+    Hämta alla meddelanden för en användare:
+    sql
+    Copy
 
--- Lägg till en orderrad som kräver fler produkter än vad som finns i lagret
-INSERT INTO order_items (order_id, product_id, quantity) VALUES (@small_order_id, @product_id, 10);
+    SELECT * FROM messages WHERE receiver_id = 2;
 
--- Lägg till en inventariepost med färre produkter än vad som krävs
-INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (@small_warehouse_id, @product_id, 5);
+Förväntat resultat:
+
+    Ett meddelande ska läggas till i messages-tabellen.
+
+    Du bör se meddelandet i resultatet när du hämtar meddelanden för receiver_id = 2.
+
+8. Testa loggning (Logs)
+SQL-frågor:
+
+    Uppdatera lagersaldo för att trigga loggning:
+    sql
+    Copy
+
+    UPDATE inventory SET quantity = 60 WHERE warehouse_id = 1 AND product_id = 1;
+
+    Hämta alla loggar:
+    sql
+    Copy
+
+    SELECT * FROM logs;
+
+Förväntat resultat:
+
+    En loggpost ska läggas till i logs-tabellen när lagersaldot uppdateras.
+
+    Du bör se en loggpost för UPDATE-operationen.
+
+9. Testa Python-skriptet
+Steg:
+
+    Kör Python-skriptet.
+
+    Välj "Main Warehouse" (ID 1) och se att alla ordrar kan uppfyllas.
+
+    Välj "Small Warehouse" (ID 2) och se att det saknas produkter.
+
+Förväntat resultat:
+
+    För "Main Warehouse" ska du se: Alla ordrar kan uppfyllas med nuvarande lager!
+
+    För "Small Warehouse" ska du se: Ordern kan inte uppfyllas. Följande produkter saknas: - Dog Food: 5 enheter saknas
+
+Sammanfattning
+
+Genom att köra dessa SQL-frågor och Python-skript kan du testa alla delar av uppgiften och verifiera att allt fungerar som det ska. Om något inte fungerar som förväntat, dubbelkolla SQL-frågorna och databasens tillstånd. Lycka till! 😊
