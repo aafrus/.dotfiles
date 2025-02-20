@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Sökväg till batteriets kapacitet och status
-BATTERY_PATH="/sys/class/power_supply/BAT0"
-CAPACITY=$(cat $BATTERY_PATH/capacity)
-STATUS=$(cat $BATTERY_PATH/status)
+# Hämta batteriinformation med acpi
+BATTERY_INFO=$(acpi -b)
+STATUS=$(echo "$BATTERY_INFO" | awk '{print $3}' | tr -d ',')
+CAPACITY=$(echo "$BATTERY_INFO" | awk '{print $4}' | tr -d '%,')
 
 # Funktion för att skicka notifikationer
 send_notification() {
@@ -13,13 +13,13 @@ send_notification() {
 
 # Kontrollera batteristatus
 if [ "$STATUS" = "Charging" ]; then
-    send_notification "Batteriet laddar nu."
+    send_notification "⚡ Batteriet laddar nu."
 elif [ "$STATUS" = "Full" ]; then
-    send_notification "Batteriet är fulladdat."
+    send_notification "🔋 Batteriet är fulladdat."
 elif [ "$CAPACITY" -le 5 ]; then
-    send_notification "Batteriet är på 5%! Ladda snart."
+    send_notification "🆘 Batteriet är på 5%! Ladda snart."
 elif [ "$CAPACITY" -le 15 ]; then
-    send_notification "Batteriet är på 15%. Överväg att ladda."
+    send_notification "⚠️ Batteriet är på 15%. Överväg att ladda."
 fi
 
 
