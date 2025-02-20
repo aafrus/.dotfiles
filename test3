@@ -1,64 +1,43 @@
-#!/bin/sh
+#!/bin/bash
 
-export DISPLAY=:0
-export DBUS_SESSION_BUS_ADDRESS=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u $USER gnome-session)/environ | cut -d= -f2-)
+# Sökväg till batteriets kapacitet och status
+BATTERY_PATH="/sys/class/power_supply/BAT0"
+CAPACITY=$(cat $BATTERY_PATH/capacity)
+STATUS=$(cat $BATTERY_PATH/status)
 
-# Batterinivåer
-LOW_BATTERY=15
-FULL_BATTERY=100
+# Funktion för att skicka notifikationer
+send_notification() {
+    local message=$1
+    notify-send -u critical "Batteri Status" "$message"
+}
 
-# Hämta batteristatus och nivå
-BATTERY_INFO=$(acpi -b)
-BATTERY_LEVEL=$(echo "$BATTERY_INFO" | grep -oP '\d+(?=%)')
-BATTERY_STATUS=$(echo "$BATTERY_INFO" | awk '{print $3}' | tr -d ',')
-
-# Notifieringshantering
-LOW_FILE=/tmp/battery_low
-FULL_FILE=/tmp/battery_full
-CHARGING_FILE=/tmp/battery_charging
-
-# Batteriet laddas
-if [ "$BATTERY_STATUS" = "Charging" ] && [ ! -f "$CHARGING_FILE" ]; then
-    notify-send "Laddar" "Datorn laddas nu." -i "battery" -r 9991
-    touch "$CHARGING_FILE"
-    rm -f "$LOW_FILE" "$FULL_FILE"
-fi
-
-# Låg batterinivå
-if [ "$BATTERY_LEVEL" -le "$LOW_BATTERY" ] && [ "$BATTERY_STATUS" = "Discharging" ] && [ ! -f "$LOW_FILE" ]; then
-    notify-send "Låg batterinivå" "Batteriet är på ${BATTERY_LEVEL}%!" -u critical -i "battery-alert" -r 9991
-    touch "$LOW_FILE"
-    rm -f "$CHARGING_FILE"
-fi
-
-# Fulladdat batteri
-if [ "$BATTERY_LEVEL" -ge "$FULL_BATTERY" ] && [ "$BATTERY_STATUS" = "Full" ] && [ ! -f "$FULL_FILE" ]; then
-    notify-send "Batteri fulladdat" "Ditt batteri är på 100%." -i "battery-full" -r 9991
-    touch "$FULL_FILE"
-    rm -f "$LOW_FILE" "$CHARGING_FILE"
+# Kontrollera batteristatus
+if [ "$STATUS" = "Charging" ]; then
+    send_notification "Batteriet laddar nu."
+elif [ "$STATUS" = "Full" ]; then
+    send_notification "Batteriet är fulladdat."
+elif [ "$CAPACITY" -le 5 ]; then
+    send_notification "Batteriet är på 5%! Ladda snart."
+elif [ "$CAPACITY" -le 15 ]; then
+    send_notification "Batteriet är på 15%. Överväg att ladda."
 fi
 
 
 battery.service
-
 [Unit]
-Description=Battery Notification Script
-After=graphical-session.target
+Description=Battery Monitor Service
 
 [Service]
-ExecStart=/home/YOUR_USERNAME/.local/bin/battery-alert.sh
-Environment=DISPLAY=:0
-Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+ExecStart=/path/to/your/battery_monitor.sh
 
 battery.timer
 
 [Unit]
-Description=Battery Notification Timer
+Description=Run Battery Monitor Every Minute
 
 [Timer]
-OnBootSec=1m
-OnUnitActiveSec=1m
-Unit=battery-alert.service
+OnBootSec=1min
+OnUnitActiveSec=1min
 
 [Install]
 WantedBy=timers.target
