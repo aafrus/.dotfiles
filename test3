@@ -37,3 +37,28 @@ if [ "$BATTERY_LEVEL" -ge "$FULL_BATTERY" ] && [ "$BATTERY_STATUS" = "Full" ] &&
     touch "$FULL_FILE"
     rm -f "$LOW_FILE" "$CHARGING_FILE"
 fi
+
+
+battery.service
+
+[Unit]
+Description=Battery Notification Script
+After=graphical-session.target
+
+[Service]
+ExecStart=/home/YOUR_USERNAME/.local/bin/battery-alert.sh
+Environment=DISPLAY=:0
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+
+battery.timer
+
+[Unit]
+Description=Battery Notification Timer
+
+[Timer]
+OnBootSec=1m
+OnUnitActiveSec=1m
+Unit=battery-alert.service
+
+[Install]
+WantedBy=timers.target
