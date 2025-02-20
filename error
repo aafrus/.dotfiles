@@ -1,14 +1,2 @@
-(venv)  ──── ─ python check                                                  ~/hub/documents/database  
-Traceback (most recent call last):
-  File "/home/ns/hub/documents/database/check", line 83, in <module>
-    fulfill_orders(warehouse_id)
-    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "/home/ns/hub/documents/database/check", line 45, in fulfill_orders
-    orders = get_orders_for_warehouse(warehouse_id)
-  File "/home/ns/hub/documents/database/check", line 30, in get_orders_for_warehouse
-    cursor.execute(query, (warehouse_id,))
-    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ns/hub/documents/database/venv/lib/python3.13/site-packages/mariadb/cursors.py", line 310, in execute
-    self._readresponse()
-    ~~~~~~~~~~~~~~~~~~^^
-mariadb.ProgrammingError: Unknown column 'o.customer_id' in 'SELECT'
+MariaDB [petshop]> insert into messages (sender_id, receiver_id, content) values (1, 2, 'hej test');
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`petshop`.`messages`, CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE)
