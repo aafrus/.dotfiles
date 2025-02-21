@@ -46,3 +46,48 @@ Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%U/bus
 
 [Install]
 WantedBy=default.target
+
+
+[global]
+    monitor = 0
+    follow = keyboard
+    width = 300
+    height = 100
+    origin = top-right
+    offset = 10x10
+    transparency = 0
+    frame_color = "#aaaaaa"
+    separator_color = frame
+    font = Monospace 10
+    markup = full
+    format = "<b>%s</b>\n%b"
+    sort = yes
+    idle_threshold = 120
+    ignore_newline = no
+    show_indicators = yes
+    stack_duplicates = yes
+    hide_duplicate_count = no
+    sticky_history = yes
+    history_length = 20
+    always_run_script = yes
+    title = Dunst
+    class = Dunst
+    startup_notification = false
+    verbosity = info
+    corner_radius = 0
+    ignore_dbusclose = false
+
+[urgency_low]
+    background = "#222222"
+    foreground = "#888888"
+    timeout = 4
+
+[urgency_normal]
+    background = "#285577"
+    foreground = "#ffffff"
+    timeout = 6
+
+[urgency_critical]
+    background = "#900000"
+    foreground = "#ffffff"
+    timeout = 0
