@@ -1,3 +1,47 @@
- ──── ─ mv /etc/systemd/system/battery.monitor battery.service                            ~  
-mv: cannot move '/etc/systemd/system/battery.monitor' to 'battery.service': Permission denied
- ──── ─  
+Feb 21 14:48:45 T-800 systemd[1009]: Starting Dunst notification daemon...
+░░ Subject: A start job for unit UNIT has begun execution
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ A start job for unit UNIT has begun execution.
+░░ 
+░░ The job identifier is 132.
+Feb 21 14:48:45 T-800 dunst[14595]: CRITICAL: [dbus_cb_name_lost:1378] Cannot acquire 'org.freedesktop.Notifications': Name is acquired by 'dunst' with PID '14435'.
+Feb 21 14:48:45 T-800 systemd[1009]: dunst.service: Main process exited, code=exited, status=1/FAILURE
+░░ Subject: Unit process exited
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ An ExecStart= process belonging to unit UNIT has exited.
+░░ 
+░░ The process' exit code is 'exited' and its exit status is 1.
+Feb 21 14:48:45 T-800 systemd[1009]: dunst.service: Failed with result 'exit-code'.
+░░ Subject: Unit failed
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ The unit UNIT has entered the 'failed' state with result 'exit-code'.
+Feb 21 14:48:45 T-800 systemd[1009]: Failed to start Dunst notification daemon.
+░░ Subject: A start job for unit UNIT has failed
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ A start job for unit UNIT has finished with a failure.
+░░ 
+░░ The job identifier is 132 and the job result is failed.
+ ──── ─ sctl --user status dunst                                                                                                                                                         ~  
+× dunst.service - Dunst notification daemon
+     Loaded: loaded (/usr/lib/systemd/user/dunst.service; static)
+     Active: failed (Result: exit-code) since Fri 2025-02-21 14:48:45 CET; 1min 11s ago
+ Invocation: a02ea4eba2e14cd4861e067a98b3a2c6
+       Docs: man:dunst(1)
+    Process: 14595 ExecStart=/usr/bin/dunst (code=exited, status=1/FAILURE)
+   Main PID: 14595 (code=exited, status=1/FAILURE)
+   Mem peak: 2.7M
+        CPU: 27ms
+
+Feb 21 14:48:45 T-800 systemd[1009]: Starting Dunst notification daemon...
+Feb 21 14:48:45 T-800 dunst[14595]: CRITICAL: [dbus_cb_name_lost:1378] Cannot acquire 'org.freedesktop.Notifications': Name is acquired by 'dunst' with PID '14435'.
+Feb 21 14:48:45 T-800 systemd[1009]: dunst.service: Main process exited, code=exited, status=1/FAILURE
+Feb 21 14:48:45 T-800 systemd[1009]: dunst.service: Failed with result 'exit-code'.
+Feb 21 14:48:45 T-800 systemd[1009]: Failed to start Dunst notification daemon.
