@@ -1,7 +1,27 @@
 #!/bin/bash
 
+# Loggfil för felsökning
+LOGFILE="/tmp/battery_monitor.log"
+
+# Funktion för att logga meddelanden
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
+}
+
+# Kontrollera om acpi är installerat
+if ! command -v acpi &> /dev/null; then
+    log "acpi är inte installerat. Installera det med 'sudo pacman -S acpi'."
+    exit 1
+fi
+
 # Hämta batteriinformation med acpi
-BATTERY_INFO=$(acpi -b)
+BATTERY_INFO=$(acpi -b 2>&1)
+if [ $? -ne 0 ]; then
+    log "Kunde inte hämta batteriinformation: $BATTERY_INFO"
+    exit 1
+fi
+
+# Extrahera status och kapacitet
 STATUS=$(echo "$BATTERY_INFO" | awk '{print $3}' | tr -d ',')
 CAPACITY=$(echo "$BATTERY_INFO" | awk '{print $4}' | tr -d '%,')
 
@@ -9,6 +29,7 @@ CAPACITY=$(echo "$BATTERY_INFO" | awk '{print $4}' | tr -d '%,')
 send_notification() {
     local message=$1
     notify-send -u critical "Batteri Status" "$message"
+    log "Notifikation skickad: $message"
 }
 
 # Kontrollera batteristatus
@@ -24,6 +45,7 @@ fi
 
 
 battery.service
+
 [Unit]
 Description=Battery Monitor Service
 
