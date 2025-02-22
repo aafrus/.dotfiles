@@ -37,6 +37,7 @@ static Key keys[] = {
     { MODKEY|ControlMask,           XK_k,      setcfact,       {.f = +0.05} },    /* Alt+Ctrl+k: Öka höjd */
     { MODKEY,                       XK_grave,  zoom,           {0} },             /* Alt+`: Zoom in */
     { MODKEY,                       XK_plus,   zoom,           {0} },             /* Alt++: Zoom out */
+    { MODKEY,                       XK_q,      killclient,     {0} },             /* Alt+q: Stäng fönster */
 };
 
 /* Layouts */
