@@ -1,5 +1,10 @@
 /* See LICENSE file for copyright and license details. */
 
+/* Modifier keys */
+#define MODKEY Mod1Mask /* Alt-tangenten */
+#define CONTROL ControlMask /* Ctrl-tangenten */
+#define SHIFT ShiftMask /* Shift-tangenten */
+
 /* Appearance */
 static const unsigned int borderpx  = 0;        /* Ingen pixel border */
 static const unsigned int snap      = 32;       /* Snap pixel */
@@ -27,16 +32,12 @@ static Key keys[] = {
     { MODKEY,                       XK_w,      spawn,          {.v = firefoxcmd } }, /* Alt+w: Firefox */
     { MODKEY,                       XK_h,      focusstack,     {.i = +1 } },      /* Alt+h: Fokusera vänster */
     { MODKEY,                       XK_l,      focusstack,     {.i = -1 } },      /* Alt+l: Fokusera höger */
-    { MODKEY|ShiftMask,             XK_h,      movestack,      {.i = +1 } },      /* Alt+Shift+h: Flytta fönster vänster */
-    { MODKEY|ShiftMask,             XK_l,      movestack,      {.i = -1 } },      /* Alt+Shift+l: Flytta fönster höger */
-    { MODKEY|ShiftMask,             XK_j,      movestack,      {.i = +2 } },      /* Alt+Shift+j: Flytta fönster ner */
-    { MODKEY|ShiftMask,             XK_k,      movestack,      {.i = -2 } },      /* Alt+Shift+k: Flytta fönster upp */
-    { MODKEY|ControlMask,           XK_h,      setmfact,       {.f = -0.05} },    /* Alt+Ctrl+h: Minska bredd */
-    { MODKEY|ControlMask,           XK_l,      setmfact,       {.f = +0.05} },    /* Alt+Ctrl+l: Öka bredd */
-    { MODKEY|ControlMask,           XK_j,      setcfact,       {.f = -0.05} },    /* Alt+Ctrl+j: Minska höjd */
-    { MODKEY|ControlMask,           XK_k,      setcfact,       {.f = +0.05} },    /* Alt+Ctrl+k: Öka höjd */
-    { MODKEY,                       XK_grave,  zoom,           {0} },             /* Alt+`: Zoom in */
-    { MODKEY,                       XK_plus,   zoom,           {0} },             /* Alt++: Zoom out */
+    { MODKEY|SHIFT,                 XK_h,      movestack,      {.i = +1 } },      /* Alt+Shift+h: Flytta fönster vänster */
+    { MODKEY|SHIFT,                 XK_l,      movestack,      {.i = -1 } },      /* Alt+Shift+l: Flytta fönster höger */
+    { MODKEY|SHIFT,                 XK_j,      movestack,      {.i = +2 } },      /* Alt+Shift+j: Flytta fönster ner */
+    { MODKEY|SHIFT,                 XK_k,      movestack,      {.i = -2 } },      /* Alt+Shift+k: Flytta fönster upp */
+    { MODKEY|CONTROL,               XK_h,      setmfact,       {.f = -0.05} },    /* Alt+Ctrl+h: Minska bredd */
+    { MODKEY|CONTROL,               XK_l,      setmfact,       {.f = +0.05} },    /* Alt+Ctrl+l: Öka bredd */
     { MODKEY,                       XK_q,      killclient,     {0} },             /* Alt+q: Stäng fönster */
 };
 
