@@ -1,173 +1,336 @@
-/* See LICENSE file for copyright and license details. */
+-- Skapa databasen
+DROP DATABASE IF EXISTS petshop;
+CREATE DATABASE petshop;
+USE petshop;
 
-/* appearance */
-static const unsigned int borderpx  = 0;        /* border pixel of windows */
-static const unsigned int snap      = 32;       /* snap pixel */
-static const unsigned int minwsz    = 20;
-static const int swallowfloating    = 0;
-static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
-static const unsigned int systrayonleft = 0;    /* 0: systray in the right corner, >0: systray on left of status text */
-static const unsigned int systrayspacing = 2;   /* systray spacing */
-static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
-static const int showsystray        = 1;        /* 0 means no systray */
-static const int showbar            = 0;        /* 0 means no bar */
-static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "jetbrains:size=20" };
-static const char dmenufont[]       = "jetbrains:size=20";
-static const char col_gray1[]       = "#222222";
-static const char col_gray2[]       = "#444444";
-static const char col_gray3[]       = "#bbbbbb";
-static const char col_gray4[]       = "#eeeeee";
-static const char col_cyan[]        = "#70327e"; //color of the titlepart of the panel
-static const char *colors[][3]      = {
-	/*               fg         bg         border   */
-	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
-	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
-};
+-- Tabell för användare
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    confirmed BOOLEAN DEFAULT FALSE
+);
 
-/* tagging, add or remove tags in this array, name those whatever you want including emoticons, hotkeys for it are defined below the bottom of this file */
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+-- Tabell för adresser
+CREATE TABLE addresses (
+    address_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    address VARCHAR(255) NOT NULL,
+    type ENUM('billing', 'delivery') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
 
-static const Rule rules[] = {
-	/* xprop(1):
-	 *	WM_CLASS(STRING) = instance, class
-	 *	WM_NAME(STRING) = title
-	 */
-	/*In this array you can set how programs should open: on which workspace (tags mask), on which monitor, floating or not, swallow it or not */
-	/* class      instance    title       tags mask     isfloating	   isterminal	noswallow   	monitor */
-	{ "Gimp",       NULL,       NULL,       0,            1,           0,		0,		-1 },
-        { "steam",      NULL,       NULL,       1 << 8,	      0,           0,		0,		-1 }, // the update window for steam is not included, it has a different name for the class. Find the name of that window with xprop (and then clicking on it) if you wish to send that to another workspace to get out of your way while you open it and have to wait 
-	{ "Lutris",     NULL,       NULL,       1 << 8,	      0,           0,		0,		-1 },
-	{ "Kotatogram", NULL,	    NULL,       1 << 2,       0,           0,		0,		-1 },
-	{ "Telegram",   NULL,	    NULL,       1 << 2,       0,           0,		0,		-1 },
-        { "Deadbeef",   NULL,       NULL,       1 << 9,       0,           0,		0,		-1 },
-	{ "Alacritty",  NULL,       "Alacritty",0,	      0,           1,           0,		-1 }, /* this is to enable swallowing in Alacritty */
-	{ "Kitty",      NULL,       "Kitty",    0,            0,           1,           0,              -1 }, /* Kitty was not tested, this line is only provided as a service. Use xprop to find othe correct names if this would not work, if this does not work try to uncapitalize it and/or try t remove one of the two, that most likely would make it work. 
-							
-	{ NULL,         NULL,       "Event Tester", 0,        0,           0,           1,              -1 }, /* xev */
-};
+-- Tabell för arter
+CREATE TABLE species (
+    species_id INT AUTO_INCREMENT PRIMARY KEY
+);
 
-/* layout(s) */
-static const float mfact     = 0.5; /* factor of master area size vs stack size [0.05..0.95] */
-static const float smfact    = 0.00; /* horizontal split between two windows in the stack area */
-static const int nmaster     = 1;    /* default number of clients in master area, can be increased on the fly with windows+d/i */
-static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
-static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
+-- Tabell för artnamn (flera namn per art)
+CREATE TABLE species_names (
+    species_name_id INT AUTO_INCREMENT PRIMARY KEY,
+    species_id INT,
+    name VARCHAR(255) NOT NULL,
+    name_type ENUM('common', 'latin') NOT NULL,
+    FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
+);
 
-static const Layout layouts[] = { /* here you choose the symbols to point out the chosen layout in the panel, more layouts can be added with patches and those patches also point out how to modify this file  */
-	/* symbol     arrange function */
-	{ "[]=",      tile },    /* first entry is default */
-	{ "><>",      NULL },    /* no layout function means floating behavior */
-	{ "[M]",      monocle },
-};
+-- Tabell för husdjur
+CREATE TABLE pets (
+    pet_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    species_id INT,
+    name VARCHAR(255),
+    birth_date DATE,
+    description TEXT,
+    status ENUM('alive', 'deceased') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (species_id) REFERENCES species(species_id) ON DELETE CASCADE
+);
 
-/* key definitions, here the hotkeys for the basic workspaces-associated functions are defined, respectively select workspace,  add another worksapce, send program to another workspace and show the program(s) on the current workspace on the selected workspace(s) */
-#define MODKEY Mod4Mask
-#define TAGKEYS(KEY,TAG) \
-	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
-	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
-	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
-	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
+-- Tabell för tillverkare
+CREATE TABLE manufacturers (
+    manufacturer_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    contact_person VARCHAR(255),
+    contact_details VARCHAR(255)
+);
 
-/* helper for spawning shell commands in the pre dwm-5.0 fashion */
-/* Thanks to defining here with a shorthand notation how to execute a command in the shell lower in the file you have to write less and it makes the code more easily readable */
-#define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
+-- Tabell för produkter (med SKU som primärnyckel)
+CREATE TABLE products (
+    sku VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    manufacturer_id INT,
+    buy_price DECIMAL(10,2) NOT NULL,
+    sell_price DECIMAL(10,2) NOT NULL,
+    description TEXT,
+    FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(manufacturer_id) ON DELETE SET NULL
+);
 
-/* commands */
-/* if you would want to use rofi or another terminal then you can change it here */
-static const char *dmenucmd[] = { "dmenu_run", "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
-static const char *termcmd[]  = { "alacritty", NULL };
+-- Tabell för produktkategorier
+CREATE TABLE product_categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
 
-#include "movestack.c" /*extra included file which contains the code  to swap two programs between two workspaces (opposite to rotating all the programs over all the windows) */
+-- Kopplingstabell för produkter och kategorier
+CREATE TABLE product_category_relation (
+    sku VARCHAR(255),
+    category_id INT,
+    PRIMARY KEY (sku, category_id),
+    FOREIGN KEY (sku) REFERENCES products(sku) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES product_categories(category_id) ON DELETE CASCADE
+);
 
-/* Here all the extra hotkeys, just copy based on examples with the spawn-function which you see here if you want to add hotkeys for extra programs. */ 
-static const Key keys[] = {
-	/* modifier                     key        function        argument */
-	{ ControlMask|ShiftMask,        XK_d,      spawn,          {.v = dmenucmd } }, // open dmenu, by default on the top of the screen (this hotkey was chosen because it is more erconomical if you use the d-key 
-	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } }, // open terminal, terminal is chosen higher in the file
-	{ MODKEY,                       XK_b,      togglebar,      {0} }, // toggle show/hide panel
-	{ MODKEY|ShiftMask,             XK_j,      rotatestack,    {.i = +1 } }, // rotate programs over windows
-	{ MODKEY|ShiftMask,             XK_k,      rotatestack,    {.i = -1 } },
-	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } }, // change focus to another window on that workspace
-	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_i,      movestack,      {.i = +1 } }, // switch programs between only two windows on that workspace
-	{ MODKEY|ShiftMask,             XK_u,      movestack,      {.i = -1 } }, 
-	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } }, // increase number of windows in the master-area
-	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
-	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} }, // change vertical split-ratio between master and stack
-	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-	{ MODKEY|ShiftMask,             XK_h,      setsmfact,      {.f = +0.05} }, //change horizontal split-ratio between programs in the stack-area (not functional for master-area)
-	{ MODKEY|ShiftMask,             XK_l,      setsmfact,      {.f = -0.05} },
-	{ MODKEY|ShiftMask,             XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_Tab,    view,           {0} }, // switch to last used workspace
-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} }, // kill program, window gets removed
-	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} }, // tiled master/stack layout
-	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} }, // only show selected window on that workspace
-	{ MODKEY,                       XK_space,  setlayout,      {0} }, // switch between two layouts
-	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
-	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
-	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
-	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } }, /*select other monitor*/
-	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } }, /*select other monitor in the other direction */
-	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } }, /*move program to another monitor*/
-	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
-	
-    // you can use both XK_* or a hexadecmial code to define a key in the second column, find the hexadecmial code with xev (X11 only)
-    { Mod1Mask|ControlMask,              XK_f,      spawn,          SHCMD("pcmanfm") },
-    { Mod1Mask|ControlMask|ShiftMask,    XK_f,      spawn,          SHCMD("firefox") },
-    { Mod1Mask|ControlMask|ShiftMask,    XK_t,      spawn,          SHCMD("~/Other/Kotatogram/Kotatogram") },
-    { Mod1Mask|ControlMask,              XK_t,      spawn,          SHCMD("thunderbird") },
-    { Mod1Mask|ControlMask,              XK_n,      spawn,          SHCMD("notepadqq") },
-    { Mod1Mask|ControlMask,              XK_q,      spawn,          SHCMD("qpdfview") },
-    { Mod1Mask|ControlMask,              XK_c,      spawn,          SHCMD("chromium") },
-    { ControlMask|Mod1Mask,              XK_b,      spawn,          SHCMD("brave") },
-    { ControlMask|ShiftMask|Mod1Mask,    XK_b,      spawn,	    SHCMD("brave --incognito") }, //open private windows in the Brave browser
-    { Mod1Mask|ControlMask,              0xff52,    spawn,          SHCMD("amixer -D pulse set Master 3%+") }, //increase audio volume, you muse use PulseAudio for this to work
-    { Mod1Mask|ControlMask,              0xff54,    spawn,          SHCMD("amixer -D pulse set Master 3%-") }, //decrease audio-volume
-    { Mod1Mask|ControlMask|ShiftMask,    0xffff,    spawn,          SHCMD("systemctl suspend") },     
-    { Mod1Mask|ControlMask|ShiftMask,    0xff56,    spawn,          SHCMD("shutdown now")},
-    { Mod1Mask|ControlMask|ShiftMask,    0xff50,    spawn,          SHCMD("reboot") },
-    {ControlMask|ShiftMask,              XK_l,      spawn,          SHCMD("lutris") },
-    {ControlMask|Mod1Mask,               XK_d,      spawn,          SHCMD("deadbeef")}, //in the next 4 lines hotkeys for making (and storing) screenshots
-    {MODKEY,                             XK_p,      spawn,          SHCMD("scrot -fs 'temp.png' -e 'xclip -selection clipboard -target image/png -i $f ; rm $f'")}, 
-    {MODKEY|ShiftMask,                   XK_p,      spawn,          SHCMD("scrot -fs '~/Pictures/%d-%m-%y-%H%M%S.png'")},
-    {MODKEY,                             XK_o,      spawn,          SHCMD("scrot 'temp.png' -e 'xclip -selection clipboard -target image/png -i $f ; rm $f'")},
-    {MODKEY|ShiftMask,                   XK_o,      spawn,          SHCMD("scrot '~/Pictures/%d-%m-%y-%H%M%S.png'")},
-    {ControlMask|Mod1Mask,               XK_s,      spawn,          SHCMD("steam")},
-    {ControlMask|Mod1Mask|ShiftMask,     XK_l,      spawn,          SHCMD("libreoffice")},
-    {ControlMask|Mod1Mask|ShiftMask,     XK_k,      spawn,          SHCMD("firefox --private-window https://knmi.nl/nederland-nu/weer/waarnemingen")},
-    {ControlMask|Mod1Mask|ShiftMask,     XK_m,      spawn,          SHCMD("pactl set-source-mute alsa_input.usb-MICE_MICROPHONE_USB_MICROPHONE_201308-00.mono-fallback 1")}, 
-    {ControlMask|Mod1Mask|ShiftMask,     XK_u,      spawn,          SHCMD("pactl set-source-mute alsa_input.usb-MICE_MICROPHONE_USB_MICROPHONE_201308-00.mono-fallback 0")},
-	
-    // here the keyboard-keys for the workspaces are defined, if you don't have a numpad-block then you could for example replace the hexadecimal codes with XK_0 to XK_9, take into account that in the C-language the first element in an array is indexed with a 0, so the 0 here corresponds to workspace 1 etcetera
-    TAGKEYS(                  0xff9c,          0)
-    TAGKEYS(                  0xff99,          1)
-    TAGKEYS(                  0xff9b,          2)
-    TAGKEYS(                  0xff96,          3)
-    TAGKEYS(                  0xff98,          5)
-    TAGKEYS(                  0xff9d,          4)
-    TAGKEYS(                  0xff95,          6)
-    TAGKEYS(                  0xff97,          7)
-    TAGKEYS(                  0xff9a,          8)
-    TAGKEYS(		      0xff9e,	       9)	
-    {MODKEY|ShiftMask,        XK_q,      quit,           {0} },
-};
+-- Tabell för lager
+CREATE TABLE warehouse (
+    warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
+    warehouse_name VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL
+);
 
-/* button definitions */
-/* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
-// Here it is defined what happens when you click with te mouse-buttons on the panel and windows (like windows+mouse-button)
-static const Button buttons[] = {
-	/* click                event mask      button          function        argument */
-	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
-	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
-	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
-	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
-	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
-	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
-	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
-	{ ClkTagBar,            0,              Button1,        view,           {0} },
-	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
-	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
-	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
-};
+-- Tabell för lagersaldo
+CREATE TABLE inventory (
+    warehouse_id INT,
+    sku VARCHAR(255),
+    quantity INT NOT NULL,
+    PRIMARY KEY (warehouse_id, sku),
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE CASCADE,
+    FOREIGN KEY (sku) REFERENCES products(sku) ON DELETE CASCADE
+);
+
+-- Tabell för ordrar
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    warehouse_id INT,
+    status ENUM('pending', 'fulfilled', 'cancelled') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE SET NULL
+);
+
+-- Tabell för orderrader
+CREATE TABLE order_items (
+    order_id INT,
+    sku VARCHAR(255),
+    quantity INT NOT NULL,
+    PRIMARY KEY (order_id, sku),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (sku) REFERENCES products(sku) ON DELETE CASCADE
+);
+
+-- Tabell för meddelanden
+CREATE TABLE messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT,
+    receiver_id INT,
+    parent_message_id INT NULL,
+    content TEXT NOT NULL,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_message_id) REFERENCES messages(message_id) ON DELETE SET NULL
+);
+
+-- Loggtabell för ändringar
+CREATE TABLE logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    table_name VARCHAR(255) NOT NULL,
+    operation VARCHAR(10) NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    old_data TEXT,
+    new_data TEXT
+);
+
+-- Trigger för INSERT på alla tabeller
+DELIMITER //
+CREATE TRIGGER log_insert AFTER INSERT ON inventory
+FOR EACH ROW
+BEGIN
+    INSERT INTO logs (table_name, operation, new_data)
+    VALUES ('inventory', 'INSERT', JSON_OBJECT('warehouse_id', NEW.warehouse_id, 'sku', NEW.sku, 'quantity', NEW.quantity));
+END //
+DELIMITER ;
+
+-- Trigger för UPDATE på alla tabeller
+DELIMITER //
+CREATE TRIGGER log_update AFTER UPDATE ON inventory
+FOR EACH ROW
+BEGIN
+    INSERT INTO logs (table_name, operation, old_data, new_data)
+    VALUES ('inventory', 'UPDATE', 
+        JSON_OBJECT('warehouse_id', OLD.warehouse_id, 'sku', OLD.sku, 'quantity', OLD.quantity),
+        JSON_OBJECT('warehouse_id', NEW.warehouse_id, 'sku', NEW.sku, 'quantity', NEW.quantity));
+END //
+DELIMITER ;
+
+-- Trigger för DELETE på alla tabeller
+DELIMITER //
+CREATE TRIGGER log_delete AFTER DELETE ON inventory
+FOR EACH ROW
+BEGIN
+    INSERT INTO logs (table_name, operation, old_data)
+    VALUES ('inventory', 'DELETE', JSON_OBJECT('warehouse_id', OLD.warehouse_id, 'sku', OLD.sku, 'quantity', OLD.quantity));
+END //
+DELIMITER ;
+
+-- Testdata
+-- Lägg till en användare
+INSERT INTO users (username, email, password_hash, confirmed) VALUES ('testuser', 'test@example.com', 'hash123', TRUE);
+SET @user_id = LAST_INSERT_ID();
+
+-- Lägg till en adress
+INSERT INTO addresses (user_id, address, type) VALUES (@user_id, '123 Test Street', 'billing');
+
+-- Lägg till en art
+INSERT INTO species () VALUES ();
+SET @species_id = LAST_INSERT_ID();
+
+-- Lägg till artnamn
+INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Dog', 'common');
+INSERT INTO species_names (species_id, name, name_type) VALUES (@species_id, 'Canis lupus familiaris', 'latin');
+
+-- Lägg till ett husdjur
+INSERT INTO pets (user_id, species_id, name, birth_date, status) VALUES (@user_id, @species_id, 'Buddy', '2020-05-01', 'alive');
+
+-- Lägg till en tillverkare
+INSERT INTO manufacturers (name, address, contact_person, contact_details) 
+VALUES ('ACME Inc.', 'Industrial Road 5', 'John Doe', 'contact@acme.com');
+SET @manufacturer_id = LAST_INSERT_ID();
+
+-- Lägg till en produkt
+INSERT INTO products (sku, name, manufacturer_id, buy_price, sell_price) 
+VALUES ('P123', 'Dog Food', @manufacturer_id, 10.00, 20.00);
+
+-- Lägg till en produktkategori
+INSERT INTO product_categories (name) VALUES ('Pet Supplies');
+SET @category_id = LAST_INSERT_ID();
+
+-- Koppla produkten till kategorin
+INSERT INTO product_category_relation (sku, category_id) VALUES ('P123', @category_id);
+
+-- Lägg till ett lager
+INSERT INTO warehouse (warehouse_name, location) VALUES ('Main Warehouse', 'City Center');
+SET @warehouse_id = LAST_INSERT_ID();
+
+-- Lägg till lagersaldo
+INSERT INTO inventory (warehouse_id, sku, quantity) VALUES (@warehouse_id, 'P123', 100);
+
+-- Lägg till en order
+INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @warehouse_id, 'pending');
+SET @order_id = LAST_INSERT_ID();
+
+-- Lägg till en orderrad
+INSERT INTO order_items (order_id, sku, quantity) VALUES (@order_id, 'P123', 2);
+
+-- Lägg till ett litet lager med otillräckligt lager
+INSERT INTO warehouse (warehouse_name, location) VALUES ('Small Warehouse', 'Suburb');
+SET @small_warehouse_id = LAST_INSERT_ID();
+
+-- Lägg till en order som inte kan uppfyllas
+INSERT INTO orders (user_id, warehouse_id, status) VALUES (@user_id, @small_warehouse_id, 'pending');
+SET @small_order_id = LAST_INSERT_ID();
+
+-- Lägg till en orderrad som kräver fler produkter än vad som finns
+INSERT INTO order_items (order_id, sku, quantity) VALUES (@small_order_id, 'P123', 10);
+
+-- Lägg till lagersaldo för det lilla lagret
+INSERT INTO inventory (warehouse_id, sku, quantity) VALUES (@small_warehouse_id, 'P123', 5);
+
+
+
+
+skript  
+
+import mariadb
+import sys
+
+# Anslutningsuppgifter
+DB_CONFIG = {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",  # Ändra till din användare
+    "password": "",  # Ändra till ditt lösenord
+    "database": "petshop"
+}
+
+def connect_to_db():
+    try:
+        conn = mariadb.connect(**DB_CONFIG)
+        return conn
+    except mariadb.Error as e:
+        print(f"Error connecting to MariaDB: {e}")
+        sys.exit(1)
+
+def list_warehouses():
+    conn = connect_to_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT warehouse_id, warehouse_name FROM warehouse;")
+    warehouses = cursor.fetchall()
+    conn.close()
+    return warehouses
+
+def get_orders_for_warehouse(warehouse_id):
+    conn = connect_to_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT o.order_id, oi.sku, oi.quantity, p.name
+        FROM orders o
+        JOIN order_items oi ON o.order_id = oi.order_id
+        JOIN products p ON oi.sku = p.sku
+        WHERE o.warehouse_id = ? AND o.status NOT IN ('fulfilled', 'cancelled');
+    """, (warehouse_id,))
+    orders = cursor.fetchall()
+    conn.close()
+    return orders
+
+def get_inventory(warehouse_id):
+    conn = connect_to_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT sku, quantity FROM inventory WHERE warehouse_id = ?;", (warehouse_id,))
+    inventory = {row["sku"]: row["quantity"] for row in cursor.fetchall()}
+    conn.close()
+    return inventory
+
+def check_order_fulfillment(warehouse_id):
+    orders = get_orders_for_warehouse(warehouse_id)
+    inventory = get_inventory(warehouse_id)
+
+    missing_products = {}
+
+    for order in orders:
+        sku = order["sku"]
+        required_quantity = order["quantity"]
+        product_name = order["name"]
+
+        available_quantity = inventory.get(sku, 0)
+
+        if available_quantity < required_quantity:
+            missing_products[product_name] = missing_products.get(product_name, 0) + (required_quantity - available_quantity)
+
+    if missing_products:
+        print("\nOrdern kan inte uppfyllas. Följande produkter saknas:")
+        for product, needed in missing_products.items():
+            print(f"- {product}: {needed} enheter saknas")
+    else:
+        print("\nAlla ordrar kan uppfyllas med nuvarande lager!")
+
+def main():
+    print("Välj ett lager att kontrollera:")
+    warehouses = list_warehouses()
+
+    for w in warehouses:
+        print(f"{w['warehouse_id']}: {w['warehouse_name']}")
+
+    while True:
+        warehouse_id = input("Ange warehouse ID: ")
+        if warehouse_id.isdigit():
+            check_order_fulfillment(int(warehouse_id))
+            break
+        else:
+            print("Felaktigt ID, ange en siffra.")
+
+if __name__ == "__main__":
+    main()
+
