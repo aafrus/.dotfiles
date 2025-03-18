@@ -35,3 +35,26 @@ men jag har
 }
 
 i min caddyfile
+services:
+  api:
+    image: rest-api:dev
+    build: .
+    restart: unless-stopped
+
+  revproxy:
+    image: caddy:alpine
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddyfile:/etc/caddy/caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
