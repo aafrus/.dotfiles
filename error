@@ -1,3 +1,54 @@
-sudo systemctl restart docker                                                                                                        ~/hub/documents/api/rest-api  [main] 
-Job for docker.service failed because the control process exited with error code.
-See "systemctl status docker.service" and "journalctl -xeu docker.service" for details.
+(venv)  ──── ─ journalctl -xeu docker.service                                                                                                       ~/hub/documents/api/rest-api  [main] 
+░░ 
+░░ The process' exit code is 'exited' and its exit status is 1.
+Mar 18 11:39:43 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
+░░ Subject: Unit failed
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ The unit docker.service has entered the 'failed' state with result 'exit-code'.
+Mar 18 11:39:43 T-800 systemd[1]: Failed to start Docker Application Container Engine.
+░░ Subject: A start job for unit docker.service has failed
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ A start job for unit docker.service has finished with a failure.
+░░ 
+░░ The job identifier is 4475 and the job result is failed.
+Mar 18 11:39:46 T-800 systemd[1]: docker.service: Scheduled restart job, restart counter is at 3.
+░░ Subject: Automatic restarting of a unit has been scheduled
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ Automatic restarting of the unit docker.service has been scheduled, as the result for
+░░ the configured Restart= setting for the unit.
+Mar 18 11:39:46 T-800 systemd[1]: docker.service: Start request repeated too quickly.
+Mar 18 11:39:46 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
+░░ Subject: Unit failed
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ The unit docker.service has entered the 'failed' state with result 'exit-code'.
+Mar 18 11:39:46 T-800 systemd[1]: Failed to start Docker Application Container Engine.
+░░ Subject: A start job for unit docker.service has failed
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ A start job for unit docker.service has finished with a failure.
+░░ 
+░░ The job identifier is 4588 and the job result is failed.
+Mar 18 11:40:24 T-800 systemd[1]: docker.service: Start request repeated too quickly.
+Mar 18 11:40:24 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
+░░ Subject: Unit failed
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ The unit docker.service has entered the 'failed' state with result 'exit-code'.
+Mar 18 11:40:24 T-800 systemd[1]: Failed to start Docker Application Container Engine.
+░░ Subject: A start job for unit docker.service has failed
+░░ Defined-By: systemd
+░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
+░░ 
+░░ A start job for unit docker.service has finished with a failure.
+░░ 
+░░ The job identifier is 4701 and the job result is failed.
