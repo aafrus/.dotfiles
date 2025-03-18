@@ -1,54 +1,52 @@
-(venv)  ──── ─ journalctl -xeu docker.service                                                                                                       ~/hub/documents/api/rest-api  [main] 
-░░ 
-░░ The process' exit code is 'exited' and its exit status is 1.
+(venv)  ──── ─ sudo journalctl -u docker --no-pager --lines=50                                                                                      ~/hub/documents/api/rest-api  [main] 
+[sudo] password for ns: 
+Mar 18 11:39:38 T-800 dockerd[38259]: time="2025-03-18T11:39:38.801211720+01:00" level=info msg="Processing signal 'terminated'"
+Mar 18 11:39:38 T-800 systemd[1]: Stopping Docker Application Container Engine...
+Mar 18 11:39:38 T-800 dockerd[38259]: time="2025-03-18T11:39:38.802231353+01:00" level=info msg="stopping event stream following graceful shutdown" error="<nil>" module=libcontainerd namespace=moby
+Mar 18 11:39:38 T-800 dockerd[38259]: time="2025-03-18T11:39:38.802586638+01:00" level=info msg="Daemon shutdown complete"
+Mar 18 11:39:38 T-800 systemd[1]: docker.service: Deactivated successfully.
+Mar 18 11:39:38 T-800 systemd[1]: Stopped Docker Application Container Engine.
+Mar 18 11:39:38 T-800 systemd[1]: docker.service: Consumed 1.030s CPU time, 30.8M memory peak.
+Mar 18 11:39:38 T-800 systemd[1]: Starting Docker Application Container Engine...
+Mar 18 11:39:38 T-800 dockerd[39174]: time="2025-03-18T11:39:38.850546303+01:00" level=info msg="Starting up"
+Mar 18 11:39:38 T-800 dockerd[39174]: time="2025-03-18T11:39:38.850972614+01:00" level=info msg="OTEL tracing is not configured, using no-op tracer provider"
+Mar 18 11:39:38 T-800 dockerd[39174]: time="2025-03-18T11:39:38.884088732+01:00" level=info msg="[graphdriver] using prior storage driver: overlay2"
+Mar 18 11:39:38 T-800 dockerd[39174]: time="2025-03-18T11:39:38.891240567+01:00" level=info msg="Loading containers: start."
+Mar 18 11:39:39 T-800 dockerd[39174]: time="2025-03-18T11:39:39.040780451+01:00" level=info msg="stopping event stream following graceful shutdown" error="<nil>" module=libcontainerd namespace=moby
+Mar 18 11:39:39 T-800 dockerd[39174]: failed to start daemon: Error initializing network controller: error obtaining controller instance: failed to register "bridge" driver: failed to create NAT chain DOCKER: iptables failed: iptables --wait -t nat -N DOCKER: iptables v1.8.10 (nf_tables): Could not fetch rule set generation id: Invalid argument
+Mar 18 11:39:39 T-800 dockerd[39174]:  (exit status 4)
+Mar 18 11:39:39 T-800 systemd[1]: docker.service: Main process exited, code=exited, status=1/FAILURE
+Mar 18 11:39:39 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
+Mar 18 11:39:39 T-800 systemd[1]: Failed to start Docker Application Container Engine.
+Mar 18 11:39:41 T-800 systemd[1]: docker.service: Scheduled restart job, restart counter is at 1.
+Mar 18 11:39:41 T-800 systemd[1]: Starting Docker Application Container Engine...
+Mar 18 11:39:41 T-800 dockerd[39261]: time="2025-03-18T11:39:41.229867233+01:00" level=info msg="Starting up"
+Mar 18 11:39:41 T-800 dockerd[39261]: time="2025-03-18T11:39:41.230326644+01:00" level=info msg="OTEL tracing is not configured, using no-op tracer provider"
+Mar 18 11:39:41 T-800 dockerd[39261]: time="2025-03-18T11:39:41.273619377+01:00" level=info msg="[graphdriver] using prior storage driver: overlay2"
+Mar 18 11:39:41 T-800 dockerd[39261]: time="2025-03-18T11:39:41.282275087+01:00" level=info msg="Loading containers: start."
+Mar 18 11:39:41 T-800 dockerd[39261]: time="2025-03-18T11:39:41.493216157+01:00" level=info msg="stopping event stream following graceful shutdown" error="<nil>" module=libcontainerd namespace=moby
+Mar 18 11:39:41 T-800 dockerd[39261]: failed to start daemon: Error initializing network controller: error obtaining controller instance: failed to register "bridge" driver: failed to create NAT chain DOCKER: iptables failed: iptables --wait -t nat -N DOCKER: iptables v1.8.10 (nf_tables): Could not fetch rule set generation id: Invalid argument
+Mar 18 11:39:41 T-800 dockerd[39261]:  (exit status 4)
+Mar 18 11:39:41 T-800 dockerd[39261]: time="2025-03-18T11:39:41.494057593+01:00" level=info msg="stopping event stream following graceful shutdown" error="context canceled" module=libcontainerd namespace=plugins.moby
+Mar 18 11:39:41 T-800 systemd[1]: docker.service: Main process exited, code=exited, status=1/FAILURE
+Mar 18 11:39:41 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
+Mar 18 11:39:41 T-800 systemd[1]: Failed to start Docker Application Container Engine.
+Mar 18 11:39:43 T-800 systemd[1]: docker.service: Scheduled restart job, restart counter is at 2.
+Mar 18 11:39:43 T-800 systemd[1]: Starting Docker Application Container Engine...
+Mar 18 11:39:43 T-800 dockerd[39338]: time="2025-03-18T11:39:43.719476090+01:00" level=info msg="Starting up"
+Mar 18 11:39:43 T-800 dockerd[39338]: time="2025-03-18T11:39:43.720383653+01:00" level=info msg="OTEL tracing is not configured, using no-op tracer provider"
+Mar 18 11:39:43 T-800 dockerd[39338]: time="2025-03-18T11:39:43.754813611+01:00" level=info msg="[graphdriver] using prior storage driver: overlay2"
+Mar 18 11:39:43 T-800 dockerd[39338]: time="2025-03-18T11:39:43.758459885+01:00" level=info msg="Loading containers: start."
+Mar 18 11:39:43 T-800 dockerd[39338]: time="2025-03-18T11:39:43.955014128+01:00" level=info msg="stopping event stream following graceful shutdown" error="<nil>" module=libcontainerd namespace=moby
+Mar 18 11:39:43 T-800 dockerd[39338]: failed to start daemon: Error initializing network controller: error obtaining controller instance: failed to register "bridge" driver: failed to create NAT chain DOCKER: iptables failed: iptables --wait -t nat -N DOCKER: iptables v1.8.10 (nf_tables): Could not fetch rule set generation id: Invalid argument
+Mar 18 11:39:43 T-800 dockerd[39338]:  (exit status 4)
+Mar 18 11:39:43 T-800 systemd[1]: docker.service: Main process exited, code=exited, status=1/FAILURE
 Mar 18 11:39:43 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
-░░ Subject: Unit failed
-░░ Defined-By: systemd
-░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
-░░ 
-░░ The unit docker.service has entered the 'failed' state with result 'exit-code'.
 Mar 18 11:39:43 T-800 systemd[1]: Failed to start Docker Application Container Engine.
-░░ Subject: A start job for unit docker.service has failed
-░░ Defined-By: systemd
-░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
-░░ 
-░░ A start job for unit docker.service has finished with a failure.
-░░ 
-░░ The job identifier is 4475 and the job result is failed.
 Mar 18 11:39:46 T-800 systemd[1]: docker.service: Scheduled restart job, restart counter is at 3.
-░░ Subject: Automatic restarting of a unit has been scheduled
-░░ Defined-By: systemd
-░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
-░░ 
-░░ Automatic restarting of the unit docker.service has been scheduled, as the result for
-░░ the configured Restart= setting for the unit.
 Mar 18 11:39:46 T-800 systemd[1]: docker.service: Start request repeated too quickly.
 Mar 18 11:39:46 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
-░░ Subject: Unit failed
-░░ Defined-By: systemd
-░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
-░░ 
-░░ The unit docker.service has entered the 'failed' state with result 'exit-code'.
 Mar 18 11:39:46 T-800 systemd[1]: Failed to start Docker Application Container Engine.
-░░ Subject: A start job for unit docker.service has failed
-░░ Defined-By: systemd
-░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
-░░ 
-░░ A start job for unit docker.service has finished with a failure.
-░░ 
-░░ The job identifier is 4588 and the job result is failed.
 Mar 18 11:40:24 T-800 systemd[1]: docker.service: Start request repeated too quickly.
 Mar 18 11:40:24 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
-░░ Subject: Unit failed
-░░ Defined-By: systemd
-░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
-░░ 
-░░ The unit docker.service has entered the 'failed' state with result 'exit-code'.
 Mar 18 11:40:24 T-800 systemd[1]: Failed to start Docker Application Container Engine.
-░░ Subject: A start job for unit docker.service has failed
-░░ Defined-By: systemd
-░░ Support: https://lists.freedesktop.org/mailman/listinfo/systemd-devel
-░░ 
-░░ A start job for unit docker.service has finished with a failure.
-░░ 
-░░ The job identifier is 4701 and the job result is failed.
