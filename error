@@ -58,3 +58,16 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+
+
+
+men i min caddyfile 
+
+:443 {
+        reverse_proxy http://api:8000
+        tls internal {
+                on_demand
+        }
+}
+
+är detta rätt
