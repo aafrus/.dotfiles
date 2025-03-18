@@ -1,0 +1,37 @@
+services:
+  api:
+    image: rest-api:dev
+    build: .
+    restart: unless-stopped
+
+revproxy:
+    image: caddy:alpine
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddyfile:/etc/caddy/caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+
+  sen säger den 
+
+  docker compose up -d                   ~/hub/documents/api/rest-api  [main] 
+validating /home/ns/hub/documents/api/rest-api/docker-compose.yml: (root) Additional property revproxy is not allowed
+
+men jag har 
+
+:443 {
+        reverse_proxy http://api:8000
+}
+
+i min caddyfile
