@@ -50,3 +50,16 @@ Mar 18 11:39:46 T-800 systemd[1]: Failed to start Docker Application Container E
 Mar 18 11:40:24 T-800 systemd[1]: docker.service: Start request repeated too quickly.
 Mar 18 11:40:24 T-800 systemd[1]: docker.service: Failed with result 'exit-code'.
 Mar 18 11:40:24 T-800 systemd[1]: Failed to start Docker Application Container Engine.
+
+
+sen med sudo dockerd
+
+(venv)  ──── ─ sudo dockerd                                                                                                                         ~/hub/documents/api/rest-api  [main] 
+INFO[2025-03-18T12:02:30.682182234+01:00] Starting up                                  
+INFO[2025-03-18T12:02:30.683067716+01:00] OTEL tracing is not configured, using no-op tracer provider 
+INFO[2025-03-18T12:02:30.721621402+01:00] [graphdriver] using prior storage driver: overlay2 
+INFO[2025-03-18T12:02:30.725251796+01:00] Loading containers: start.                   
+INFO[2025-03-18T12:02:30.875065601+01:00] stopping event stream following graceful shutdown  error="<nil>" module=libcontainerd namespace=moby
+failed to start daemon: Error initializing network controller: error obtaining controller instance: failed to register "bridge" driver: failed to create NAT chain DOCKER: iptables failed: iptables --wait -t nat -N DOCKER: iptables v1.8.10 (nf_tables): Could not fetch rule set generation id: Invalid argument
+ (exit status 4)
+
