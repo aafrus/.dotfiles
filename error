@@ -1,0 +1,4 @@
+ docker run --rm -p 127.0.0.1:8080:8000 rest-api:dev                                                                                  ~/hub/documents/api/rest-api  [main] 
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint clever_heisenberg (bb200160fbd770ccc8ebd017d698877a94e453553de78f05ad5ea0b7b2dac453): Unable to enable LOOPBACK FILTERING - DROP rule:  (iptables failed: iptables --wait -t raw -A PREROUTING -p tcp -d 127.0.0.1 --dport 8080 ! -i lo -j DROP: iptables v1.8.10 (legacy): can't initialize iptables table `raw': Table does not exist (do you need to insmod?)
+Perhaps iptables or your kernel needs to be upgraded.
+ (exit status 3))
