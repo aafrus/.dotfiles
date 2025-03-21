@@ -1,0 +1,36 @@
+! special
+*.foreground:   #222222  ! Mjuk svart för text
+*.background:   #fafafa  ! E-paper vit
+*.cursorColor:  #444444  ! Ljusgrå, behaglig för ögonen
+
+! black
+*.color0:       #fafafa  ! Bakgrundsfärg
+*.color8:       #e0e0e0  ! Lite mörkare e-ink grå
+
+! red
+*.color1:       #444444  ! Dämpad mörkgrå (ingen ren röd i e-ink)
+*.color9:       #666666  ! Mildare kontrast
+
+! green
+*.color2:       #333333  ! Mörkare än texten
+*.color10:      #555555  ! Lite ljusare för subtil variation
+
+! yellow
+*.color3:       #666666  ! Dämpad gråton för "gul"
+*.color11:      #888888  ! Lite ljusare nyans
+
+! blue
+*.color4:       #555555  ! Mörk, men inte för hård
+*.color12:      #777777  ! Ljusare blå-tonad grå
+
+! magenta
+*.color5:       #666666  ! Nästan samma som yellow
+*.color13:      #888888  ! Mild variation
+
+! cyan
+*.color6:       #777777  ! Dämpad blågrå
+*.color14:      #999999  ! Ljusaste grå innan vitt
+
+! white
+*.color7:       #222222  ! Primär textfärg
+*.color15:      #000000  ! Djupaste svarta toner
