@@ -1,0 +1,41 @@
+# Font settings
+font_family      FiraCode Nerd Font
+bold_font        auto
+italic_font      auto
+bold_italic_font auto
+font_size        12.0
+
+# Cursor
+cursor           #d0d0d0
+cursor_text_color #000000
+
+# Background & Foreground
+background       #101010
+foreground       #d0d0d0
+
+# Normal colors
+color0  #000000  # Black
+color1  #703f3f  # Dark Red
+color2  #3f704f  # Dark Green
+color3  #70703f  # Dark Yellow
+color4  #3f5f70  # Dark Blue
+color5  #5f3f70  # Dark Magenta
+color6  #3f7070  # Dark Cyan
+color7  #d0d0d0  # Light Gray
+
+# Bright colors
+color8  #404040  # Dark Gray
+color9  #a06060  # Red
+color10 #60a080  # Green
+color11 #a0a060  # Yellow
+color12 #6080a0  # Blue
+color13 #8060a0  # Magenta
+color14 #60a0a0  # Cyan
+color15 #ffffff  # White
+
+# Selection
+selection_foreground #000000
+selection_background #d0d0d0
+
+# Opacity (if using transparency)
+background_opacity 0.95
