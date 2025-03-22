@@ -1,41 +1,40 @@
-# Font settings
-font_family      FiraCode Nerd Font
-bold_font        auto
-italic_font      auto
-bold_italic_font auto
-font_size        12.0
+# vim:ft=kitty
 
-# Cursor
-cursor           #d0d0d0
-cursor_text_color #000000
+foreground #D0D0D0
+background #181818
+selection_foreground none
+selection_background #404040
 
-# Background & Foreground
-background       #101010
-foreground       #d0d0d0
+cursor none
 
-# Normal colors
-color0  #000000  # Black
-color1  #703f3f  # Dark Red
-color2  #3f704f  # Dark Green
-color3  #70703f  # Dark Yellow
-color4  #3f5f70  # Dark Blue
-color5  #5f3f70  # Dark Magenta
-color6  #3f7070  # Dark Cyan
-color7  #d0d0d0  # Light Gray
+# black
+color0  #181818
+color8  #787878
 
-# Bright colors
-color8  #404040  # Dark Gray
-color9  #a06060  # Red
-color10 #60a080  # Green
-color11 #a0a060  # Yellow
-color12 #6080a0  # Blue
-color13 #8060a0  # Magenta
-color14 #60a0a0  # Cyan
-color15 #ffffff  # White
+# red
+color1  #A8A8A8
+color9  #A8A8A8
 
-# Selection
-selection_foreground #000000
-selection_background #d0d0d0
+# green
+color2  #505050
+color10 #505050
 
-# Opacity (if using transparency)
-background_opacity 0.95
+# yellow
+color3  #606060
+color11 #606060
+
+# blue
+color4  #707070
+color12 #707070
+
+# magenta
+color5  #505050
+color13 #505050
+
+# cyan
+color6  #A0A0A0
+color14 #A0A0A0
+
+# white
+color7  #C2C2C2
+color15 #909090
