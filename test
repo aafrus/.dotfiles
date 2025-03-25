@@ -1,2 +1,9 @@
-[alias]
-    gc = "! f() { if gpg --list-secret-keys > /dev/null 2>&1; then git commit -S -m \"$1\"; else git commit -m \"$1\"; fi }; f"
+Host gitlab.com
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_gitlab
+
+Host git.chasacademy.dev
+    HostName git.chasacademy.dev
+    User git
+    IdentityFile ~/.ssh/id_chasacademy
