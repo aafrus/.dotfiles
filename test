@@ -1,9 +1,0 @@
-Host gitlab.com
-    HostName gitlab.com
-    User git
-    IdentityFile ~/.ssh/id_gitlab
-
-Host git.chasacademy.dev
-    HostName git.chasacademy.dev
-    User git
-    IdentityFile ~/.ssh/id_chasacademy
