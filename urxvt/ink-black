@@ -1,36 +1,36 @@
-! special
-*.foreground:   #e5e5e5  ! Ljusgrå, men inte hård vit
-*.background:   #111111  ! Nästan svart, e-ink mörk
-*.cursorColor:  #bbbbbb  ! Mjukare vit/grå
+! Special
+*.foreground:   #d0d0d0 
+*.background:   #0c0c0c  
+*.cursorColor:  #a0a0a0  
 
-! black
-*.color0:       #111111  ! Bakgrund
-*.color8:       #222222  ! Något ljusare, subtil skillnad
+! Black 
+*.color0:       #0c0c0c 
+*.color8:       #1a1a1a  
 
-! red
-*.color1:       #444444  ! Mörkgrå
-*.color9:       #666666  ! Lite ljusare, men ingen röd ton
+! Red 
+*.color1:       #303030  
+*.color9:       #505050  
 
-! green
-*.color2:       #333333  ! Nästan svart, med en hint av grön
-*.color10:      #555555  ! Lite ljusare grå
+! Green 
+*.color2:       #2a2a2a  
+*.color10:      #505050 
 
-! yellow
-*.color3:       #555555  ! Behaglig mellanljus grå
-*.color11:      #777777  ! Lite ljusare
+! Yellow
+*.color3:       #444444  
+*.color11:      #666666  
 
-! blue
-*.color4:       #666666  ! Dämpad blågrå
-*.color12:      #888888  ! Mjukare blågrå
+! Blue 
+*.color4:       #555555  
+*.color12:      #777777  
 
-! magenta
-*.color5:       #666666  ! Mörkare lila-grå
-*.color13:      #888888  ! Mildare ton
+! Magenta 
+*.color5:       #5a5a5a  
+*.color13:      #808080  
 
-! cyan
-*.color6:       #777777  ! Dämpad blågrå
-*.color14:      #999999  ! Nästan vit
+! Cyan 
+*.color6:       #666666  
+*.color14:      #999999  
 
-! white
-*.color7:       #e5e5e5  ! Primär textfärg
-*.color15:      #ffffff  ! Helt vit, används sparsamt
+! White
+*.color7:       #c0c0c0 
+*.color15:      #ffffff  
