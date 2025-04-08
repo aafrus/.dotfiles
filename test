@@ -1,0 +1,8 @@
+# Logga öppnade filer i ~/.config/
+function nvim() {
+    if [[ "$@" == *"/.config/"* ]]; then
+        echo "$(realpath "$@")" >> ~/.config_recent
+        sort -u ~/.config_recent -o ~/.config_recent
+    fi
+    command nvim "$@"
+}
