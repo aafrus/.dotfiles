@@ -1,13 +1,17 @@
 #!/bin/bash
-DMENU_OPTS="-i -l 10 -x W/2 -y H/2 -w 600 -fn 'Fira Code-12'"
-choice=$(printf "Config Files\nTerminal\nFile Manager\nWeb Browser\nExit" | dmenu $DMENU_OPTS -p "Menu:")
+export DISPLAY=:0
+export XAUTHORITY=$HOME/.Xauthority
+
+# Anpassad dmenu-konfig för urxvt
+DMENU_CMD="/usr/bin/dmenu -i -l 10 -fn 'xft:FiraMono-12' -nb '#2E3440' -nf '#D8DEE9'"
+
+choice=$(printf "Terminal\nWeb Browser\nConfig Files\nExit" | eval "$DMENU_CMD")
 
 case "$choice" in
-  "Config Files") 
-    config=$(find ~/.config -type f | dmenu $DMENU_OPTS)
-    [ "$config" ] && alacritty -e nvim "$config" ;;
-  "Terminal") alacritty ;;
-  "File Manager") pcmanfm ;;
-  "Web Browser") firefox ;;
+  "Terminal") /usr/bin/urxvt & ;;
+  "Web Browser") /usr/bin/firefox & ;;
+  "Config Files")
+    config=$(find ~/.config -type f | eval "$DMENU_CMD")
+    [ -n "$config" ] && /usr/bin/urxvt -e /usr/bin/nvim "$config" ;;
   "Exit") exit ;;
 esac
