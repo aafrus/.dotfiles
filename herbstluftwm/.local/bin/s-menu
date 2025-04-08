@@ -1,0 +1,13 @@
+#!/bin/bash
+choices="Recently Used\nConfig Files\nOpen Terminal\nExit"
+selected=$(echo -e "$choices" | dmenu -i -p "Menu:" -l 10 -x W/2 -y H/2 -w W/3 -fn "Monospace-12")
+
+case "$selected" in
+  "Recently Used") rofi -show drun -show-icons ;;
+  "Config Files") 
+    config=$(find ~/.config -type f | dmenu -i -l 20)
+    [ -n "$config" ] && $TERMINAL -e $EDITOR "$config"
+    ;;
+  "Open Terminal") $TERMINAL ;;
+  "Exit") exit 0 ;;
+esac
