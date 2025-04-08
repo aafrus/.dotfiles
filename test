@@ -1,8 +1,98 @@
-# Logga öppnade filer i ~/.config/
-function nvim() {
-    if [[ "$@" == *"/.config/"* ]]; then
-        echo "$(realpath "$@")" >> ~/.config_recent
-        sort -u ~/.config_recent -o ~/.config_recent
-    fi
-    command nvim "$@"
-}
+# Åsidosätt inte terminalens Ctrl+Shift+C/V
+hc keybind Ctrl+c spawn clipmenu -i -l 10 -w 600 -h 400 -fn "Fira Code-12"
+hc keybind Ctrl+v spawn xclip -o | xclip -selection clipboard -i
+
+# Avbryt kommando med Ctrl+X
+hc keybind Ctrl+x spawn pkill -SIGINT urxvt  # Avbryt aktuellt kommando
+
+
+
+mkdir -p ~/.config/clipmenu
+echo "CM_LAUNCHER=dmenu" > ~/.config/clipmenu/init
+
+
+2. Sudo utan lösenord (SÄKERHETSVARNING)
+
+Varning: Detta minskar säkerheten. Använd endast på privat dator.
+
+    Öppna sudoers-filen:
+    bash
+    Copy
+
+    sudo EDITOR=nvim visudo
+
+    Lägg till denna rad (ersätt ditt_användarnamn):
+    bash
+    Copy
+
+    ditt_användarnamn ALL=(ALL) NOPASSWD: ALL
+
+Alternativ: För specifika kommandon:
+bash
+Copy
+
+ditt_användarnamn ALL=(ALL) NOPASSWD: /usr/bin/pacman, /usr/bin/systemctl
+
+3. Password Manager Setup
+
+Ja, dmenu_pass kräver pass:
+a) Installera Password Store
+bash
+Copy
+
+sudo pacman -S pass  # Arch
+sudo apt install pass # Debian
+
+b) Initiera lösenordsbutik
+bash
+Copy
+
+pass init "Your GPG Key"  # Ersätt med din GPG-nyckel
+pass git init  # Valfritt: Versionshantering
+
+c) Förbättrad dmenu_pass
+
+Skapa ~/.local/bin/dmenu_pass:
+
+#!/bin/sh
+selected=$(find ~/.password-store/ -type f -name "*.gpg" | \
+    sed 's|.*/.password-store/||; s/\.gpg$//' | \
+    dmenu -i -l 15 -p " Pass:" -w 500)
+
+[ -n "$selected" ] && pass show -c "$selected" && \
+    notify-send -t 2000 "Password Copied" "$selected"
+
+Gör den körbar:
+chmod +x ~/.local/bin/dmenu_pass
+
+Bind till tangent:
+hc keybind Mod1+p spawn ~/.local/bin/dmenu_pass
+
+4. dmenu_websearch - Förenklad Version
+
+Skapa ~/.local/bin/dmenu_websearch:
+
+#!/bin/sh
+engine="https://duckduckgo.com/?q="
+query=$(echo "" | dmenu -p "🔍 Search:" -w 600)
+[ -n "$query" ] && xdg-open "${engine}${query}"
+
+5. Extra Tips: Clipboard History
+
+För en bättre clipboard-historik:
+
+yay -S cliphist  # Arch
+
+Lägg till i autostart:
+
+wl-paste --watch cliphist store &  # Wayland
+# ELLER
+xclip -selection clipboard -o -watch | cliphist store &  # X11
+
+Sammanfattning av Tangentbordsbindningar
+Tangent	Funktion
+Ctrl+C	Visa clipboard-historik
+Ctrl+V	Klistra från clipboard
+Ctrl+X	Avbryt kommando
+Alt+P	Lösenordsmanager
+Alt+D	dmenu-websearch
