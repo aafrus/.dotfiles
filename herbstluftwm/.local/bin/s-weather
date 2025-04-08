@@ -1,0 +1,3 @@
+#!/bin/bash
+export $(dbus-launch)
+notify-send -t 5000 "Weather" "$(curl -s wttr.in/?format=3)"
