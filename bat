@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BAT_PATH="/sys/class/power_supply/BAT0"
-LAST_STATUS_FILE="/tmp/battery-status.txt"
+LAST_STATUS_FILE="/tmp/last_battery_status"
 
 export DISPLAY=:0
 export XAUTHORITY="$HOME/.Xauthority"
@@ -17,16 +17,16 @@ last_state=$(cat "$LAST_STATUS_FILE" 2>/dev/null || echo "")
 case "$status" in
     "Discharging")
         if [[ "$capacity" -le 10 ]]; then
-            notify-send -u critical "Battery 10% - Plug in!"
+            notify-send -u critical "Low Battery ($capacity%)"
         elif [[ "$last_state" =~ "Charging" ]]; then
-            notify-send -u low "Discharging ($capacity%)"
+            notify-send -u low "Unplugged ($capacity%)"
         fi
         ;;
     "Charging")
         if [[ "$capacity" -ge 99 ]]; then
-            notify-send -u normal "Battery full"
+            notify-send -u normal "Battery Full (100%)"
         elif [[ "$last_state" =~ "Discharging" ]]; then
-            notify-send -u low "Charging ($capacity%)"
+            notify-send -u low "Plugged In ($capacity%)"
         fi
         ;;
 esac
