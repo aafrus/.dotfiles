@@ -4,38 +4,34 @@ Lägg till detta i din ~/.config/herbstluftwm/autostart:
 bash
 Copy
 
-# GLOBALA KOPIERINGSKOMBINATIONER
-hc keybind Ctrl+x spawn kill -INT $(ps -o pid= -t $(ps -o tty= -p $$))  # Avbryt kommando (ersätter Ctrl+C)
-hc keybind Alt+Shift+c spawn clipmenu -i -l 10 -w 600 -fn "Fira Code-12"  # Clipboard-historik
+# Clipboard-bindningar
+hc keybind Ctrl+c exec xclip -selection clipboard -i <<< "$(xclip -selection primary -o)"
+hc keybind Ctrl+v exec xclip -selection clipboard -o | xdotool type --clearmodifiers --delay 0 --file -
+hc keybind Ctrl+x spawn kill -INT $(ps -o pid= -t $(ps -o tty= -p $$))
+hc keybind Alt+Shift+c spawn clipmenu -i -l 10 -w 600 -fn "Fira Code-12"
 
 # X11 Clipboard Magic (fungerar överallt inklusive terminalen)
 hc keybind Ctrl+c exec xclip -selection clipboard -i <<< "$(xclip -selection primary -o)"
 hc keybind Ctrl+v exec xclip -selection clipboard -o | xclip -selection primary -i
 
-2. Krävda paket
 
-Se till att du har dessa installerade:
+ Flytta clipmenud till .xinitrc
+
+Redigera ~/.xinitrc (skapa filen om den inte finns):
+
+# Start clipmenud utan notiser
+pgrep -x clipmenud || clipmenud --no-persist --no-notify &
+
+# Start herbstluftwm
+exec herbstluftwm
+
+4. URxvt-specifika inställningar (~/.Xresources)
+
+För bättre integrering i terminalen:
 bash
 Copy
 
-sudo pacman -S xclip clipnotify clipmenu  # Arch
-# eller
-sudo apt install xclip clipnotify clipmenu # Debian
-
-3. Autostart för Clipboard-daemon
-
-Lägg till detta i slutet av din herbstluftwm autostart-fil:
-bash
-Copy
-
-# Starta clipboard-daemon i bakgrunden
-pgrep -x clipmenud || clipmenud &
-
-4. Terminal-specifika inställningar
-
-För URxvt (~/.Xresources):
-bash
-Copy
-
-URxvt.keysym.Shift-Control-V: eval:paste_clipboard
-URxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
+! Använd Shift+Ctrl för terminalens egna kopiering
+URxvt.keysym.Control-C: perl:clipboard:copy
+URxvt.keysym.Control-V: perl:clipboard:paste
+URxvt.iso14755: false  # Stäng av obehaglig ISO-prompt
