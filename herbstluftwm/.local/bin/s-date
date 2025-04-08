@@ -1,3 +1,4 @@
 #!/bin/bash
-export $(dbus-launch)
-notify-send -t 2000 "$(date '+%H:%M')" "$(date '+%A %d %B %Y')"
+export DISPLAY=:0
+export XAUTHORITY=$HOME/.Xauthority
+/usr/bin/notify-send -t 2000 "$(/usr/bin/date '+%H:%M')" "$(/usr/bin/date '+%A %d %B %Y')"
