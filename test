@@ -1,98 +1,41 @@
-# Åsidosätt inte terminalens Ctrl+Shift+C/V
-hc keybind Ctrl+c spawn clipmenu -i -l 10 -w 600 -h 400 -fn "Fira Code-12"
-hc keybind Ctrl+v spawn xclip -o | xclip -selection clipboard -i
+1. Tangentbordsbindningar för Clipboard (herbstluftwm)
 
-# Avbryt kommando med Ctrl+X
-hc keybind Ctrl+x spawn pkill -SIGINT urxvt  # Avbryt aktuellt kommando
-
-
-
-mkdir -p ~/.config/clipmenu
-echo "CM_LAUNCHER=dmenu" > ~/.config/clipmenu/init
-
-
-2. Sudo utan lösenord (SÄKERHETSVARNING)
-
-Varning: Detta minskar säkerheten. Använd endast på privat dator.
-
-    Öppna sudoers-filen:
-    bash
-    Copy
-
-    sudo EDITOR=nvim visudo
-
-    Lägg till denna rad (ersätt ditt_användarnamn):
-    bash
-    Copy
-
-    ditt_användarnamn ALL=(ALL) NOPASSWD: ALL
-
-Alternativ: För specifika kommandon:
+Lägg till detta i din ~/.config/herbstluftwm/autostart:
 bash
 Copy
 
-ditt_användarnamn ALL=(ALL) NOPASSWD: /usr/bin/pacman, /usr/bin/systemctl
+# GLOBALA KOPIERINGSKOMBINATIONER
+hc keybind Ctrl+x spawn kill -INT $(ps -o pid= -t $(ps -o tty= -p $$))  # Avbryt kommando (ersätter Ctrl+C)
+hc keybind Alt+Shift+c spawn clipmenu -i -l 10 -w 600 -fn "Fira Code-12"  # Clipboard-historik
 
-3. Password Manager Setup
+# X11 Clipboard Magic (fungerar överallt inklusive terminalen)
+hc keybind Ctrl+c exec xclip -selection clipboard -i <<< "$(xclip -selection primary -o)"
+hc keybind Ctrl+v exec xclip -selection clipboard -o | xclip -selection primary -i
 
-Ja, dmenu_pass kräver pass:
-a) Installera Password Store
+2. Krävda paket
+
+Se till att du har dessa installerade:
 bash
 Copy
 
-sudo pacman -S pass  # Arch
-sudo apt install pass # Debian
+sudo pacman -S xclip clipnotify clipmenu  # Arch
+# eller
+sudo apt install xclip clipnotify clipmenu # Debian
 
-b) Initiera lösenordsbutik
+3. Autostart för Clipboard-daemon
+
+Lägg till detta i slutet av din herbstluftwm autostart-fil:
 bash
 Copy
 
-pass init "Your GPG Key"  # Ersätt med din GPG-nyckel
-pass git init  # Valfritt: Versionshantering
+# Starta clipboard-daemon i bakgrunden
+pgrep -x clipmenud || clipmenud &
 
-c) Förbättrad dmenu_pass
+4. Terminal-specifika inställningar
 
-Skapa ~/.local/bin/dmenu_pass:
+För URxvt (~/.Xresources):
+bash
+Copy
 
-#!/bin/sh
-selected=$(find ~/.password-store/ -type f -name "*.gpg" | \
-    sed 's|.*/.password-store/||; s/\.gpg$//' | \
-    dmenu -i -l 15 -p " Pass:" -w 500)
-
-[ -n "$selected" ] && pass show -c "$selected" && \
-    notify-send -t 2000 "Password Copied" "$selected"
-
-Gör den körbar:
-chmod +x ~/.local/bin/dmenu_pass
-
-Bind till tangent:
-hc keybind Mod1+p spawn ~/.local/bin/dmenu_pass
-
-4. dmenu_websearch - Förenklad Version
-
-Skapa ~/.local/bin/dmenu_websearch:
-
-#!/bin/sh
-engine="https://duckduckgo.com/?q="
-query=$(echo "" | dmenu -p "🔍 Search:" -w 600)
-[ -n "$query" ] && xdg-open "${engine}${query}"
-
-5. Extra Tips: Clipboard History
-
-För en bättre clipboard-historik:
-
-yay -S cliphist  # Arch
-
-Lägg till i autostart:
-
-wl-paste --watch cliphist store &  # Wayland
-# ELLER
-xclip -selection clipboard -o -watch | cliphist store &  # X11
-
-Sammanfattning av Tangentbordsbindningar
-Tangent	Funktion
-Ctrl+C	Visa clipboard-historik
-Ctrl+V	Klistra från clipboard
-Ctrl+X	Avbryt kommando
-Alt+P	Lösenordsmanager
-Alt+D	dmenu-websearch
+URxvt.keysym.Shift-Control-V: eval:paste_clipboard
+URxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
