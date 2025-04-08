@@ -1,43 +1,21 @@
 #!/bin/bash
-# Vertikal layout - hög och smal
-DMENU_ARGS="\
-  -i -l 12 \
-  -x W/2 -y H/2 -w 300 -h 600 \
-  -fn 'Fira Code-12' \
-  -nb '#2E3440' -nf '#D8DEE9' -sb '#3B4252' -sf '#E5E9F0' \
-  -bw 0"
+# Basic vertical dmenu - inget magiskt
+export DISPLAY=:0
 
-# Dynamiska menyval
-CHOICES=$(printf "\
-⚙️  Edit Configs\n\
-📝 Recent Files\n\
-📂 Quick Notes\n\
-🔧 System Tools\n\
-")
+choices="\
+Edit HerbstluftWM Config
+Edit ZSH Config
+Edit Dunst Config
+Edit Notes
+Show Keybinds
+"
 
-SELECTION=$(echo "$CHOICES" | dmenu $DMENU_ARGS -p "Menu:")
+selected=$(echo "$choices" | dmenu -i -l 10 -x W/2 -y H/2 -w 300 -h 400 -fn "DejaVu Sans Mono-12")
 
-case "$SELECTION" in
-  "⚙️  Edit Configs")
-    CONFIG=$(printf "\
-herbstluftwm\n\
-zsh\n\
-dunst\n\
-nvim\n\
-" | dmenu $DMENU_ARGS -p "Config:")
-    case "$CONFIG" in
-      "herbstluftwm") urxvt -e nvim ~/.config/herbstluftwm/autostart ;;
-      "zsh") urxvt -e nvim ~/.zshrc ;;
-      "dunst") urxvt -e nvim ~/.config/dunst/dunstrc ;;
-      "nvim") urxvt -e nvim ~/.config/nvim/init.vim ;;
-    esac
-    ;;
-  
-  "📝 Recent Files")
-    RECENT=$(cat ~/.config_recent | dmenu $DMENU_ARGS -l 10 -p "Recent:")
-    [ -n "$RECENT" ] && urxvt -e nvim "$RECENT"
-    ;;
-  
-  "📂 Quick Notes") urxvt -e nvim ~/notes.md ;;
-  "🔧 System Tools") urxvt -e htop ;;
+case "$selected" in
+  "Edit HerbstluftWM Config") urxvt -e nvim ~/.config/herbstluftwm/autostart ;;
+  "Edit ZSH Config") urxvt -e nvim ~/.zshrc ;;
+  "Edit Dunst Config") urxvt -e nvim ~/.config/dunst/dunstrc ;;
+  "Edit Notes") urxvt -e nvim ~/notes.md ;;
+  "Show Keybinds") urxvt -e less ~/.config/herbstluftwm/autostart ;;
 esac
