@@ -1,3 +1,6 @@
 #!/bin/bash
 export $(dbus-launch)
-notify-send -t 5000 "Weather" "$(curl -s wttr.in/?format=3)"
+# replce "Stockholm" with your location
+LOCATION="Stockholm"  
+WEATHER=$(curl -s "wttr.in/$LOCATION?format=%c+%t+%w")
+notify-send -t 5000 "Weather in $LOCATION" "$WEATHER"
