@@ -1,13 +1,13 @@
 #!/bin/bash
-choices="Recently Used\nConfig Files\nOpen Terminal\nExit"
-selected=$(echo -e "$choices" | dmenu -i -p "Menu:" -l 10 -x W/2 -y H/2 -w W/3 -fn "Monospace-12")
+DMENU_OPTS="-i -l 10 -x W/2 -y H/2 -w 600 -fn 'Fira Code-12'"
+choice=$(printf "Config Files\nTerminal\nFile Manager\nWeb Browser\nExit" | dmenu $DMENU_OPTS -p "Menu:")
 
-case "$selected" in
-  "Recently Used") rofi -show drun -show-icons ;;
+case "$choice" in
   "Config Files") 
-    config=$(find ~/.config -type f | dmenu -i -l 20)
-    [ -n "$config" ] && $TERMINAL -e $EDITOR "$config"
-    ;;
-  "Open Terminal") $TERMINAL ;;
-  "Exit") exit 0 ;;
+    config=$(find ~/.config -type f | dmenu $DMENU_OPTS)
+    [ "$config" ] && alacritty -e nvim "$config" ;;
+  "Terminal") alacritty ;;
+  "File Manager") pcmanfm ;;
+  "Web Browser") firefox ;;
+  "Exit") exit ;;
 esac
