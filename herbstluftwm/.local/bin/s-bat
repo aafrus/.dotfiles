@@ -1,0 +1,5 @@
+#!/bin/bash
+export $(dbus-launch)
+BAT=$(cat /sys/class/power_supply/BAT0/capacity)
+STATUS=$(cat /sys/class/power_supply/BAT0/status)
+notify-send -t 2000 "Battery" "$STATUS: $BAT%"
