@@ -1,24 +1,38 @@
 #!/bin/bash
+LOCKFILE="/tmp/battery-notify.lock"
 
-# Batteridata
-BAT_PATH="/sys/class/power_supply/BAT0"
-CAPACITY=$(cat "$BAT_PATH/capacity")
-STATUS=$(cat "$BAT_PATH/status")
-
-# Emoji + färger för notify-send (via dunst)
-ICON_LOW="🔋"
-ICON_CHARGING="⚡"
-ICON_FULL="✅"
-ICON_WARNING="☠️"
-
-# DBUS magic (krävs i cron/systemd timers ibland)
-export DISPLAY=:0
-export XAUTHORITY=/home/$USER/.Xauthority
-export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
-
-# Notifieringslogik
-if [[ "$STATUS" == "Discharging" && "$CAPACITY" -le 20 ]]; then
-    notify-send -u critical "$ICON_LOW  Battery Low ($CAPACITY%)" "Plug in now or face the consequences $ICON_WARNING"
-elif [[ "$STATUS" == "Charging" && "$CAPACITY" -ge 95 ]]; then
-    notify-send -u normal "$ICON_FULL  Battery Full ($CAPACITY%)" "You can unplug now $ICON_CHARGING"
+if [ -e "$LOCKFILE" ]; then
+    exit 0
 fi
+
+touch "$LOCKFILE"
+
+trap "rm -f $LOCKFILE" EXIT
+
+while true; do
+    for bat in /sys/class/power_supply/BAT?; do
+        if [ -d "$bat" ]; then
+            capacity=$(cat "$bat/capacity")
+            status=$(cat "$bat/status")
+
+            # Baterai lemah
+            if [[ "$status" == "Discharging" && "$capacity" == 20 ]]; then
+                notify-send "🪫 Battery Low" "Battery is at ${capacity}%. Please charge now." --urgency=critical
+		aplay "$SOUND_LOW" &
+                sleep 180
+
+            # Baterai kritis
+            elif [[ "$status" == "Discharging" && "$capacity" == 5 ]]; then
+                notify-send "🪫 Battery Critical" "Battery is at ${capacity}%. It will die soon!" --urgency=critical
+		aplay "$SOUND_LOW" &
+                sleep 240
+
+            # Baterai hampir penuh
+            elif [[ "$status" == "Charging" && "$capacity" == 95 ]]; then
+                notify-send "🔋 Battery Almost Full" "Battery is at ${capacity}%. You can unplug the charger." --urgency=normal
+		aplay "$SOUND_FULL" &
+                sleep 300
+	    fi
+        fi
+    done
+done
