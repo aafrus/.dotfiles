@@ -122,3 +122,10 @@ else
 fi
 
 RPROMPT='%F{15}%~ $(git_prompt_info)%f'
+
+bindkey '^f' autosuggest-accept         # Ctrl+f to accept suggestion
+bindkey '^h' backward-char             # Ctrl+h move left
+bindkey '^j' history-search-backward   # Ctrl+j search history back
+bindkey '^k' history-search-forward    # Ctrl+k search history forward
+bindkey '^l' forward-char              # Ctrl+l move right
+bindkey '^z' kill-region               # Ctrl+z delete line
