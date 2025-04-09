@@ -1,34 +1,101 @@
-# --- Zinit Plugins ---
-zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-autosuggestions
+~/.zshrc (huvudfil)
 
-# För completion-systemet
-zinit ice blockf
-zinit light zsh-users/zsh-completions
+#!/usr/bin/env zsh
+# Minimal main config - only loads other files
 
-# FZF-tab (advanced completion)
-zinit light Aloxaf/fzf-tab
+# XDG base directories (must be set first)
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
 
-# Oh-My-Zsh snippets
-zinit snippet OMZL::git.zsh
-zinit snippet OMZP::git
-zinit snippet OMZP::sudo
-zinit snippet OMZP::archlinux
-zinit snippet OMZP::aws
-zinit snippet OMZP::kubectl
-zinit snippet OMZP::kubectx
-zinit snippet OMZP::command-not-found
+# Load all zsh config files (except those starting with _)
+for config_file in "$XDG_CONFIG_HOME"/zsh/[^_]*.zsh; do
+  source "$config_file"
+done
 
-# --- Init completion system ---
+~/.config/zsh/history.zsh
+
+# History settings
+export HISTFILE="$XDG_DATA_HOME/zsh/history"
+HISTSIZE=100000
+SAVEHIST=100000
+
+setopt HIST_IGNORE_SPACE      # Ignore commands starting with space
+setopt HIST_IGNORE_ALL_DUPS   # Remove older duplicate entries
+setopt HIST_SAVE_NO_DUPS      # Don't save duplicates in history file
+setopt HIST_FIND_NO_DUPS      # Don't show duplicates when searching
+setopt SHARE_HISTORY          # Share history between sessions
+setopt APPEND_HISTORY         # Append rather than overwrite
+setopt EXTENDED_HISTORY       # Save timestamp and duration
+
+~/.config/zsh/completion.zsh
+
+# Completion system
 autoload -Uz compinit
-if [ $(date +'%j') != $(stat -f '%Sm' -t '%j' ~/.zcompdump) ]; then
-  compinit -u
-else
-  compinit -u -C
+compinit -u -d "$XDG_CACHE_HOME/zsh/zcompdump"
+
+# Completion styling
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu select=2
+
+# FZF-tab integration (if installed)
+if (( $+commands[fzf] )); then
+  zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+  zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 fi
 
-# --- Completion styling ---
-zstyle ':completion:*' menu select
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+~/.config/zsh/plugins.zsh
+
+# Load plugins manually (no plugin manager needed)
+plugin_dir="$XDG_DATA_HOME/zsh/plugins"
+
+# Syntax highlighting
+source "$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || {
+  mkdir -p "$plugin_dir"
+  git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git "$plugin_dir/zsh-syntax-highlighting"
+  source "$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+}
+
+# Autosuggestions
+source "$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || {
+  git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions.git "$plugin_dir/zsh-autosuggestions"
+  source "$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+}
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+bindkey '^f' autosuggest-accept
+
+# Zoxide (if installed)
+(( $+commands[zoxide] )) && eval "$(zoxide init --cmd cd zsh)"
+
+# FZF (if installed)
+(( $+commands[fzf] )) && source <(fzf --zsh)
+
+~/.config/zsh/prompt.zsh
+
+# Enable colors and prompt substitution
+autoload -Uz colors && colors
+setopt PROMPT_SUBST
+
+# Git prompt function (simplified version of your current one)
+git_prompt_info() {
+  local ref dirty
+  ref=$(git symbolic-ref --short HEAD 2>/dev/null) || return
+  dirty="" && [[ -n $(git status --porcelain 2>/dev/null) ]] && dirty=" ⚡"
+  echo "%F{241}[%F{244}${ref}${dirty}%F{241}]"
+}
+
+# Main prompt configuration
+if [[ -v VIMRUNTIME ]]; then
+  # When in Vim terminal
+  PROMPT='%F{9} ──── ─%f '
+elif [[ -v SSH_TTY ]]; then
+  # When in SSH session
+  PROMPT='%F{13} ${HOSTNAME}%F{3}_%f '
+else
+  # Normal prompt
+  PROMPT='%F{11} ──── ─%f '
+fi
+
+# Right prompt with path and git info
+RPROMPT='%F{15}%~ $(git_prompt_info)%f'
