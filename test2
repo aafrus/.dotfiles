@@ -53,11 +53,10 @@ zinit snippet OMZP::kubectx
 zinit snippet OMZP::command-not-found
 
 autoload -Uz compinit
-if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
-    compinit -u
-else
-    compinit -u -C
-fi
+for dump in ~/.zcompdump(N.mh+24); do
+  compinit -u
+done
+compinit -u -C
 
 # --- Completion styling ---
 zstyle ':completion:*' menu select
