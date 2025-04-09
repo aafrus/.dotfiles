@@ -77,25 +77,83 @@ bindkey '^f' autosuggest-accept
 autoload -Uz colors && colors
 setopt PROMPT_SUBST
 
-# Git prompt function (simplified version of your current one)
-git_prompt_info() {
-  local ref dirty
-  ref=$(git symbolic-ref --short HEAD 2>/dev/null) || return
-  dirty="" && [[ -n $(git status --porcelain 2>/dev/null) ]] && dirty=" ⚡"
-  echo "%F{241}[%F{244}${ref}${dirty}%F{241}]"
+# Git prompt symbols
+ICO_DIRTY="⚡"
+ICO_AHEAD="▲"
+ICO_BEHIND="▼"
+ICO_DIVERGED="⥮"
+
+# Git prompt function (your exact original version)
+GIT_PROMPT() {
+  # Check if we're in a git repo
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    case "$PROMPT_STYLE" in
+      tiny) echo "%F{241}[%F{244}%F{241}]" ;;
+      *) echo "" ;;
+    esac
+    return
+  fi
+
+  # Get branch/tag name
+  local ref
+  ref=$(git name-rev --name-only HEAD | sed 's!remotes/!!' 2>/dev/null)
+  
+  # Handle tags
+  if [[ "$ref" == "tags/"* ]]; then
+    local branch
+    branch=$(git branch | grep -e "^*" | tr -d "*")
+    ref="${branch/ /} ${ref}"
+  fi
+
+  # Dirty working directory
+  local dirty=""
+  [[ -n $(git diff --shortstat 2>/dev/null | tail -n1) ]] && dirty=$ICO_DIRTY
+
+  # Remote status
+  local stat
+  case "$(git status | sed -n 2p)" in
+    *ahead*) stat=$ICO_AHEAD ;;
+    *behind*) stat=$ICO_BEHIND ;;
+    *diverged*) stat=$ICO_DIVERGED ;;
+    *) stat="" ;;
+  esac
+
+  # Format based on prompt style
+  case "$PROMPT_STYLE" in
+    tiny)
+      echo "%F{241}[%F{244}${ref}${dirty}${stat}%F{241}]"
+      ;;
+    classic)
+      echo "%F{white}─[${ref}${dirty}${stat}%F{white}]"
+      ;;
+    *)
+      echo "%F{cyan}─[%F{white}${ref}${dirty}${stat}%F{cyan}]"
+      ;;
+  esac
 }
 
-# Main prompt configuration
-if [[ -v VIMRUNTIME ]]; then
-  # When in Vim terminal
-  PROMPT='%F{9} ──── ─%f '
-elif [[ -v SSH_TTY ]]; then
-  # When in SSH session
-  PROMPT='%F{13} ${HOSTNAME}%F{3}_%f '
-else
-  # Normal prompt
-  PROMPT='%F{11} ──── ─%f '
-fi
+# Set prompt style (change to 'classic' if you prefer)
+PROMPT_STYLE="tiny"
 
-# Right prompt with path and git info
-RPROMPT='%F{15}%~ $(git_prompt_info)%f'
+# Main prompt configuration (matches your original exactly)
+case "$PROMPT_STYLE" in
+  tiny)
+    if [[ -v VIMRUNTIME ]]; then
+      # Vim terminal
+      PROMPT='%F{9} ──── ─%f '
+    elif [[ -v SSH_TTY ]]; then
+      # SSH session
+      PROMPT='%F{13} ${HOSTNAME}%F{3}_%f '
+    else
+      # Normal prompt
+      PROMPT='%F{11} ──── ─%f '
+    fi
+    RPROMPT='%F{15}%~ $(GIT_PROMPT)%f'
+    ;;
+  classic)
+    PROMPT='%F{cyan}%n@%F{white}[%m]$(GIT_PROMPT)%F{white} : %~# %f'
+    ;;
+  *)
+    PROMPT='%F{cyan}%n@%F{white}[%m]$(GIT_PROMPT)%F{white} : %~# %f'
+    ;;
+esac
