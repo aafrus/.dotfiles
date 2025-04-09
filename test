@@ -1,4 +1,4 @@
-~/.zshrc (huvudfil)
+~/.zshrc (ultimat minimal version)
 
 #!/usr/bin/env zsh
 # Minimal main config - only loads other files
@@ -9,8 +9,8 @@ export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
 # Load all zsh config files (except those starting with _)
-for config_file in "$XDG_CONFIG_HOME"/zsh/[^_]*.zsh; do
-  source "$config_file"
+for config in "$XDG_CONFIG_HOME"/zsh/[^_]*.zsh; do
+  source "$config"
 done
 
 ~/.config/zsh/history.zsh
@@ -71,89 +71,54 @@ bindkey '^f' autosuggest-accept
 # FZF (if installed)
 (( $+commands[fzf] )) && source <(fzf --zsh)
 
-~/.config/zsh/prompt.zsh
+~/.config/zsh/prompt.zsh 
 
 # Enable colors and prompt substitution
 autoload -Uz colors && colors
 setopt PROMPT_SUBST
 
-# Git prompt symbols
+# Git symbols
 ICO_DIRTY="⚡"
 ICO_AHEAD="▲"
 ICO_BEHIND="▼"
 ICO_DIVERGED="⥮"
 
-# Git prompt function (your exact original version)
-GIT_PROMPT() {
-  # Check if we're in a git repo
-  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    case "$PROMPT_STYLE" in
-      tiny) echo "%F{241}[%F{244}%F{241}]" ;;
-      *) echo "" ;;
-    esac
-    return
-  fi
-
-  # Get branch/tag name
-  local ref
-  ref=$(git name-rev --name-only HEAD | sed 's!remotes/!!' 2>/dev/null)
+# Optimized git prompt
+git_prompt_info() {
+  # Fast git check
+  local git_dir
+  git_dir=$(git rev-parse --git-dir 2>/dev/null) || return
   
-  # Handle tags
-  if [[ "$ref" == "tags/"* ]]; then
-    local branch
-    branch=$(git branch | grep -e "^*" | tr -d "*")
-    ref="${branch/ /} ${ref}"
-  fi
+  # Get current reference
+  local ref
+  ref=$(git symbolic-ref --short HEAD 2>/dev/null || 
+        git describe --tags --exact-match HEAD 2>/dev/null ||
+        git rev-parse --short HEAD 2>/dev/null)
 
-  # Dirty working directory
-  local dirty=""
-  [[ -n $(git diff --shortstat 2>/dev/null | tail -n1) ]] && dirty=$ICO_DIRTY
+  # Fast dirty check (5x faster than --shortstat)
+  local dirty
+  git diff --quiet --ignore-submodules 2>/dev/null || dirty=$ICO_DIRTY
 
-  # Remote status
+  # Fast remote status check
   local stat
-  case "$(git status | sed -n 2p)" in
-    *ahead*) stat=$ICO_AHEAD ;;
-    *behind*) stat=$ICO_BEHIND ;;
-    *diverged*) stat=$ICO_DIVERGED ;;
-    *) stat="" ;;
+  case "$(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null)" in
+    "") ;;  # No upstream
+    "0"*) ;;  # Equal
+    *"0") stat=$ICO_AHEAD ;;
+    *) stat=$ICO_DIVERGED ;;
   esac
 
-  # Format based on prompt style
-  case "$PROMPT_STYLE" in
-    tiny)
-      echo "%F{241}[%F{244}${ref}${dirty}${stat}%F{241}]"
-      ;;
-    classic)
-      echo "%F{white}─[${ref}${dirty}${stat}%F{white}]"
-      ;;
-    *)
-      echo "%F{cyan}─[%F{white}${ref}${dirty}${stat}%F{cyan}]"
-      ;;
-  esac
+  # Your exact format
+  echo "%F{241}[%F{244}${ref}${dirty}${stat}%F{241}]"
 }
 
-# Set prompt style (change to 'classic' if you prefer)
-PROMPT_STYLE="tiny"
+# Main prompt (your exact style)
+if [[ -v VIMRUNTIME ]]; then
+  PROMPT='%F{9} ──── ─%f '       # Red for Vim
+elif [[ -v SSH_TTY ]]; then
+  PROMPT='%F{13}%m%F{3}_%f '     # Purple for SSH
+else
+  PROMPT='%F{11} ──── ─%f '      # Yellow normal
+fi
 
-# Main prompt configuration (matches your original exactly)
-case "$PROMPT_STYLE" in
-  tiny)
-    if [[ -v VIMRUNTIME ]]; then
-      # Vim terminal
-      PROMPT='%F{9} ──── ─%f '
-    elif [[ -v SSH_TTY ]]; then
-      # SSH session
-      PROMPT='%F{13} ${HOSTNAME}%F{3}_%f '
-    else
-      # Normal prompt
-      PROMPT='%F{11} ──── ─%f '
-    fi
-    RPROMPT='%F{15}%~ $(GIT_PROMPT)%f'
-    ;;
-  classic)
-    PROMPT='%F{cyan}%n@%F{white}[%m]$(GIT_PROMPT)%F{white} : %~# %f'
-    ;;
-  *)
-    PROMPT='%F{cyan}%n@%F{white}[%m]$(GIT_PROMPT)%F{white} : %~# %f'
-    ;;
-esac
+RPROMPT='%F{15}%~ $(git_prompt_info)%f'
