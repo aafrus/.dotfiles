@@ -29,17 +29,19 @@ setopt APPEND_HISTORY         # Append rather than overwrite
 setopt EXTENDED_HISTORY       # Save timestamp and duration
 
 ~/.config/zsh/completion.zsh
+zsh
+Copy
 
 # Completion system
 autoload -Uz compinit
 compinit -u -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
 # Completion styling
+zstyle ':completion:*' menu no
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*' menu select=2
 
-# FZF-tab integration (if installed)
+# FZF-tab integration
 if (( $+commands[fzf] )); then
   zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
   zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
@@ -47,29 +49,43 @@ fi
 
 ~/.config/zsh/plugins.zsh
 
-# Load plugins manually (no plugin manager needed)
+# Initialize plugins
 plugin_dir="$XDG_DATA_HOME/zsh/plugins"
 
-# Syntax highlighting
+# Load Oh My Zsh sudo plugin
+zinit snippet OMZP::sudo
+
+# Load syntax highlighting
 source "$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || {
   mkdir -p "$plugin_dir"
   git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git "$plugin_dir/zsh-syntax-highlighting"
   source "$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 }
 
-# Autosuggestions
+# Load autosuggestions
 source "$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || {
   git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions.git "$plugin_dir/zsh-autosuggestions"
   source "$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
 }
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
-bindkey '^f' autosuggest-accept
 
-# Zoxide (if installed)
+# Initialize zoxide and fzf
 (( $+commands[zoxide] )) && eval "$(zoxide init --cmd cd zsh)"
-
-# FZF (if installed)
 (( $+commands[fzf] )) && source <(fzf --zsh)
+
+# Finalize zinit
+zinit cdreplay -q
+
+
+~/.config/zsh/keys.zsh
+
+# Key bindings
+bindkey '^f' autosuggest-accept         # Ctrl+f to accept suggestion
+bindkey '^h' backward-char             # Ctrl+h move left
+bindkey '^j' history-search-backward   # Ctrl+j search history back
+bindkey '^k' history-search-forward    # Ctrl+k search history forward
+bindkey '^l' forward-char              # Ctrl+l move right
+bindkey '^z' kill-region               # Ctrl+z delete line
 
 ~/.config/zsh/prompt.zsh 
 
