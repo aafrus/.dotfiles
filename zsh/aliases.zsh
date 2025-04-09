@@ -8,10 +8,6 @@
 # ░░░░░░ ░░░░░░  ░░   ░░
 # s h e l l  a l i a s e s
 
-# colours
-red="\e[31m"
-green="\e[32m"
-reset="\e[0m"
 
 # ▓▓▒░ root
 # check for doas so aliases can be used on different systems
@@ -52,7 +48,8 @@ command -v doas >/dev/null && \
     term="urxvtc -hold -e "                                                   \
                                                                               \
     reboot="sudo reboot"                                                      \
-    systemctl="sudo systemctl"
+    sctl="systemctl"                                                          \
+    peel="tar xf"                                                             \
 
 
 # ▓▓▒░ info
@@ -74,7 +71,7 @@ command -v doas >/dev/null && \
     g="git"                                                                   \
     ga="git add"                                                              \
     gb="git branch"                                                           \
-    gc="git commit -S -m"                                                     \
+    gc="git commit -m"                                                        \
     gs="git status -sb"                                                       \
     gd="git diff"                                                             \
     gf="git fetch && git log --pretty=format:'%C(always,yellow)%h%Creset %s %Cred%d' ..@{u}" \
@@ -144,6 +141,7 @@ command -v doas >/dev/null && \
     gifview="gifview -a"                                                      \
     feh="feh -g 640x480"                                                      \
     tidy="python3 ~/.local/bin/tidy"
+    sys="~/.local/bin/sysinfo"
 
 # ▓▓▒░ fun(ctions)
 
