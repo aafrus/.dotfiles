@@ -1,0 +1,75 @@
+# ░▀▀█░█▀▀░█░█░░
+# ░▄▀░░▀▀█░█▀█░░
+# ░▀▀▀░▀▀▀░▀░▀░░
+
+# set hostname
+HOSTNAME=$(hostname -s)
+
+# load configs
+for config in ~/.config/zsh/*.zsh; do
+  if [[ -f "$config" ]]; then
+    source "$config"
+  fi
+done
+
+setopt auto_cd
+
+export PATH=$PATH:/home/ns/bin:/home/ns/.local/bin
+
+#source ~/.config/zsh/meridian.zsh
+
+
+# Set the directory we want to store zinit and plugins
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+
+# Download Zinit, if it's not there yet
+if [ ! -d "$ZINIT_HOME" ]; then
+   mkdir -p "$(dirname $ZINIT_HOME)"
+   git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+
+# Source/Load zinit
+source "${ZINIT_HOME}/zinit.zsh"
+
+# --- Zinit Plugins ---
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-autosuggestions
+
+# För completion-systemet
+zinit ice blockf
+zinit light zsh-users/zsh-completions
+
+# FZF-tab (advanced completion)
+zinit light Aloxaf/fzf-tab
+
+# Oh-My-Zsh snippets
+zinit snippet OMZL::git.zsh
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+zinit snippet OMZP::archlinux
+zinit snippet OMZP::aws
+zinit snippet OMZP::kubectl
+zinit snippet OMZP::kubectx
+zinit snippet OMZP::command-not-found
+
+# --- Init completion system ---
+autoload -Uz compinit
+if [ $(date +'%j') != $(stat -f '%Sm' -t '%j' ~/.zcompdump) ]; then
+  compinit -u
+else
+  compinit -u -C
+fi
+
+# --- Completion styling ---
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
+# Keybindings
+bindkey '^f' autosuggest-accept
+bindkey '^h' backward-char
+bindkey '^j' history-search-backward
+bindkey '^k' history-search-forward
+bindkey '^l' forward-char
+bindkey '^z' kill-region
