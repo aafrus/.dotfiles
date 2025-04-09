@@ -1,45 +1,40 @@
-# ░▀▀█░█▀▀░█░█░░
-# ░▄▀░░▀▀█░█▀█░░
-# ░▀▀▀░▀▀▀░▀░▀░░
+# --- Basic Setup ---
+HOSTNAME=$(hostname -s)  # Set hostname
 
-# set hostname
-HOSTNAME=$(hostname -s)
-
-# load configs
+# Load additional config files
 for config in ~/.config/zsh/*.zsh; do
-  if [[ -f "$config" ]]; then
-    source "$config"
-  fi
+  [[ -f "$config" ]] && source "$config"
 done
 
-setopt auto_cd
+setopt auto_cd           # Change dir without 'cd' command
+setopt interactivecomments  # Allow comments in interactive shell
 
+# --- PATH Configuration ---
 export PATH=$PATH:/home/ns/bin:/home/ns/.local/bin
 
-#source ~/.config/zsh/meridian.zsh
-
-
-# Set the directory we want to store zinit and plugins
+# --- Zinit Plugin Manager ---
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
-# Download Zinit, if it's not there yet
-if [ ! -d "$ZINIT_HOME" ]; then
-   mkdir -p "$(dirname $ZINIT_HOME)"
-   git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+# Install Zinit if not present
+if [[ ! -d "$ZINIT_HOME" ]]; then
+  mkdir -p "$(dirname $ZINIT_HOME)"
+  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 fi
 
-# Source/Load zinit
 source "${ZINIT_HOME}/zinit.zsh"
 
-# --- Zinit Plugins ---
+# --- Plugins ---
+# Syntax highlighting
 zinit light zsh-users/zsh-syntax-highlighting
+
+# Autosuggestions
 zinit light zsh-users/zsh-autosuggestions
 
-# För completion-systemet
+# Completions (must come before compinit)
 zinit ice blockf
 zinit light zsh-users/zsh-completions
 
-# FZF-tab (advanced completion)
+# FZF-tab completion
 zinit light Aloxaf/fzf-tab
 
 # Oh-My-Zsh snippets
@@ -52,27 +47,48 @@ zinit snippet OMZP::kubectl
 zinit snippet OMZP::kubectx
 zinit snippet OMZP::command-not-found
 
+# --- Completion System ---
+# Load and initialize completion system
 autoload -Uz compinit
-for dump in ~/.zcompdump(N.mh+24); do
-  compinit -u
-done
-compinit -u -C
 
-# --- Completion styling ---
-zstyle ':completion:*' menu select
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+# Only rebuild compdump if older than 24 hours or missing
+() {
+  setopt localoptions extendedglob
+  local dumpfile=$1
+  if [[ ! -e "$dumpfile" || "$dumpfile" -ot "${dumpfile}.zwc" || 
+       -n "$dumpfile(#qN.mh+24)" ]]; then
+    compinit -u -i -d "$dumpfile"
+    zcompile "$dumpfile" 2>/dev/null
+  else
+    compinit -C -u -i -d "$dumpfile"
+  fi
+} ~/.zcompdump
+
+# --- Completion Styles ---
+# General completion settings
 zstyle ':completion:*' completer _complete _match _approximate
 zstyle ':completion:*' expand prefix suffix
-zstyle ':completion:*' ignore-parents parent pwd
-zstyle ':completion:*' insert-unambiguous true
-zstyle ':completion:*:cd:*' tag-order local-directories path-directories
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' menu select=2
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' rehash true
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ~/.cache/zsh
 
-# Keybindings
-bindkey '^f' autosuggest-accept
-bindkey '^h' backward-char
-bindkey '^j' history-search-backward
-bindkey '^k' history-search-forward
-bindkey '^l' forward-char
-bindkey '^z' kill-region
+# Specific completions
+zstyle ':completion:*:cd:*' tag-order local-directories path-directories
+zstyle ':completion:*:cd:*' ignore-parents parent pwd
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+
+# Approximate completion
+zstyle ':completion:*:approximate:*' max-errors 2 numeric
+
+# --- Key Bindings ---
+bindkey '^I' complete-word              # Tab for completion
+bindkey '^f' autosuggest-accept         # Ctrl+f to accept suggestion
+bindkey '^h' backward-char             # Ctrl+h move left
+bindkey '^j' history-search-backward   # Ctrl+j search history back
+bindkey '^k' history-search-forward    # Ctrl+k search history forward
+bindkey '^l' forward-char              # Ctrl+l move right
+bindkey '^z' kill-region               # Ctrl+z delete line
