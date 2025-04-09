@@ -1,37 +1,34 @@
-1. Tangentbordsbindningar för Clipboard (herbstluftwm)
+# --- Zinit Plugins ---
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-autosuggestions
 
-Lägg till detta i din ~/.config/herbstluftwm/autostart:
-bash
-Copy
+# För completion-systemet
+zinit ice blockf
+zinit light zsh-users/zsh-completions
 
-# Clipboard-bindningar
-hc keybind Ctrl+c exec xclip -selection clipboard -i <<< "$(xclip -selection primary -o)"
-hc keybind Ctrl+v exec xclip -selection clipboard -o | xdotool type --clearmodifiers --delay 0 --file -
-hc keybind Ctrl+x spawn kill -INT $(ps -o pid= -t $(ps -o tty= -p $$))
-hc keybind Alt+Shift+c spawn clipmenu -i -l 10 -w 600 -fn "Fira Code-12"
+# FZF-tab (advanced completion)
+zinit light Aloxaf/fzf-tab
 
-# X11 Clipboard Magic (fungerar överallt inklusive terminalen)
-hc keybind Ctrl+c exec xclip -selection clipboard -i <<< "$(xclip -selection primary -o)"
-hc keybind Ctrl+v exec xclip -selection clipboard -o | xclip -selection primary -i
+# Oh-My-Zsh snippets
+zinit snippet OMZL::git.zsh
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+zinit snippet OMZP::archlinux
+zinit snippet OMZP::aws
+zinit snippet OMZP::kubectl
+zinit snippet OMZP::kubectx
+zinit snippet OMZP::command-not-found
 
+# --- Init completion system ---
+autoload -Uz compinit
+if [ $(date +'%j') != $(stat -f '%Sm' -t '%j' ~/.zcompdump) ]; then
+  compinit -u
+else
+  compinit -u -C
+fi
 
- Flytta clipmenud till .xinitrc
-
-Redigera ~/.xinitrc (skapa filen om den inte finns):
-
-# Start clipmenud utan notiser
-pgrep -x clipmenud || clipmenud --no-persist --no-notify &
-
-# Start herbstluftwm
-exec herbstluftwm
-
-4. URxvt-specifika inställningar (~/.Xresources)
-
-För bättre integrering i terminalen:
-bash
-Copy
-
-! Använd Shift+Ctrl för terminalens egna kopiering
-URxvt.keysym.Control-C: perl:clipboard:copy
-URxvt.keysym.Control-V: perl:clipboard:paste
-URxvt.iso14755: false  # Stäng av obehaglig ISO-prompt
+# --- Completion styling ---
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
