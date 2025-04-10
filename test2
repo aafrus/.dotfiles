@@ -133,9 +133,30 @@ gcl() {
     cd "$_dir" || return 1
 }
 
-Error: The compinit function hasn't been loaded, cannot do compdef replay.
-/home/ns/.dotfiles/zsh/alias.zsh:77: defining function based on alias `gcl'
-/home/ns/.dotfiles/zsh/alias.zsh:77: parse error near `()'
-/home/ns/.dotfiles/zsh/alias.zsh:77: defining function based on alias `gcl'
-/home/ns/.dotfiles/zsh/alias.zsh:77: parse error near `()'
+#!/usr/bin/env zsh
 
+# --- [1] Zinit Init ---
+ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
+source "${ZINIT_HOME}/zinit.zsh"
+
+# --- [2] Ladda completion-systemet först ---
+autoload -Uz compinit && compinit
+
+# --- [3] Ladda plugins ---
+source ~/.dotfiles/zsh/plugins.zsh
+
+# --- [4] Ladda funktioner (skapa functions.zsh om den inte finns) ---
+for func in ~/.dotfiles/zsh/functions/*; do
+    autoload -Uz "$func"
+done
+
+# --- [5] Ladda konfigfiler ---
+for config in ~/.dotfiles/zsh/*.zsh; do
+    [[ "$config" == *".zprofile" ]] && continue
+    [[ "$config" == *".zshrc" ]] && continue
+    [[ "$config" == *"plugins.zsh" ]] && continue
+    source "$config"
+done
+
+# --- [6] Ladda alias sist ---
+source ~/.dotfiles/zsh/alias.zsh
