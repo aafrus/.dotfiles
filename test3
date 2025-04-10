@@ -1,0 +1,155 @@
+1. Uppdaterad .zshrc
+zsh
+Copy
+
+#!/usr/bin/env zsh
+# --------------------------------------------
+# Main configuration file
+# Loads all other configs in correct order
+# --------------------------------------------
+
+# Load all .zsh files in ~/.dotfiles/zsh/
+for config in ~/.dotfiles/zsh/*.zsh; do
+  # Skip these files
+  [[ "$config" == *".zprofile" ]] && continue
+  [[ "$config" == *".zshrc" ]] && continue
+  
+  # Load each config file
+  source "$config"
+done
+
+# Load aliases LAST to override everything
+source ~/.dotfiles/zsh/alias.zsh
+
+2. Uppdaterad plugins.zsh
+zsh
+Copy
+
+# --------------------------------------------
+# Plugin Manager Configuration
+# Uses Zinit to load plugins
+# --------------------------------------------
+
+# Initialize Zinit
+ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
+if [[ ! -f "$ZINIT_HOME/zinit.zsh" ]]; then
+  mkdir -p "$(dirname "$ZINIT_HOME")"
+  git clone --depth 1 https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+source "${ZINIT_HOME}/zinit.zsh"
+
+# --------------------------------------------
+# Essential Plugins
+# --------------------------------------------
+
+# Syntax highlighting
+zinit light zsh-users/zsh-syntax-highlighting
+
+# Auto-suggestions
+zinit light zsh-users/zsh-autosuggestions
+
+# Better completion
+zinit light zsh-users/zsh-completions
+
+# FZF integration
+zinit light Aloxaf/fzf-tab
+
+# --------------------------------------------
+# Oh My Zsh Snippets
+# --------------------------------------------
+
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+
+# --------------------------------------------
+# Tools Initialization
+# --------------------------------------------
+
+# FZF shell integration (without bindings)
+(( ${+commands[fzf]} )) && eval "$(fzf --zsh --no-bindings)"
+
+# Zoxide initialization
+(( ${+commands[zoxide]} )) && eval "$(zoxide init --cmd cd zsh)"
+
+# Finalize Zinit
+zinit compile --all &>/dev/null
+
+3. Uppdaterad completion.zsh
+zsh
+Copy
+
+# --------------------------------------------
+# Completion System Configuration
+# --------------------------------------------
+
+# Initialize completion system
+autoload -Uz compinit && compinit
+
+# Completion styling
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+
+# FZF-tab previews
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+
+4. Uppdaterad keys.zsh
+zsh
+Copy
+
+# --------------------------------------------
+# Key Bindings Configuration
+# --------------------------------------------
+
+# Use emacs keybindings
+bindkey -e
+
+# Improved history search
+bindkey '^P' history-search-backward
+bindkey '^N' history-search-forward
+
+# Better word deletion
+bindkey '^W' backward-kill-word
+
+5. Uppdaterad alias.zsh
+zsh
+Copy
+
+# --------------------------------------------
+# Aliases Configuration
+# --------------------------------------------
+
+# General aliases
+alias ls='ls --color=auto'
+alias ll='ls -lh'
+alias la='ls -A'
+alias vim='nvim'
+alias c='clear'
+
+# Git aliases
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gcl='git clone'
+
+6. Uppdaterad env.zsh
+zsh
+Copy
+
+# --------------------------------------------
+# Environment Variables
+# --------------------------------------------
+
+# Editor
+export EDITOR='nvim'
+export VISUAL='nvim'
+
+# Path
+export PATH="$HOME/.local/bin:$PATH"
+
+# XDG Directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
