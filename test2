@@ -156,3 +156,12 @@ git add .
 git commit -m "Snygg ZSH-konfiguration"
 git remote add origin git@github.com:dittanvandare/dotfiles.git
 git push -u origin main
+
+
+mkdir: cannot create directory ‘/zinit’: Permission denied
+fatal: could not create leading directories of '/zinit/zinit.git': Permission denied
+/home/ns/.dotfiles/zsh/plugins.zsh:source:9: no such file or directory: /zinit/zinit.git/zinit.zsh
+/home/ns/.dotfiles/zsh/plugins.zsh:13: command not found: zinit
+/home/ns/.dotfiles/zsh/plugins.zsh:16: command not found: zinit
+/home/ns/.dotfiles/zsh/plugins.zsh:19: command not found: zinit
+/home/ns/.dotfiles/zsh/plugins.zsh:29: command not found: zinit
