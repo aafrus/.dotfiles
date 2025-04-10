@@ -160,3 +160,19 @@ done
 
 # --- [6] Ladda alias sist ---
 source ~/.dotfiles/zsh/alias.zsh
+
+autocopletion.zsh
+# ---[ Completion System ]-------------------------------
+autoload -Uz compinit
+compinit -u -d "$XDG_CACHE_HOME/zsh/zcompdump"
+
+# ---[ Completion Styles ]-------------------------------
+zstyle ':completion:*' menu no
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
+# ---[ FZF-Tab Integration ]----------------------------
+if (( $+commands[fzf] )); then
+  zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+  zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+fi
