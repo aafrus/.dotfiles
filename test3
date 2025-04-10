@@ -16,3 +16,31 @@
 └── .zshrc
 
 2 directories, 13 files
+
+
+#!/usr/bin/env zsh
+# --------------------------------------------
+# Main Configuration File
+# --------------------------------------------
+
+# [1] Load env FIRST
+source ~/.dotfiles/zsh/env.zsh
+
+# [2] Setup function path
+fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
+autoload -Uz $fpath[1]/*(.:t)  # Load all functions
+
+# [3] Load other configs (except env/alias)
+for config in ~/.dotfiles/zsh/*.zsh; do
+  [[ "$config" == *"env.zsh" ]] && continue
+  [[ "$config" == *"alias.zsh" ]] && continue
+  [[ "$config" == *".zprofile" ]] && continue
+  [[ "$config" == *".zshrc" ]] && continue
+  source "$config"
+done
+
+# [4] Load aliases LAST
+source ~/.dotfiles/zsh/alias.zsh
+
+# [5] Cleanup
+unset config
