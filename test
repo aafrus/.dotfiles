@@ -1,96 +1,97 @@
-~/.zshrc (ultimat minimal version)
+~/.dotfiles/zsh/.zshrc:
 
 #!/usr/bin/env zsh
-# Minimal main config - only loads other files
+# Main config - only loads other files
 
-# XDG base directories (must be set first)
+# Set XDG before anything else
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
-# Load all zsh config files (except those starting with _)
+# Load all zsh config files
 for config in "$XDG_CONFIG_HOME"/zsh/[^_]*.zsh; do
   source "$config"
 done
 
-~/.config/zsh/history.zsh
 
+~/.dotfiles/zsh/.config/zsh/env.zsh:
+zsh
+Copy
+
+# Environment variables
+export EDITOR='nvim'
+export VISUAL='nvim'
+export PATH="$HOME/.local/bin:$PATH"
+
+# Language settings
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8'
+
+~/.dotfiles/zsh/.config/zsh/history.zsh:
 # History settings
 export HISTFILE="$XDG_DATA_HOME/zsh/history"
 HISTSIZE=100000
 SAVEHIST=100000
 
-setopt HIST_IGNORE_SPACE      # Ignore commands starting with space
-setopt HIST_IGNORE_ALL_DUPS   # Remove older duplicate entries
-setopt HIST_SAVE_NO_DUPS      # Don't save duplicates in history file
-setopt HIST_FIND_NO_DUPS      # Don't show duplicates when searching
-setopt SHARE_HISTORY          # Share history between sessions
-setopt APPEND_HISTORY         # Append rather than overwrite
-setopt EXTENDED_HISTORY       # Save timestamp and duration
+setopt HIST_IGNORE_SPACE
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_FIND_NO_DUPS
+setopt SHARE_HISTORY
+setopt APPEND_HISTORY
+setopt EXTENDED_HISTORY
 
-~/.config/zsh/completion.zsh
-zsh
-Copy
-
+~/.dotfiles/zsh/.config/zsh/completion.zsh:
 # Completion system
 autoload -Uz compinit
 compinit -u -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
-# Completion styling
 zstyle ':completion:*' menu no
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
-# FZF-tab integration
+# FZF integration
 if (( $+commands[fzf] )); then
   zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
   zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 fi
 
-~/.config/zsh/plugins.zsh
+~/.dotfiles/zsh/.config/zsh/plugins.zsh:
+# Zinit setup
+ZINIT_HOME="${XDG_DATA_HOME}/zinit/zinit.git"
+if [[ ! -f "${ZINIT_HOME}/zinit.zsh" ]]; then
+    mkdir -p "${ZINIT_HOME}"
+    git clone https://github.com/zdharma-continuum/zinit.git "${ZINIT_HOME}"
+fi
+source "${ZINIT_HOME}/zinit.zsh"
 
-# Initialize plugins
-plugin_dir="$XDG_DATA_HOME/zsh/plugins"
-
-# Load Oh My Zsh sudo plugin
+# Plugins
 zinit snippet OMZP::sudo
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-autosuggestions
 
-# Load syntax highlighting
-source "$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || {
-  mkdir -p "$plugin_dir"
-  git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git "$plugin_dir/zsh-syntax-highlighting"
-  source "$plugin_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-}
-
-# Load autosuggestions
-source "$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || {
-  git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions.git "$plugin_dir/zsh-autosuggestions"
-  source "$plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
-}
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
-
-# Initialize zoxide and fzf
+# Tools
 (( $+commands[zoxide] )) && eval "$(zoxide init --cmd cd zsh)"
 (( $+commands[fzf] )) && source <(fzf --zsh)
 
-# Finalize zinit
 zinit cdreplay -q
 
-
-~/.config/zsh/keys.zsh
-
+~/.dotfiles/zsh/.config/zsh/keys.zsh:
 # Key bindings
-bindkey '^f' autosuggest-accept         # Ctrl+f to accept suggestion
-bindkey '^h' backward-char             # Ctrl+h move left
-bindkey '^j' history-search-backward   # Ctrl+j search history back
-bindkey '^k' history-search-forward    # Ctrl+k search history forward
-bindkey '^l' forward-char              # Ctrl+l move right
-bindkey '^z' kill-region               # Ctrl+z delete line
+bindkey -v  # Vi mode
 
-~/.config/zsh/prompt.zsh 
+bindkey '^f' autosuggest-accept
+bindkey '^h' backward-char
+bindkey '^j' history-search-backward
+bindkey '^k' history-search-forward
+bindkey '^l' forward-char
+bindkey '^z' kill-region
+bindkey '^R' history-incremental-search-backward
 
-# Enable colors and prompt substitution
-autoload -Uz colors && colors
+
+~/.dotfiles/zsh/.config/zsh/prompt.zsh:
+# Prompt setup
+autoload -Uz colors vcs_info && colors
 setopt PROMPT_SUBST
 
 # Git symbols
@@ -101,47 +102,29 @@ ICO_DIVERGED="⥮"
 
 # Optimized git prompt
 git_prompt_info() {
-  # Fast git check
-  local git_dir
-  git_dir=$(git rev-parse --git-dir 2>/dev/null) || return
-  
-  # Get current reference
-  local ref
-  ref=$(git symbolic-ref --short HEAD 2>/dev/null || 
-        git describe --tags --exact-match HEAD 2>/dev/null ||
-        git rev-parse --short HEAD 2>/dev/null)
+    local ref dirty stat
+    ref=$(git symbolic-ref --short HEAD 2>/dev/null || 
+          git describe --tags --exact-match HEAD 2>/dev/null) || return
 
-  # Fast dirty check (5x faster than --shortstat)
-  local dirty
-  git diff --quiet --ignore-submodules 2>/dev/null || dirty=$ICO_DIRTY
+    git diff --quiet --ignore-submodules 2>/dev/null || dirty=$ICO_DIRTY
 
-  # Fast remote status check
-  local stat
-  case "$(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null)" in
-    "") ;;  # No upstream
-    "0"*) ;;  # Equal
-    *"0") stat=$ICO_AHEAD ;;
-    *) stat=$ICO_DIVERGED ;;
-  esac
+    case $(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null) in
+        "") ;;
+        "0"*) ;;
+        *"0") stat=$ICO_AHEAD ;;
+        *) stat=$ICO_DIVERGED ;;
+    esac
 
-  # Your exact format
-  echo "%F{241}[%F{244}${ref}${dirty}${stat}%F{241}]"
+    echo "%F{241}[%F{244}${ref}${dirty}${stat}%F{241}]"
 }
 
-# Main prompt (your exact style)
+# Main prompt
 if [[ -v VIMRUNTIME ]]; then
-  PROMPT='%F{9} ──── ─%f '       # Red for Vim
+    PROMPT='%F{9}─────%f '
 elif [[ -v SSH_TTY ]]; then
-  PROMPT='%F{13}%m%F{3}_%f '     # Purple for SSH
+    PROMPT='%F{13}%m%f '
 else
-  PROMPT='%F{11} ──── ─%f '      # Yellow normal
+    PROMPT='%F{11}─────%f '
 fi
 
-RPROMPT='%F{15}%~ $(git_prompt_info)%f'
-
-bindkey '^f' autosuggest-accept         # Ctrl+f to accept suggestion
-bindkey '^h' backward-char             # Ctrl+h move left
-bindkey '^j' history-search-backward   # Ctrl+j search history back
-bindkey '^k' history-search-forward    # Ctrl+k search history forward
-bindkey '^l' forward-char              # Ctrl+l move right
-bindkey '^z' kill-region               # Ctrl+z delete line
+RPROMPT='%F{8}%~ $(git_prompt_info)%f'
