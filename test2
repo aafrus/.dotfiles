@@ -79,20 +79,8 @@ urxvtd -q -o -f
 exec herbstluftwm
 
 
- ──── ─ tree                                                   ~/.dotfiles/zsh  [master⚡] 
-./
-├── functions/
-│   └── chpwd_auto_cd
-├── alias.zsh
-├── completion.zsh
-├── env.zsh
-├── history.zsh
-├── keys.zsh
-├── plugins.zsh
-├── prompt.zsh
-├── security.zsh
-├── .zprofile
-└── .zshrc
-
-export XDG_STATE_HOME="$HOME/.local/state"
-export HISTFILE="$XDG_STATE_HOME"/zsh/history
+emulate -L zsh
+# Force vertical listing with full details
+command -v gls >/dev/null && \
+    gls -lAhF --color=auto --group-directories-first || \
+    ls -lAhF --color=auto --group-directories-first
