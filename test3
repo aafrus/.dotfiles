@@ -1,46 +1,10 @@
- ──── ─ tree                                                   ~/.dotfiles/zsh  [master⚡] 
-./
-├── functions/
-│   ├── chpwd_auto_cd
-│   ├── gcl
-│   └── git_functions.zsh
-├── alias.zsh
-├── completion.zsh
-├── env.zsh
-├── history.zsh
-├── keys.zsh
-├── plugins.zsh
-├── prompt.zsh
-├── security.zsh
-├── .zprofile
-└── .zshrc
-
-2 directories, 13 files
-
-
 #!/usr/bin/env zsh
-# --------------------------------------------
-# Main Configuration File
-# --------------------------------------------
 
-# [1] Load env FIRST
-source ~/.dotfiles/zsh/env.zsh
+git_current_branch() {
+  git branch --show-current 2>/dev/null || echo "detached"
+}
 
-# [2] Setup function path
-fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
-autoload -Uz $fpath[1]/*(.:t)  # Load all functions
-
-# [3] Load other configs (except env/alias)
-for config in ~/.dotfiles/zsh/*.zsh; do
-  [[ "$config" == *"env.zsh" ]] && continue
-  [[ "$config" == *"alias.zsh" ]] && continue
-  [[ "$config" == *".zprofile" ]] && continue
-  [[ "$config" == *".zshrc" ]] && continue
-  source "$config"
-done
-
-# [4] Load aliases LAST
-source ~/.dotfiles/zsh/alias.zsh
-
-# [5] Cleanup
-unset config
+git_main_branch() {
+  git config --get gitflow.branch.main 2>/dev/null || 
+  { git branch -l | grep -E '^\*? *(main|master)' | sed 's/^* *//'; }
+}
