@@ -94,3 +94,9 @@ grename() {
   git push origin --delete "$1" 2>/dev/null && \
   git push origin -u "$2"
 }
+
+
+
+
+
+hc keybind $Mod-Return spawn urxvtc
