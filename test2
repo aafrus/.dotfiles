@@ -81,119 +81,83 @@ exec herbstluftwm
 
 
 
-# ---[ Prompt Configuration ]---
+# ------ [ Core Setup ] ------
 autoload -Uz colors && colors
 setopt PROMPT_SUBST
 
-# ---[ Git Symbols ]---
-ICO_DIRTY="⚡"
-ICO_AHEAD="▲"
-ICO_BEHIND="▼"
-ICO_DIVERGED="⥮"
+# ------ [ Git Symbols ] ------
+ICO_DIRTY="✗"          # Osaved changes
+ICO_STAGED="+"         # Staged changes
+ICO_UNTRACKED="?"      # New files
+ICO_STASHED="⚑"        # Stashes exist
+ICO_AHEAD="↑"          # Ahead of remote
+ICO_BEHIND="↓"         # Behind remote
+ICO_DIVERGED="↕"       # Diverged from remote
+ICO_CLEAN="✓"          # Clean branch
 
-# ---[ Colors ]---
-COLOR_ROOT="%F{red}"
-COLOR_USER="%F{cyan}"
-COLOR_NORMAL="%F{white}"
-PROMPT_STYLE="tiny"  # Change to 'classic', 'dual', 'mini' or 'ascii' if needed
+# ------ [ Colors ] ------
+COLOR_BRANCH="%F{magenta}"
+COLOR_DIR="%F{blue}"
+COLOR_CHANGES="%F{red}"
+COLOR_STAGED="%F{yellow}"
+COLOR_CLEAN="%F{green}"
 
-# ---[ Git Prompt Function ]---
-GIT_PROMPT() {
-    # Only show in Git repos
-    local test=$(git rev-parse --is-inside-work-tree 2>/dev/null)
-    if [ ! "$test" ]; then
-        case "$PROMPT_STYLE" in
-            ascii) echo "$reset_color%F{cyan}▒░" ;;
-            arrows) echo "$reset_color%F{cyan}" ;;
-            *) echo "" ;;
-        esac
-        return
-    fi
+# ------ [ Main Prompt (Left) ] ------
+PROMPT='%F{11}───── %f%F{15}%~%f '  # Behåll din minimalistiska stil
 
-    # Get branch/tag info
-    local ref=$(git name-rev --name-only HEAD | sed 's!remotes/!!' 2>/dev/null)
-    if [[ "$ref" == "tags"* ]]; then
-        local branch=$(git branch | grep -e "^*" | tr -d "*")
-        ref="${branch/ /} ${ref}"
-    fi
+# ------ [ Git Powerprompt (Right) ] ------
+RPROMPT='$(git_super_status)'
 
-    # Check dirty status
-    local dirty=""
-    [[ $(git diff --shortstat 2>/dev/null | tail -n1) != "" ]] && dirty=$ICO_DIRTY
+# ------ [ Git Status Function ] ------
+git_super_status() {
+  local branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+  [[ -z "$branch" ]] && return
 
-    # Check upstream status
-    local stat=""
-    case $(git status | sed -n 2p) in
-        *ahead*) stat=$ICO_AHEAD ;;
-        *behind*) stat=$ICO_BEHIND ;;
-        *diverged*) stat=$ICO_DIVERGED ;;
-    esac
+  # ---- [ Local Status ] ----
+  local changes="" staged="" untracked="" stashed=""
+  
+  # Dirty check (faster than git status)
+  git diff --quiet --ignore-submodules 2>/dev/null || changes=$ICO_DIRTY
+  git diff --cached --quiet --ignore-submodules 2>/dev/null || staged=$ICO_STAGED
+  [[ -n $(git ls-files --others --exclude-standard) ]] && untracked=$ICO_UNTRACKED
+  [[ $(git stash list | wc -l) -gt 0 ]] && stashed=$ICO_STASHED
 
-    # Format based on style
-    case "$PROMPT_STYLE" in
-        classic) echo "${COLOR_NORMAL}─[${ref}${dirty}${stat}]" ;;
-        tiny) echo "%F{241} [%F{244}${ref}${dirty}${stat}%F{241}]" ;;
-        *) echo "${COLOR_USER}─[${COLOR_NORMAL}${ref}${dirty}${stat}${COLOR_USER}]" ;;
-    esac
+  # ---- [ Remote Status ] ----
+  local ahead=0 behind=0 diverged=""
+  git rev-parse --abbrev-ref @{u} &>/dev/null && {
+    ahead=$(git rev-list @{u}..HEAD --count 2>/dev/null)
+    behind=$(git rev-list HEAD..@{u} --count 2>/dev/null)
+    [[ $ahead -gt 0 && $behind -gt 0 ]] && diverged=$ICO_DIVERGED
+  }
+
+  # ---- [ Formatting ] ----
+  echo "${COLOR_BRANCH}[${branch}${COLOR_CHANGES}${changes}${COLOR_STAGED}${staged}${untracked}${stashed}"\
+  "${diverged}${ahead:+$ICO_AHEAD$ahead}${behind:+$ICO_BEHIND$behind}${COLOR_BRANCH}]%f"
 }
 
-# ---[ Main Prompt ]---
-case "$PROMPT_STYLE" in
-    ascii)
-        PROMPT='%{$bg[cyan]%} %F{black}%~ $(GIT_PROMPT)$reset_color 
-%f'
-        ;;
-    dual)
-        PROMPT='${COLOR_USER}┌[${COLOR_NORMAL}%~${COLOR_USER}]$(GIT_PROMPT)
-${COLOR_USER}└─ - %f'
-        ;;
-    mini)
-        PROMPT='${COLOR_USER}[${COLOR_NORMAL}%~${COLOR_USER}]$(GIT_PROMPT)── - %f'
-        ;;
-    tiny)
-        if [[ -v VIMRUNTIME ]]; then
-            PROMPT='%F{9} ──── ─${COLOR_NORMAL} '
-        elif [[ -v SSH_TTY ]]; then
-            PROMPT='%F{13} ${HOSTNAME}%F{3}_ ${COLOR_NORMAL}'
-        else
-            PROMPT='%F{11} ──── ─${COLOR_NORMAL} '
-        fi
-        RPROMPT='%F{15}%~ $(GIT_PROMPT) ${COLOR_NORMAL}'
-        ;;
-    *)
-        PROMPT='%F{cyan}${USERNAME}@%F{white}[${HOSTNAME}]$(GIT_PROMPT)%F{white} : %~# '
-        ;;
-esac
-
-# ---[ Auto-CD Function ]---
-chpwd_auto_cd() {
-    emulate -L zsh
-    ls -lAhF --color=auto
-}
+# ------ [ Auto-Refresh ] ------
 autoload -Uz add-zsh-hook
-add-zsh-hook chpwd chpwd_auto_cd
+add-zsh-hook precmd {
+  git rev-parse --is-inside-work-tree &>/dev/null && git fetch --quiet &!
+}
+
 
 plugins.zsh
 
-# ---[ Zinit Plugin Manager ]---
+# ------ [ Zinit Setup ] ------
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
-
-# Install Zinit if missing
-if [[ ! -f "$ZINIT_HOME/zinit.zsh" ]]; then
-  mkdir -p "$(dirname "$ZINIT_HOME")"
-  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
-fi
-
+[[ ! -f "$ZINIT_HOME/zinit.zsh" ]] && git clone --depth 1 https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 source "${ZINIT_HOME}/zinit.zsh"
 
-# ---[ Plugins ]---
+# ------ [ Essentials Only ] ------
 zinit light zsh-users/zsh-syntax-highlighting
 zinit light zsh-users/zsh-autosuggestions
-zinit snippet OMZP::sudo
+zinit light zdharma-continuum/fast-syntax-highlighting
 
-# ---[ Tools ]---
-(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
+# ------ [ Git Extras ] ------
+zinit light wfxr/forgit          # Git UI shortcuts
+zinit light paulirish/git-open   # `git open` to open repo in browser
+
+# ------ [ Tools ] ------
+(( $+commands[zoxide] )) && eval "$(zoxide init zsh --no-aliases)"
 (( $+commands[fzf] )) && source <(fzf --zsh)
-
-# ---[ Finalize ]----------------------------------------
-zinit cdreplay -q  # Process all zinit commands
