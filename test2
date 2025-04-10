@@ -91,3 +91,7 @@ for config in ~/.dotfiles/zsh/*.zsh; do
   [[ "$config" == *".zshrc" ]] && continue
   source "$config"
 done
+
+#to override OMZP git alias with our own it needs to load last
+source ~/.dotfiles/zsh/alias.zsh
+
