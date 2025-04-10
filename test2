@@ -81,83 +81,13 @@ exec herbstluftwm
 
 
 
-# ------ [ Core Setup ] ------
-autoload -Uz colors && colors
-setopt PROMPT_SUBST
+#!/usr/bin/env zsh
+# ---[ Load all configs ]---
 
-# ------ [ Git Symbols ] ------
-ICO_DIRTY="✗"          # Osaved changes
-ICO_STAGED="+"         # Staged changes
-ICO_UNTRACKED="?"      # New files
-ICO_STASHED="⚑"        # Stashes exist
-ICO_AHEAD="↑"          # Ahead of remote
-ICO_BEHIND="↓"         # Behind remote
-ICO_DIVERGED="↕"       # Diverged from remote
-ICO_CLEAN="✓"          # Clean branch
-
-# ------ [ Colors ] ------
-COLOR_BRANCH="%F{magenta}"
-COLOR_DIR="%F{blue}"
-COLOR_CHANGES="%F{red}"
-COLOR_STAGED="%F{yellow}"
-COLOR_CLEAN="%F{green}"
-
-# ------ [ Main Prompt (Left) ] ------
-PROMPT='%F{11}───── %f%F{15}%~%f '  # Behåll din minimalistiska stil
-
-# ------ [ Git Powerprompt (Right) ] ------
-RPROMPT='$(git_super_status)'
-
-# ------ [ Git Status Function ] ------
-git_super_status() {
-  local branch=$(git symbolic-ref --short HEAD 2>/dev/null)
-  [[ -z "$branch" ]] && return
-
-  # ---- [ Local Status ] ----
-  local changes="" staged="" untracked="" stashed=""
-  
-  # Dirty check (faster than git status)
-  git diff --quiet --ignore-submodules 2>/dev/null || changes=$ICO_DIRTY
-  git diff --cached --quiet --ignore-submodules 2>/dev/null || staged=$ICO_STAGED
-  [[ -n $(git ls-files --others --exclude-standard) ]] && untracked=$ICO_UNTRACKED
-  [[ $(git stash list | wc -l) -gt 0 ]] && stashed=$ICO_STASHED
-
-  # ---- [ Remote Status ] ----
-  local ahead=0 behind=0 diverged=""
-  git rev-parse --abbrev-ref @{u} &>/dev/null && {
-    ahead=$(git rev-list @{u}..HEAD --count 2>/dev/null)
-    behind=$(git rev-list HEAD..@{u} --count 2>/dev/null)
-    [[ $ahead -gt 0 && $behind -gt 0 ]] && diverged=$ICO_DIVERGED
-  }
-
-  # ---- [ Formatting ] ----
-  echo "${COLOR_BRANCH}[${branch}${COLOR_CHANGES}${changes}${COLOR_STAGED}${staged}${untracked}${stashed}"\
-  "${diverged}${ahead:+$ICO_AHEAD$ahead}${behind:+$ICO_BEHIND$behind}${COLOR_BRANCH}]%f"
-}
-
-# ------ [ Auto-Refresh ] ------
-autoload -Uz add-zsh-hook
-add-zsh-hook precmd {
-  git rev-parse --is-inside-work-tree &>/dev/null && git fetch --quiet &!
-}
-
-
-plugins.zsh
-
-# ------ [ Zinit Setup ] ------
-ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
-[[ ! -f "$ZINIT_HOME/zinit.zsh" ]] && git clone --depth 1 https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
-source "${ZINIT_HOME}/zinit.zsh"
-
-# ------ [ Essentials Only ] ------
-zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-autosuggestions
-zinit light zdharma-continuum/fast-syntax-highlighting
-
-# ------ [ Git Extras ] ------
-zinit light wfxr/forgit          # Git UI shortcuts
-zinit light paulirish/git-open   # `git open` to open repo in browser
-
-# ------ [ Tools ] ------
-(( $+commands[zoxide] )) && eval "$(zoxide init zsh --no-aliases)"
-(( $+commands[fzf] )) && source <(fzf --zsh)
+# Ladda alla .zsh-filer i samma mapp
+for config in ~/.dotfiles/zsh/*.zsh; do
+  # Exkludera .zprofile och sig själv för att undvika loopar
+  [[ "$config" == *".zprofile" ]] && continue
+  [[ "$config" == *".zshrc" ]] && continue
+  source "$config"
+done
