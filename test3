@@ -22,3 +22,7 @@ source ~/.dotfiles/zsh/alias.zsh
 
 
 git_current_branch() { git branch --show-current 2>/dev/null || echo "detached"; }
+
+
+
+/home/ns/.dotfiles/zsh/alias.zsh:59: git_current_branch: function definition file not found
