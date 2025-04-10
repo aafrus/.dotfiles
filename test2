@@ -77,21 +77,35 @@ urxvtd -q -o -f
 
 #start wm
 exec herbstluftwm
+# ---[ Core Environment ]--------------------------------
+export EDITOR='nvim'
+export VISUAL='nvim'
+export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
-# ---[ Auto-CD Function ]---
-chpwd_auto_cd() {
-    emulate -L zsh
-    ls --color=auto
-}
-autoload -Uz add-zsh-hook
-add-zsh-hook chpwd chpwd_auto_cd
+# ---[ XDG Base Directories ]----------------------------
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_STATE_HOME="$HOME/.local/state"
+export HISTFILE="$XDG_STATE_HOME/zsh/history"
 
-och sen 
+# ---[ Language & Locale ]-------------------------------
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 
-emulate -L zsh
-# have to do a similar thing here
-# as in aliases.zsh
-command -v gls >/dev/null && \
-    gls -lAhF --color=auto || \
-    ls -lAhF --color=auto
+# ---[ LS Colors (för färger i ls) ]---------------------
+if command -v dircolors >/dev/null; then      # Linux
+    eval "$(dircolors -b)"
+elif command -v gdircolors >/dev/null; then   # macOS (med coreutils)
+    eval "$(gdircolors -b)"
+    alias ls='gls --color=auto'
+fi
+export CLICOLOR=1                             # macOS/BSD fallback
 
+# ---[ Other Tools ]-------------------------------------
+export GOPATH="$HOME/.local/lib/go"
+export CARGO_HOME="$HOME/.local/lib/cargo"
+export PATH="$PATH:$GOPATH/bin:$CARGO_HOME/bin"
+
+# ---[ Vi Mode (om du vill ha det) ]---------------------
+set -o vi
