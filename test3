@@ -99,4 +99,28 @@ grename() {
 
 
 
-hc keybind $Mod-Return spawn urxvtc
+# --------------------------------------------
+# Environment Variables
+# --------------------------------------------
+
+# Core
+export EDITOR='nvim'
+export VISUAL='nvim'
+export TERM='xterm-256color'       # Terminalemulatorns kapabilitet
+export TERMINAL='urxvtc'           # Ditt terminalprogram
+
+# XDG Base Directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+# PATH
+export PATH="$HOME/.local/bin:$PATH"
+
+# Git (för dina funktioner)
+export GITFLOW_MAIN_BRANCH=main
+export GITFLOW_DEVELOP_BRANCH=develop
+
+# Använd TERMINAL-variabeln om den finns, annars fallback till urxvtc
+hc keybind $Mod-Return spawn "${TERMINAL:-urxvtc}"
