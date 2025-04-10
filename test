@@ -1,130 +1,204 @@
-~/.dotfiles/zsh/.zshrc:
+~/.dotfiles/zsh/.zprofile
+zsh
+Copy
 
 #!/usr/bin/env zsh
-# Main config - only loads other files
+# ---[ Auto-start X11 ]----------------------------------
+[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && startx
 
-# Set XDG before anything else
+~/.dotfiles/zsh/.zshrc
+zsh
+Copy
+
+#!/usr/bin/env zsh
+# ---[ Main Configuration ]------------------------------
+# XDG Base Directory Specification
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
-# Load all zsh config files
-for config in "$XDG_CONFIG_HOME"/zsh/[^_]*.zsh; do
+# ---[ Source Config Files ]-----------------------------
+# Load modular config files
+for config in "$XDG_CONFIG_HOME"/zsh/*.zsh; do
   source "$config"
 done
 
+# Load flat config files
+source ~/env.zsh
+source ~/security.zsh
 
-~/.dotfiles/zsh/.config/zsh/env.zsh:
+~/.dotfiles/zsh/env.zsh
 zsh
 Copy
 
-# Environment variables
+# ---[ Environment Variables ]---------------------------
+# Core
 export EDITOR='nvim'
 export VISUAL='nvim'
 export PATH="$HOME/.local/bin:$PATH"
 
-# Language settings
+# Internationalization
 export LANG='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
 
-~/.dotfiles/zsh/.config/zsh/history.zsh:
-# History settings
+# Custom
+export GPG_TTY=$(tty)
+export TERM='xterm-256color'
+
+~/.dotfiles/zsh/security.zsh
+zsh
+Copy
+
+# ---[ Security Aliases ]--------------------------------
+# AV Tools
+alias checkrootkits="sudo rkhunter --update; sudo rkhunter --propupd; sudo rkhunter --sk --check"
+alias checkvirus="clamscan --recursive=yes --infected /home"
+alias updateantivirus="sudo freshclam"
+
+# System Monitoring
+alias listports="sudo netstat -tulnp"
+alias checkauth="sudo tail -n 20 /var/log/auth.log"
+
+~/.dotfiles/zsh/history.zsh
+zsh
+Copy
+
+# ---[ History Settings ]--------------------------------
 export HISTFILE="$XDG_DATA_HOME/zsh/history"
-HISTSIZE=100000
-SAVEHIST=100000
+export HISTSIZE=100000
+export SAVEHIST=100000
 
-setopt HIST_IGNORE_SPACE
-setopt HIST_IGNORE_ALL_DUPS
-setopt HIST_SAVE_NO_DUPS
-setopt HIST_FIND_NO_DUPS
-setopt SHARE_HISTORY
-setopt APPEND_HISTORY
-setopt EXTENDED_HISTORY
+# History Behavior
+setopt HIST_IGNORE_SPACE         # Ignore space-prefixed commands
+setopt HIST_IGNORE_ALL_DUPS      # Remove older duplicates
+setopt HIST_SAVE_NO_DUPS         # Don't save duplicates
+setopt HIST_FIND_NO_DUPS         # Don't show duplicates in search
+setopt SHARE_HISTORY             # Share history across sessions
+setopt APPEND_HISTORY            # Append rather than overwrite
+setopt EXTENDED_HISTORY          # Save timestamps and duration
 
-~/.dotfiles/zsh/.config/zsh/completion.zsh:
-# Completion system
+~/.dotfiles/zsh/completion.zsh
+zsh
+Copy
+
+# ---[ Completion System ]-------------------------------
 autoload -Uz compinit
 compinit -u -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
+# ---[ Completion Styles ]-------------------------------
 zstyle ':completion:*' menu no
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
-# FZF integration
+# ---[ FZF-Tab Integration ]----------------------------
 if (( $+commands[fzf] )); then
   zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
   zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 fi
 
-~/.dotfiles/zsh/.config/zsh/plugins.zsh:
-# Zinit setup
+~/.dotfiles/zsh/plugins.zsh
+zsh
+Copy
+
+# ---[ Zinit Plugin Manager ]----------------------------
 ZINIT_HOME="${XDG_DATA_HOME}/zinit/zinit.git"
+
+# Initialize or install Zinit
 if [[ ! -f "${ZINIT_HOME}/zinit.zsh" ]]; then
     mkdir -p "${ZINIT_HOME}"
     git clone https://github.com/zdharma-continuum/zinit.git "${ZINIT_HOME}"
 fi
 source "${ZINIT_HOME}/zinit.zsh"
 
-# Plugins
+# ---[ Plugins ]-----------------------------------------
+# OMZ Plugins
 zinit snippet OMZP::sudo
+
+# Syntax Highlighting
 zinit light zsh-users/zsh-syntax-highlighting
+
+# Autosuggestions
 zinit light zsh-users/zsh-autosuggestions
 
-# Tools
+# ---[ Tools ]-------------------------------------------
+# Zoxide (smarter cd)
 (( $+commands[zoxide] )) && eval "$(zoxide init --cmd cd zsh)"
+
+# FZF Fuzzy Finder
 (( $+commands[fzf] )) && source <(fzf --zsh)
 
-zinit cdreplay -q
+# ---[ Finalize ]----------------------------------------
+zinit cdreplay -q  # Process all zinit commands
 
-~/.dotfiles/zsh/.config/zsh/keys.zsh:
-# Key bindings
-bindkey -v  # Vi mode
+~/.dotfiles/zsh/keys.zsh
+zsh
+Copy
 
-bindkey '^f' autosuggest-accept
+# ---[ Key Bindings ]------------------------------------
+# Vi Mode
+bindkey -v
+
+# Navigation
 bindkey '^h' backward-char
+bindkey '^l' forward-char
+
+# History Search
 bindkey '^j' history-search-backward
 bindkey '^k' history-search-forward
-bindkey '^l' forward-char
-bindkey '^z' kill-region
 bindkey '^R' history-incremental-search-backward
 
+# Text Manipulation
+bindkey '^z' kill-region
 
-~/.dotfiles/zsh/.config/zsh/prompt.zsh:
-# Prompt setup
+# Autosuggestions
+bindkey '^f' autosuggest-accept
+
+~/.dotfiles/zsh/prompt.zsh
+zsh
+Copy
+
+# ---[ Prompt Configuration ]----------------------------
+# Enable colors and substitution
 autoload -Uz colors vcs_info && colors
 setopt PROMPT_SUBST
 
-# Git symbols
+# ---[ Git Symbols ]-------------------------------------
 ICO_DIRTY="⚡"
 ICO_AHEAD="▲"
 ICO_BEHIND="▼"
 ICO_DIVERGED="⥮"
 
-# Optimized git prompt
+# ---[ Git Status Prompt ]-------------------------------
 git_prompt_info() {
-    local ref dirty stat
-    ref=$(git symbolic-ref --short HEAD 2>/dev/null || 
-          git describe --tags --exact-match HEAD 2>/dev/null) || return
+    # Current reference (branch/tag/commit)
+    local ref=$(git symbolic-ref --short HEAD 2>/dev/null || 
+                git describe --tags --exact-match HEAD 2>/dev/null) || return
 
+    # Dirty working directory
+    local dirty=""
     git diff --quiet --ignore-submodules 2>/dev/null || dirty=$ICO_DIRTY
 
+    # Upstream status
+    local stat=""
     case $(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null) in
-        "") ;;
-        "0"*) ;;
-        *"0") stat=$ICO_AHEAD ;;
-        *) stat=$ICO_DIVERGED ;;
+        "") ;;       # No upstream
+        "0"*) ;;     # Equal
+        *"0") stat=$ICO_AHEAD ;;   # Ahead
+        *) stat=$ICO_DIVERGED ;;   # Diverged
     esac
 
     echo "%F{241}[%F{244}${ref}${dirty}${stat}%F{241}]"
 }
 
-# Main prompt
-if [[ -v VIMRUNTIME ]]; then
-    PROMPT='%F{9}─────%f '
-elif [[ -v SSH_TTY ]]; then
-    PROMPT='%F{13}%m%f '
-else
-    PROMPT='%F{11}─────%f '
-fi
+# ---[ Main Prompt ]-------------------------------------
+case "${(%):-%N}" in
+    *vim*)
+        PROMPT='%F{9}─────%f ' ;;     # Red in Vim
+    *ssh*)
+        PROMPT='%F{13}%m%f ' ;;       # Purple for SSH
+    *)
+        PROMPT='%F{11}─────%f ' ;;    # Yellow normally
+esac
 
+# Right Prompt (directory + git info)
 RPROMPT='%F{8}%~ $(git_prompt_info)%f'
