@@ -80,14 +80,7 @@ exec herbstluftwm
 
 
 
-==> zsh-users/zsh-syntax-highlighting
-==> Compiling zsh-syntax-highlighting.plugin.zsh [OK]
-==> zsh-users/zsh-autosuggestions
-==> Compiling zsh-autosuggestions.plugin.zsh [OK]
-==> Aloxaf/fzf-tab
-==> Compiling fzf-tab.plugin.zsh [OK]
-==> agkozak/zsh-z
-==> Compiling zsh-z.plugin.zsh [OK]
-==> zsh-users/zsh-completions
-==> Compiling zsh-completions.plugin.zsh [OK]
 
+# Shell integrations
+eval "$(fzf --zsh)"
+eval "$(zoxide init --cmd cd zsh)"
