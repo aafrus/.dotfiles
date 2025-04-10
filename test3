@@ -1,10 +1,22 @@
 #!/usr/bin/env zsh
 
-git_current_branch() {
-  git branch --show-current 2>/dev/null || echo "detached"
-}
+# [1] Ladda env FÖRST
+source ~/.dotfiles/zsh/env.zsh
 
-git_main_branch() {
-  git config --get gitflow.branch.main 2>/dev/null || 
-  { git branch -l | grep -E '^\*? *(main|master)' | sed 's/^* *//'; }
-}
+# [2] Sätt upp fpath och ladda funktioner MANUELLT
+fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
+for func in ~/.dotfiles/zsh/functions/*; do
+  autoload -Uz ${func:t}
+done
+
+# [3] Ladda andra konfigfiler
+for config in ~/.dotfiles/zsh/*.zsh; do
+  [[ "$config" == *"env.zsh" ]] && continue
+  [[ "$config" == *"alias.zsh" ]] && continue
+  [[ "$config" == *".zprofile" ]] && continue
+  [[ "$config" == *".zshrc" ]] && continue
+  source "$config"
+done
+
+# [4] Ladda alias SIST
+source ~/.dotfiles/zsh/alias.zsh
