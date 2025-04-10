@@ -82,39 +82,41 @@ exec herbstluftwm
 
 
 #!/usr/bin/env zsh
-# ---[ Load all configs ]---
 
-# Ladda alla .zsh-filer i samma mapp
+# --- [1] Zinit Init ---
+ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
+if [[ ! -f "$ZINIT_HOME/zinit.zsh" ]]; then
+  mkdir -p "$(dirname "$ZINIT_HOME")"
+  git clone --depth 1 https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+source "${ZINIT_HOME}/zinit.zsh"
+
+# --- [2] Ladda plugins ---
+source ~/.dotfiles/zsh/plugins.zsh
+
+# --- [3] Ladda konfigfiler ---
 for config in ~/.dotfiles/zsh/*.zsh; do
-  # Exkludera .zprofile och sig själv för att undvika loopar
   [[ "$config" == *".zprofile" ]] && continue
   [[ "$config" == *".zshrc" ]] && continue
+  [[ "$config" == *"plugins.zsh" ]] && continue
   source "$config"
 done
 
-#to override OMZP git alias with our own it needs to load last
+# --- [4] Ladda alias sist ---
 source ~/.dotfiles/zsh/alias.zsh
 
-# ---[ Zinit Plugin Manager ]---
-ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 
-# Install Zinit if missing
-if [[ ! -f "$ZINIT_HOME/zinit.zsh" ]]; then
-  mkdir -p "$(dirname "$ZINIT_HOME")"
-  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
-fi
+plugins.zsh
 
-source "${ZINIT_HOME}/zinit.zsh"
-
-# ---[ Plugins ]---
+# --- [Plugins] ---
 zinit light zsh-users/zsh-syntax-highlighting
 zinit light zsh-users/zsh-autosuggestions
 zinit snippet OMZP::sudo
 zinit snippet OMZP::git
 
-# ---[ Tools ]---
+# --- [Tools] ---
 (( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
 (( $+commands[fzf] )) && source <(fzf --zsh)
 
-# ---[ Finalize ]----------------------------------------
-zinit cdreplay -q  # Process all zinit commands
+# --- [Finalize] ---
+zinit cdreplay -q
