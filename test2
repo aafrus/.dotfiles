@@ -158,10 +158,84 @@ git remote add origin git@github.com:dittanvandare/dotfiles.git
 git push -u origin main
 
 
-mkdir: cannot create directory ‘/zinit’: Permission denied
-fatal: could not create leading directories of '/zinit/zinit.git': Permission denied
-/home/ns/.dotfiles/zsh/plugins.zsh:source:9: no such file or directory: /zinit/zinit.git/zinit.zsh
-/home/ns/.dotfiles/zsh/plugins.zsh:13: command not found: zinit
-/home/ns/.dotfiles/zsh/plugins.zsh:16: command not found: zinit
-/home/ns/.dotfiles/zsh/plugins.zsh:19: command not found: zinit
-/home/ns/.dotfiles/zsh/plugins.zsh:29: command not found: zinit
+Det ser ut som att Zinit försöker installeras i fel katalog (rotmappen / istället för din hemkatalog). Låt oss fixa detta direkt:
+1. Åtgärda Zinit-sökvägen
+
+Redigera ~/.dotfiles/zsh/plugins.zsh och byt ut Zinit-installationen till detta:
+zsh
+Copy
+
+# ---[ Zinit Plugin Manager ]---
+ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
+
+# Install Zinit if missing
+if [[ ! -f "$ZINIT_HOME/zinit.zsh" ]]; then
+  mkdir -p "$(dirname "$ZINIT_HOME")"
+  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+
+source "${ZINIT_HOME}/zinit.zsh"
+
+# ---[ Plugins ]---
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-autosuggestions
+zinit snippet OMZP::sudo
+
+# ---[ Tools ]---
+(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
+(( $+commands[fzf] )) && source <(fzf --zsh)
+
+2. Rensa gamla Zinit-filer
+bash
+Copy
+
+sudo rm -rf /zinit  # Ta bort felaktig installation i rotmappen
+rm -rf ~/.zinit     # Ta bort eventuell gammal installation
+
+3. Ladda om konfigurationen
+bash
+Copy
+
+exec zsh
+
+4. Verifiera att det fungerar
+bash
+Copy
+
+# Kolla att Zinit laddades
+zinit self-update
+
+# Testa plugins
+echo "Test"  # Borde visa syntaxfärgning
+
+Förklaring av ändringarna:
+
+    ZINIT_HOME pekar nu på ~/.local/share/zinit/ (XDG-kompatibelt)
+
+    mkdir -p skapar först alla nödvändiga kataloger
+
+    Rensning av felaktiga installationer
+
+Om problemet kvarstår:
+
+    Kontrollera att du har skrivrättigheter:
+
+bash
+Copy
+
+ls -ld ~/.local/share
+
+    Testa manuell installation:
+
+bash
+Copy
+
+mkdir -p ~/.local/share/zinit
+git clone https://github.com/zdharma-continuum/zinit.git ~/.local/share/zinit/zinit.git
+
+    Debugga plugins:
+
+bash
+Copy
+
+zsh -xv 2> ~/zsh_debug.log
