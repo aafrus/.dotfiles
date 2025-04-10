@@ -80,77 +80,54 @@ exec herbstluftwm
 
 
 
-.zshrc
+Uppdatera din .zshrc med denna exakta ordning:
+zsh
+Copy
+
 #!/usr/bin/env zsh
 
 # --- [1] Zinit Init ---
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 source "${ZINIT_HOME}/zinit.zsh"
 
-# --- [2] Ladda completion först ---
-source ~/.dotfiles/zsh/autocompletion.zsh
+# --- [2] Ladda basfunktioner FÖRE completion ---
+autoload -Uz compaudit compinit
 
-# --- [3] Ladda plugins ---
+# --- [3] Ladda completion-systemet ---
+source ~/.dotfiles/zsh/completion.zsh
+
+# --- [4] Ladda plugins ---
 source ~/.dotfiles/zsh/plugins.zsh
 
-# --- [4] Ladda funktioner ---
-fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
-autoload -Uz $fpath[1]/*(.:t)
+# Resten av din konfiguration...
 
-# --- [5] Ladda övriga konfigfiler ---
-for config in ~/.dotfiles/zsh/*.zsh; do
-    [[ "$config" == *".zprofile" ]] && continue
-    [[ "$config" == *".zshrc" ]] && continue
-    [[ "$config" == *"plugins.zsh" ]] && continue
-    [[ "$config" == *"autocompletion.zsh" ]] && continue
-    source "$config"
-done
-
-# --- [6] Ladda alias sist ---
-source ~/.dotfiles/zsh/alias.zsh
-
-
-
-Uppdaterad autocompletion.zsh:
+2. Uppdaterad completion.zsh:
+zsh
+Copy
 
 # ---[ Completion System ]---
-if [[ -n "$XDG_CACHE_HOME" ]]; then
-    mkdir -p "$XDG_CACHE_HOME/zsh"
-    compinit -u -d "$XDG_CACHE_HOME/zsh/zcompdump"
-else
-    compinit -u
-fi
+() {
+  # Skapa zcompdump-katalog om den inte finns
+  local zcompdump="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+  [[ -d "${zcompdump:h}" ]] || mkdir -p "${zcompdump:h}"
+  
+  # Ladda compinit säkert
+  if autoload -Uz compinit; then
+    compinit -u -d "$zcompdump"
+  else
+    echo "compinit autoload failed!" >&2
+    return 1
+  fi
+}
 
 # ---[ Completion Styles ]---
 zstyle ':completion:*' menu no
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' format '%F{blue}%d%f'
 
 # ---[ FZF-Tab Integration ]---
 if (( ${+commands[fzf]} )); then
-    zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
-    zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -1 --color=always $realpath'
-    zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'exa -1 --color=always $realpath'
+  zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
+  zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color=always $realpath'
+  zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color=always $realpath'
 fi
-
-
-Uppdaterad plugins.zsh:
-
-# ---[ Essential Plugins ]---
-zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-autosuggestions
-zinit light Aloxaf/fzf-tab
-zinit light agkozak/zsh-z
-
-# ---[ OMZ Snippets ]---
-zinit snippet OMZP::sudo
-zinit snippet OMZP::git
-
-# ---[ Tools Initialization ]---
-(( ${+commands[zoxide]} )) && eval "$(zoxide init zsh --no-aliases)"
-(( ${+commands[fzf]} )) && source <(fzf --zsh)
-
-# ---[ Final Touch ]---
-zinit compile --all
