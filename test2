@@ -80,7 +80,18 @@ exec herbstluftwm
 
 
 
+./
+├── functions/
+│   ├── chpwd_auto_cd
+│   └── gcl
+├── alias.zsh
+├── completion.zsh
+├── env.zsh
+├── history.zsh
+├── keys.zsh
+├── plugins.zsh
+├── prompt.zsh
+├── security.zsh
+├── .zprofile
+└── .zshrc
 
-# Shell integrations
-eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
