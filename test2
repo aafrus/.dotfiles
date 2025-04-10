@@ -79,5 +79,9 @@ urxvtd -q -o -f
 exec herbstluftwm
 
 
-autoload -U add-zsh-hook
-add-zsh-hook chpwd chpwd_auto_cd
+chpwd() {
+    emulate -L zsh
+    command -v gls >/dev/null && \
+        gls -lAhF --color=auto || \
+        ls -lAhF --color=auto
+}
