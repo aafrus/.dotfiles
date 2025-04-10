@@ -1,69 +1,37 @@
-1. Ta bort OMZP::git från plugins.zsh
-zsh
-Copy
+# --------------------------------------------
+# Environment Variables
+# --------------------------------------------
 
-# Ta bort denna rad:
-# zinit snippet OMZP::git
+# Editor
+export EDITOR='nvim'
+export VISUAL='nvim'
 
-2. Skapa ~/.dotfiles/zsh/functions/git_functions.zsh:
-zsh
-Copy
+# Path
+export PATH="$HOME/.local/bin:$PATH"
+
+# XDG Directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+
+
+.zshrc
 
 #!/usr/bin/env zsh
+# --------------------------------------------
+# Main configuration file
+# Loads all other configs in correct order
+# --------------------------------------------
 
-git_current_branch() {
-  # Get current branch or "detached" if in HEAD
-  local branch
-  branch=$(git symbolic-ref --short HEAD 2>/dev/null)
-  [[ -n "$branch" ]] && echo "$branch" || echo "detached"
-}
+# Load all .zsh files in ~/.dotfiles/zsh/
+for config in ~/.dotfiles/zsh/*.zsh; do
+  # Skip these files
+  [[ "$config" == *".zprofile" ]] && continue
+  [[ "$config" == *".zshrc" ]] && continue
+  
+  # Load each config file
+  source "$config"
+done
 
-git_main_branch() {
-  # Detect main branch (main/master or custom GitFlow)
-  local branch
-  branch=$(git config --get gitflow.branch.main 2>/dev/null)
-  [[ -z "$branch" ]] && branch=$(git branch -l | grep -E '^\*? *(main|master)' | sed 's/^* *//;q')
-  echo "${branch:-main}"
-}
-
-grename() {
-  # Rename branch locally and remotely
-  [[ $# -ne 2 ]] && echo "Usage: grename <old> <new>" && return 1
-  git branch -m "$1" "$2"
-  git push origin --delete "$1"
-  git push origin -u "$2"
-}
-
-3. Uppdaterat alias.zsh:
-zsh
-Copy
-
-# --- Core Git ---
-alias g='git'
-alias gs='git status'
-alias gd='git diff'
-alias gco='git checkout'
-alias gc='git commit -v'
-alias gpsu='git push --set-upstream origin $(git_current_branch)'
-
-# --- Branch Operations ---
-alias gb='git branch'
-alias gba='git branch -a'
-alias gcm='git checkout $(git_main_branch)'
-alias gnew='git checkout -b'
-
-# --- History ---
-alias gl='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"'
-
-4. Uppdatera din .zshrc:
-zsh
-Copy
-
-# Ladda funktioner FÖRE alias
-fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
-autoload -Uz $fpath[1]/*(.:t)  # Ladda alla funktioner
-
-# ... (resten av din konfig)
-
-# Ladda alias sist
+# Load aliases LAST to override everything
 source ~/.dotfiles/zsh/alias.zsh
