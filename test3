@@ -1,2 +1,92 @@
-# Basic PATH setup
+env.zsh
+
+# --------------------------------------------
+# Environment Variables
+# --------------------------------------------
+
+# Core
+export EDITOR='nvim'
+export VISUAL='nvim'
+export TERM='xterm-256color'       # Terminalemulatorns kapabilitet
+export TERMINAL='urxvtc'           # Ditt terminalprogram
+
+# XDG Base Directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+# PATH
+export PATH="$HOME/.local/bin:$PATH"
 export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+
+# Git (för dina funktioner)
+export GITFLOW_MAIN_BRANCH=main
+export GITFLOW_DEVELOP_BRANCH=develop
+
+.zshrc
+
+#!/usr/bin/env zsh
+# --------------------------------------------
+# Main Configuration File
+# --------------------------------------------
+
+# [1] Load env FIRST
+source ~/.dotfiles/zsh/env.zsh
+
+# [2] Setup function path
+fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
+autoload -Uz $fpath[1]/*(.:t)  # Load all functions
+
+# [3] Load other configs (except env/alias)
+for config in ~/.dotfiles/zsh/*.zsh; do
+  [[ "$config" == *"env.zsh" ]] && continue
+  [[ "$config" == *"alias.zsh" ]] && continue
+  [[ "$config" == *".zprofile" ]] && continue
+  [[ "$config" == *".zshrc" ]] && continue
+  source "$config"
+done
+
+# [4] Load aliases LAST
+source ~/.dotfiles/zsh/alias.zsh
+
+# [5] Cleanup
+unset config
+
+git_functions.zsh
+
+#!/usr/bin/env zsh
+# --------------------------------------------
+# Git Functions
+# --------------------------------------------
+
+git_current_branch() {
+  # Use modern git command (faster)
+  git branch --show-current 2>/dev/null || echo "detached"
+}
+
+git_main_branch() {
+  # Check gitflow config first, then detect
+  local branch
+  branch=${GITFLOW_MAIN_BRANCH:-$(git config gitflow.branch.main)}
+  branch=${branch:-$(git branch -l | grep -E '^\*? *(main|master)' | head -1 | sed 's/^* *//')}
+  echo "${branch:-main}"
+}
+
+grename() {
+  # Safer branch rename with checks
+  if [[ $# -ne 2 ]]; then
+    echo "Usage: ${0[9,-1]} <old-branch> <new-branch>" >&2
+    return 1
+  fi
+  
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Not a git repository" >&2
+    return 1
+  fi
+  
+  git branch -m "$1" "$2" && \
+  git push origin --delete "$1" 2>/dev/null && \
+  git push origin -u "$2"
+}
+
