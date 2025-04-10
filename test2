@@ -132,3 +132,10 @@ gcl() {
     fi
     cd "$_dir" || return 1
 }
+
+Error: The compinit function hasn't been loaded, cannot do compdef replay.
+/home/ns/.dotfiles/zsh/alias.zsh:77: defining function based on alias `gcl'
+/home/ns/.dotfiles/zsh/alias.zsh:77: parse error near `()'
+/home/ns/.dotfiles/zsh/alias.zsh:77: defining function based on alias `gcl'
+/home/ns/.dotfiles/zsh/alias.zsh:77: parse error near `()'
+
