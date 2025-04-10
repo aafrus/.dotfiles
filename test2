@@ -93,3 +93,6 @@ exec herbstluftwm
 ├── security.zsh
 ├── .zprofile
 └── .zshrc
+
+export XDG_STATE_HOME="$HOME/.local/state"
+export HISTFILE="$XDG_STATE_HOME"/zsh/history
