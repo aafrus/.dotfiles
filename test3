@@ -11,3 +11,5 @@ gpsu() {
 
   git push --set-upstream origin "$branch"
 }
+
+branch=$(git branch --show-current 2>/dev/null) && git push --set-upstream origin "$branch"
