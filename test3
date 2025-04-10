@@ -1,20 +1,18 @@
-#!/usr/bin/env zsh
+ ──── ─ tree                                                   ~/.dotfiles/zsh  [master⚡] 
+./
+├── functions/
+│   ├── chpwd_auto_cd
+│   ├── gcl
+│   └── git_functions.zsh
+├── alias.zsh
+├── completion.zsh
+├── env.zsh
+├── history.zsh
+├── keys.zsh
+├── plugins.zsh
+├── prompt.zsh
+├── security.zsh
+├── .zprofile
+└── .zshrc
 
-# [1] Ladda env först
-source ~/.dotfiles/zsh/env.zsh
-
-# [2] Sätt upp fpath och ladda funktioner EXPLICIT
-fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
-autoload -Uz git_current_branch git_main_branch  # Namnge alla funktioner du behöver
-
-# [3] Ladda resten av konfigurationen
-for config in ~/.dotfiles/zsh/*.zsh; do
-  [[ "$config" == *"env.zsh" ]] && continue
-  [[ "$config" == *"alias.zsh" ]] && continue
-  [[ "$config" == *".zprofile" ]] && continue
-  [[ "$config" == *".zshrc" ]] && continue
-  source "$config"
-done
-
-# [4] Ladda alias sist
-source ~/.dotfiles/zsh/alias.zsh
+2 directories, 13 files
