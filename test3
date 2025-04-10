@@ -1,22 +1,2 @@
-#!/usr/bin/env zsh
-
-# [1] Ladda env FÖRST
-source ~/.dotfiles/zsh/env.zsh
-
-# [2] Sätt upp fpath och ladda funktioner MANUELLT
-fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
-for func in ~/.dotfiles/zsh/functions/*; do
-  autoload -Uz ${func:t}
-done
-
-# [3] Ladda andra konfigfiler
-for config in ~/.dotfiles/zsh/*.zsh; do
-  [[ "$config" == *"env.zsh" ]] && continue
-  [[ "$config" == *"alias.zsh" ]] && continue
-  [[ "$config" == *".zprofile" ]] && continue
-  [[ "$config" == *".zshrc" ]] && continue
-  source "$config"
-done
-
-# [4] Ladda alias SIST
-source ~/.dotfiles/zsh/alias.zsh
+# Basic PATH setup
+export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
