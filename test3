@@ -124,3 +124,6 @@ export GITFLOW_DEVELOP_BRANCH=develop
 
 # Använd TERMINAL-variabeln om den finns, annars fallback till urxvtc
 hc keybind $Mod-Return spawn "${TERMINAL:-urxvtc}"
+
+/home/ns/.dotfiles/zsh/alias.zsh:59: command not found: git_current_branch
+
