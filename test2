@@ -79,91 +79,80 @@ urxvtd -q -o -f
 exec herbstluftwm
 
 
-[ -d ~/.config/zsh ] && mv ~/.config/zsh/* ~/.config/zsh.bak/
+1. Rensa upp kaoset:
+bash
+Copy
 
-ls -l ~/.zshrc ~/.zprofile ~/env.zsh ~/security.zsh
+# Ta bort alla trasiga länkar/filer
+rm -f ~/.zshrc ~/.zprofile ~/env.zsh ~/security.zsh
 
+# Återställ backup om du har någon
+[ -d ~/.config/zsh.bak ] && mv ~/.config/zsh.bak/* ~/.dotfiles/zsh/
 
-zsh -xl 2> ~/zsh_debug.log
+2. Skapa den perfekta strukturen:
+bash
+Copy
 
-T-800% cat zsh_debug.log 
-+/etc/zsh/zprofile:1> emulate sh -c 'source /etc/profile'
-+/etc/zsh/zprofile:1> source /etc/profile
-+/etc/profile:16> append_path /usr/local/sbin
-+append_path:16> case :/home/ns/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl: (*:/usr/local/sbin:*)
-+/etc/profile:17> append_path /usr/local/bin
-+append_path:17> case :/home/ns/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl: (*:/usr/local/bin:*)
-+/etc/profile:18> append_path /usr/bin
-+append_path:18> case :/home/ns/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl: (*:/usr/bin:*)
-+/etc/profile:21> export PATH
-+/etc/profile:30> test -d /etc/profile.d/
-+/etc/profile:30> profile=/etc/profile.d/70-systemd-shell-extra.sh
-+/etc/profile:30> test -r /etc/profile.d/70-systemd-shell-extra.sh
-+/etc/profile:30> . /etc/profile.d/70-systemd-shell-extra.sh
-+/etc/profile.d/70-systemd-shell-extra.sh:18> [ -n '' ']'
-+/etc/profile.d/70-systemd-shell-extra.sh:22> [ -n '' ']'
-+/etc/profile.d/70-systemd-shell-extra.sh:26> [ -n '' ']'
-+/etc/profile:30> profile=/etc/profile.d/debuginfod.sh
-+/etc/profile:30> test -r /etc/profile.d/debuginfod.sh
-+/etc/profile:30> . /etc/profile.d/debuginfod.sh
-+/etc/profile.d/debuginfod.sh:8> prefix=/usr 
-+/etc/profile.d/debuginfod.sh:12> [ -z 'https://debuginfod.archlinux.org ' ']'
-+/etc/profile.d/debuginfod.sh:17> [ -z '' ']'
-+/etc/profile.d/debuginfod.sh:17> DEBUGINFOD_IMA_CERT_PATH=+/etc/profile.d/debuginfod.sh:17> find /etc/debuginfod -name '*.certpath' -print0
-+/etc/profile.d/debuginfod.sh:17> DEBUGINFOD_IMA_CERT_PATH=+/etc/profile.d/debuginfod.sh:17> xargs -0 cat
-+/etc/profile.d/debuginfod.sh:17> DEBUGINFOD_IMA_CERT_PATH=+/etc/profile.d/debuginfod.sh:17> tr '\n' :
-+/etc/profile.d/debuginfod.sh:17> DEBUGINFOD_IMA_CERT_PATH='' 
-+/etc/profile.d/debuginfod.sh:17> [ -n '' ']'
-+/etc/profile.d/debuginfod.sh:17> unset DEBUGINFOD_IMA_CERT_PATH
-+/etc/profile.d/debuginfod.sh:18> unset prefix
-+/etc/profile:30> profile=/etc/profile.d/freetype2.sh
-+/etc/profile:30> test -r /etc/profile.d/freetype2.sh
-+/etc/profile:30> . /etc/profile.d/freetype2.sh
-+/etc/profile:30> profile=/etc/profile.d/gawk.sh
-+/etc/profile:30> test -r /etc/profile.d/gawk.sh
-+/etc/profile:30> . /etc/profile.d/gawk.sh
-+/etc/profile:30> profile=/etc/profile.d/gpm.sh
-+/etc/profile:30> test -r /etc/profile.d/gpm.sh
-+/etc/profile:30> . /etc/profile.d/gpm.sh
-+/etc/profile.d/gpm.sh:4> /usr/bin/tty
-+/etc/profile.d/gpm.sh:4> case /dev/pts/0 (/dev/tty[0-9]*)
-+/etc/profile:30> profile=/etc/profile.d/locale.sh
-+/etc/profile:30> test -r /etc/profile.d/locale.sh
-+/etc/profile:30> . /etc/profile.d/locale.sh
-+/etc/profile.d/locale.sh:15> [ -z en_US.UTF-8 ']'
-+/etc/profile.d/locale.sh:18> LANG=en_US.UTF-8 
-+/etc/profile.d/locale.sh:23> export LANG LANGUAGE LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT LC_IDENTIFICATION
-+/etc/profile:30> profile=/etc/profile.d/perlbin.sh
-+/etc/profile:30> test -r /etc/profile.d/perlbin.sh
-+/etc/profile:30> . /etc/profile.d/perlbin.sh
-+/etc/profile.d/perlbin.sh:6> [ -d /usr/bin/site_perl ']'
-+/etc/profile.d/perlbin.sh:6> append_path /usr/bin/site_perl
-+append_path:6> case :/home/ns/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl: (*:/usr/bin/site_perl:*)
-+/etc/profile.d/perlbin.sh:8> [ -d /usr/bin/vendor_perl ']'
-+/etc/profile.d/perlbin.sh:8> append_path /usr/bin/vendor_perl
-+append_path:8> case :/home/ns/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl: (*:/usr/bin/vendor_perl:*)
-+/etc/profile.d/perlbin.sh:10> [ -d /usr/bin/core_perl ']'
-+/etc/profile.d/perlbin.sh:10> append_path /usr/bin/core_perl
-+append_path:10> case :/home/ns/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl: (*:/usr/bin/core_perl:*)
-+/etc/profile.d/perlbin.sh:12> export PATH
-+/etc/profile:30> unset profile
-+/etc/profile:36> unset -v GLOBSORT
-+/etc/profile:39> unset -f append_path
-+/etc/profile:49> test ''
-+/etc/profile:52> unset TERMCAP
-+/etc/profile:55> unset MANPATH
-+/home/ns/.zprofile:3> [[ -z :0 ]]
-+/home/ns/.zshrc:4> export XDG_CONFIG_HOME=/home/ns/.config
-+/home/ns/.zshrc:5> export XDG_DATA_HOME=/home/ns/.local/share
-+/home/ns/.zshrc:6> export XDG_CACHE_HOME=/home/ns/.cache
-/home/ns/.zshrc:10: no matches found: /home/ns/.config/zsh/*.zsh
-+zsh:1> ls -al
-+zsh:2> bat zsh_debug.log
-+zsh:3> cat zsh_debug.log
+# Skapa mappen (om den inte finns)
+mkdir -p ~/.dotfiles/zsh
 
+# Flytta ALL din ZSH-konfig hit:
+mv ~/.config/zsh/*.zsh ~/.dotfiles/zsh/ 2>/dev/null || echo "Inga filer att flytta"
+mv ~/.zshrc ~/.zprofile ~/.dotfiles/zsh/ 2>/dev/null || echo "Inga filer att flytta"
+
+Nu ska din ~/.dotfiles/zsh/ se ut exakt så här:
+Copy
+
+~/.dotfiles/zsh/
+├── .zprofile          # [[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && startx
+├── .zshrc             # Huvudfil (se nedan)
+├── aliases.zsh        # Alla dina alias
+├── completion.zsh     # Tab-completion
+├── env.zsh            # Miljövariabler (EDITOR, PATH etc)
+├── history.zsh        # HISTSIZE-inställningar
+├── keys.zsh           # Tangentbordsbindningar
+├── plugins.zsh        # Zinit-plugins
+├── prompt.zsh         # Din prompt
+└── security.zsh       # Säkerhetsaliases
+
+3. Skapa huvudfilen (~/.dotfiles/zsh/.zshrc):
+zsh
+Copy
 
 #!/usr/bin/env zsh
-# ---[ Load all .zsh files in this directory ]---
+# ---[ Load all configs ]---
+
+# Ladda alla .zsh-filer i samma mapp
 for config in ~/.dotfiles/zsh/*.zsh; do
+  # Exkludera .zprofile och sig själv för att undvika loopar
+  [[ "$config" == *".zprofile" ]] && continue
+  [[ "$config" == *".zshrc" ]] && continue
   source "$config"
 done
+
+4. Skapa symlinks (manuellt enklast):
+bash
+Copy
+
+ln -sv ~/.dotfiles/zsh/.zshrc ~/.zshrc
+ln -sv ~/.dotfiles/zsh/.zprofile ~/.zprofile
+
+(Du behöver inte symlinka andra filer - de laddas via .zshrc!)
+5. Testa direkt:
+bash
+Copy
+
+exec zsh
+echo $EDITOR  # Borde visa "nvim" om env.zsh laddades
+alias         # Borde visa dina aliases
+
+6. Git-uppsättning (för backup):
+bash
+Copy
+
+cd ~/.dotfiles
+git init
+git add .
+git commit -m "Snygg ZSH-konfiguration"
+git remote add origin git@github.com:dittanvandare/dotfiles.git
+git push -u origin main
