@@ -26,3 +26,39 @@ git_current_branch() { git branch --show-current 2>/dev/null || echo "detached";
 
 
 /home/ns/.dotfiles/zsh/alias.zsh:59: git_current_branch: function definition file not found
+
+
+
+Permanent lösning:
+
+    Byta namn på funktionsfilen:
+    bash
+    Copy
+
+    mv ~/.dotfiles/zsh/functions/git_functions.zsh ~/.dotfiles/zsh/functions/git_current_branch
+
+    En funktion per fil - filnamnet måste matcha funktionsnamnet
+
+    Uppdatera .zshrc:
+    zsh
+    Copy
+
+    # [2] Setup function path
+    fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
+    autoload -Uz git_current_branch  # Ladda endast denna funktion
+
+    Kontrollera filinnehåll:
+    bash
+    Copy
+
+    cat ~/.dotfiles/zsh/functions/git_current_branch
+
+    Ska innehålla endast:
+    zsh
+    Copy
+
+    #!/usr/bin/env zsh
+
+    git_current_branch() {
+      git branch --show-current 2>/dev/null || echo "detached"
+    }
