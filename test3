@@ -16,27 +16,19 @@ setopt INC_APPEND_HISTORY     # Append immediately, not on exit
 
 #!/usr/bin/env zsh
 # --------------------------------------------
-# Load configs in this specific order:
-# 1. Env variables
-# 2. History
-# 3. Plugins
-# 4. Completion
-# 5. Keys
-# 6. Prompt
-# 7. Aliases (last)
+# Main configuration file
+# Loads all other configs in correct order
 # --------------------------------------------
 
-# Load env first
-source ~/.dotfiles/zsh/env.zsh
-
-# Then history (before plugins!)
-source ~/.dotfiles/zsh/history.zsh
-
-# Then load other configs
+# Load all .zsh files in ~/.dotfiles/zsh/
 for config in ~/.dotfiles/zsh/*.zsh; do
-  [[ "$config" == *"env.zsh" ]] && continue
-  [[ "$config" == *"history.zsh" ]] && continue
+  # Skip these files
   [[ "$config" == *".zprofile" ]] && continue
   [[ "$config" == *".zshrc" ]] && continue
+  
+  # Load each config file
   source "$config"
 done
+
+# Load aliases LAST to override everything
+source ~/.dotfiles/zsh/alias.zsh
