@@ -1,15 +1,13 @@
-gpsu() {
-  if ! branch=$(git_current_branch); then
-    echo "Error: You're in detached HEAD state. Checkout a branch first." >&2
-    return 1
-  fi
+#!/usr/bin/env zsh
 
-  if [[ "$branch" == "main" || "$branch" == "master" ]]; then
-    echo "Error: Direct pushes to main/master are blocked. Create a feature branch." >&2
+git_current_branch() {
+  # Moderna git har --show-current, men vi gör det kompatibelt
+  git symbolic-ref --short HEAD 2>/dev/null || {
+    echo "ERROR: Not on any branch (detached HEAD)" >&2
     return 1
-  fi
-
-  git push --set-upstream origin "$branch"
+  }
 }
 
-branch=$(git branch --show-current 2>/dev/null) && git push --set-upstream origin "$branch"
+
+
+alias gpsu='{ branch=$(git_current_branch) || exit 1; git push --set-upstream origin "$branch"; }'
