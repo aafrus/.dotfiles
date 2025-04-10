@@ -62,3 +62,8 @@ Permanent lösning:
     git_current_branch() {
       git branch --show-current 2>/dev/null || echo "detached"
     }
+
+
+ ──── ─ gpsu                                                                                                                           ~/hub/documents/api/test-projekt  [test-branch⚡] 
+error: src refspec detached does not match any
+error: failed to push some refs to 'git.chasacademy.dev:chas-challenge-2025/group-15/test-projekt.git'
