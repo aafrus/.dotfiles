@@ -77,3 +77,6 @@ urxvtd -q -o -f
 
 #start wm
 exec herbstluftwm
+
+
+[ -d ~/.config/zsh ] && mv ~/.config/zsh/* ~/.config/zsh.bak/
