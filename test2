@@ -80,3 +80,5 @@ exec herbstluftwm
 
 
 [ -d ~/.config/zsh ] && mv ~/.config/zsh/* ~/.config/zsh.bak/
+
+ls -l ~/.zshrc ~/.zprofile ~/env.zsh ~/security.zsh
