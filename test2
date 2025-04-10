@@ -161,3 +161,9 @@ T-800% cat zsh_debug.log
 +zsh:2> bat zsh_debug.log
 +zsh:3> cat zsh_debug.log
 
+
+#!/usr/bin/env zsh
+# ---[ Load all .zsh files in this directory ]---
+for config in ~/.dotfiles/zsh/*.zsh; do
+  source "$config"
+done
