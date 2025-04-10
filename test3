@@ -1,69 +1,53 @@
+1. Förbättrad funktion (rekommenderas)
+
+Uppdatera din git_current_branch-funktion i ~/.dotfiles/zsh/functions/git_current_branch:
+zsh
+Copy
+
 #!/usr/bin/env zsh
 
-# [1] Load env FIRST
-source ~/.dotfiles/zsh/env.zsh
+git_current_branch() {
+  # Return error code 1 if in detached HEAD state
+  git branch --show-current 2>/dev/null || return 1
+}
 
-# [2] Setup function path and AUTOLOAD
-fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
-autoload -Uz git_current_branch git_main_branch grename  # Ladda EXPLICIT
+2. Uppdaterat alias (snabb fix)
 
-# [3] Load other configs
-for config in ~/.dotfiles/zsh/*.zsh; do
-  [[ "$config" == *"env.zsh" ]] && continue
-  [[ "$config" == *"alias.zsh" ]] && continue
-  [[ "$config" == *".zprofile" ]] && continue
-  [[ "$config" == *".zshrc" ]] && continue
-  source "$config"
-done
+Ändra i alias.zsh:
+zsh
+Copy
 
-# [4] Load aliases LAST
-source ~/.dotfiles/zsh/alias.zsh
+alias gpsu='if branch=$(git_current_branch 2>/dev/null); then git push --set-upstream origin "$branch"; else echo "Error: Not on any branch (detached HEAD)"; fi'
 
+Testa efter ändringarna:
+bash
+Copy
 
+exec zsh
+cd ~/ditt-repo
+git checkout main  # Se till att du är på en riktig branch
+gpsu  # Bör fungera nu
 
-git_current_branch() { git branch --show-current 2>/dev/null || echo "detached"; }
+# Simulera detached HEAD för test:
+git checkout HEAD~1  # Gå till föregående commit
+gpsu  # Bör nu visa felmeddelande
 
+Varför detta är bättre:
 
+    Funktionen returnerar nu felkod istället för "detached" text
 
-/home/ns/.dotfiles/zsh/alias.zsh:59: git_current_branch: function definition file not found
+    Aliaset hanterar fel snyggt
 
+    Du får tydliga felmeddelanden
 
+Extra tips:
 
-Permanent lösning:
+För att lämna detached HEAD-tillstånd:
+bash
+Copy
 
-    Byta namn på funktionsfilen:
-    bash
-    Copy
+git switch -  # Gå tillbaka till senaste branchen
+# ELLER
+git switch -c ny-branch  # Skapa ny branch från nuvarande commit
 
-    mv ~/.dotfiles/zsh/functions/git_functions.zsh ~/.dotfiles/zsh/functions/git_current_branch
-
-    En funktion per fil - filnamnet måste matcha funktionsnamnet
-
-    Uppdatera .zshrc:
-    zsh
-    Copy
-
-    # [2] Setup function path
-    fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
-    autoload -Uz git_current_branch  # Ladda endast denna funktion
-
-    Kontrollera filinnehåll:
-    bash
-    Copy
-
-    cat ~/.dotfiles/zsh/functions/git_current_branch
-
-    Ska innehålla endast:
-    zsh
-    Copy
-
-    #!/usr/bin/env zsh
-
-    git_current_branch() {
-      git branch --show-current 2>/dev/null || echo "detached"
-    }
-
-
- ──── ─ gpsu                                                                                                                           ~/hub/documents/api/test-projekt  [test-branch⚡] 
-error: src refspec detached does not match any
-error: failed to push some refs to 'git.chasacademy.dev:chas-challenge-2025/group-15/test-projekt.git'
+New chat
