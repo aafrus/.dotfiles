@@ -79,7 +79,5 @@ urxvtd -q -o -f
 exec herbstluftwm
 
 
-emulate -L zsh
-command -v gls >/dev/null && \
-    gls -1lAhF --color=auto --group-directories-first || \
-    ls -1lAhF --color=auto --group-directories-first
+autoload -U add-zsh-hook
+add-zsh-hook chpwd chpwd_auto_cd
