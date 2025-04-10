@@ -1,34 +1,69 @@
-# --------------------------------------------
-# History Configuration
-# --------------------------------------------
+1. Ta bort OMZP::git från plugins.zsh
+zsh
+Copy
 
-# History file location
-HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
-HISTSIZE=100000               # Max size in memory
-SAVEHIST=100000               # Max size in history file
+# Ta bort denna rad:
+# zinit snippet OMZP::git
 
-# History options
-setopt EXTENDED_HISTORY       # Save timestamp and duration
-setopt SHARE_HISTORY          # Share history between sessions
-setopt HIST_IGNORE_ALL_DUPS   # Skip duplicates
-setopt HIST_IGNORE_SPACE      # Skip commands starting with space
-setopt INC_APPEND_HISTORY     # Append immediately, not on exit
+2. Skapa ~/.dotfiles/zsh/functions/git_functions.zsh:
+zsh
+Copy
 
 #!/usr/bin/env zsh
-# --------------------------------------------
-# Main configuration file
-# Loads all other configs in correct order
-# --------------------------------------------
 
-# Load all .zsh files in ~/.dotfiles/zsh/
-for config in ~/.dotfiles/zsh/*.zsh; do
-  # Skip these files
-  [[ "$config" == *".zprofile" ]] && continue
-  [[ "$config" == *".zshrc" ]] && continue
-  
-  # Load each config file
-  source "$config"
-done
+git_current_branch() {
+  # Get current branch or "detached" if in HEAD
+  local branch
+  branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+  [[ -n "$branch" ]] && echo "$branch" || echo "detached"
+}
 
-# Load aliases LAST to override everything
+git_main_branch() {
+  # Detect main branch (main/master or custom GitFlow)
+  local branch
+  branch=$(git config --get gitflow.branch.main 2>/dev/null)
+  [[ -z "$branch" ]] && branch=$(git branch -l | grep -E '^\*? *(main|master)' | sed 's/^* *//;q')
+  echo "${branch:-main}"
+}
+
+grename() {
+  # Rename branch locally and remotely
+  [[ $# -ne 2 ]] && echo "Usage: grename <old> <new>" && return 1
+  git branch -m "$1" "$2"
+  git push origin --delete "$1"
+  git push origin -u "$2"
+}
+
+3. Uppdaterat alias.zsh:
+zsh
+Copy
+
+# --- Core Git ---
+alias g='git'
+alias gs='git status'
+alias gd='git diff'
+alias gco='git checkout'
+alias gc='git commit -v'
+alias gpsu='git push --set-upstream origin $(git_current_branch)'
+
+# --- Branch Operations ---
+alias gb='git branch'
+alias gba='git branch -a'
+alias gcm='git checkout $(git_main_branch)'
+alias gnew='git checkout -b'
+
+# --- History ---
+alias gl='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"'
+
+4. Uppdatera din .zshrc:
+zsh
+Copy
+
+# Ladda funktioner FÖRE alias
+fpath=( ~/.dotfiles/zsh/functions "${fpath[@]}" )
+autoload -Uz $fpath[1]/*(.:t)  # Ladda alla funktioner
+
+# ... (resten av din konfig)
+
+# Ladda alias sist
 source ~/.dotfiles/zsh/alias.zsh
