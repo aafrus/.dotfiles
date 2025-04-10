@@ -121,8 +121,14 @@ zinit snippet OMZP::git
 # --- [Finalize] ---
 zinit cdreplay -q
 
-    gcl() {
-        git clone "${@}"
-        test -n "${2}" && _dir=${2} || _dir=${1##*/}
-        cd ${_dir%.git}
-    }
+gcl() {
+    git clone "$@"
+    local _dir
+    if [[ -n "$2" ]]; then
+        _dir="$2"
+    else
+        _dir="${1##*/}"
+        _dir="${_dir%.git}"
+    fi
+    cd "$_dir" || return 1
+}
