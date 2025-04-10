@@ -80,54 +80,14 @@ exec herbstluftwm
 
 
 
-Uppdatera din .zshrc med denna exakta ordning:
-zsh
-Copy
+==> zsh-users/zsh-syntax-highlighting
+==> Compiling zsh-syntax-highlighting.plugin.zsh [OK]
+==> zsh-users/zsh-autosuggestions
+==> Compiling zsh-autosuggestions.plugin.zsh [OK]
+==> Aloxaf/fzf-tab
+==> Compiling fzf-tab.plugin.zsh [OK]
+==> agkozak/zsh-z
+==> Compiling zsh-z.plugin.zsh [OK]
+==> zsh-users/zsh-completions
+==> Compiling zsh-completions.plugin.zsh [OK]
 
-#!/usr/bin/env zsh
-
-# --- [1] Zinit Init ---
-ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
-source "${ZINIT_HOME}/zinit.zsh"
-
-# --- [2] Ladda basfunktioner FÖRE completion ---
-autoload -Uz compaudit compinit
-
-# --- [3] Ladda completion-systemet ---
-source ~/.dotfiles/zsh/completion.zsh
-
-# --- [4] Ladda plugins ---
-source ~/.dotfiles/zsh/plugins.zsh
-
-# Resten av din konfiguration...
-
-2. Uppdaterad completion.zsh:
-zsh
-Copy
-
-# ---[ Completion System ]---
-() {
-  # Skapa zcompdump-katalog om den inte finns
-  local zcompdump="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
-  [[ -d "${zcompdump:h}" ]] || mkdir -p "${zcompdump:h}"
-  
-  # Ladda compinit säkert
-  if autoload -Uz compinit; then
-    compinit -u -d "$zcompdump"
-  else
-    echo "compinit autoload failed!" >&2
-    return 1
-  fi
-}
-
-# ---[ Completion Styles ]---
-zstyle ':completion:*' menu no
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-
-# ---[ FZF-Tab Integration ]---
-if (( ${+commands[fzf]} )); then
-  zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
-  zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color=always $realpath'
-  zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color=always $realpath'
-fi
