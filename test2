@@ -80,7 +80,6 @@ exec herbstluftwm
 
 
 emulate -L zsh
-# Force vertical listing with full details
 command -v gls >/dev/null && \
-    gls -lAhF --color=auto --group-directories-first || \
-    ls -lAhF --color=auto --group-directories-first
+    gls -1lAhF --color=auto --group-directories-first || \
+    ls -1lAhF --color=auto --group-directories-first
