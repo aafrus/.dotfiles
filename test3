@@ -1,17 +1,11 @@
 gpsu() {
-  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo "Error: Not in a git repository" >&2
+  if ! branch=$(git_current_branch); then
+    echo "Error: You're in detached HEAD state. Checkout a branch first." >&2
     return 1
   fi
 
-  local branch
-  branch=$(git_current_branch) || {
-    echo "Error: Not on any branch (detached HEAD)" >&2
-    return 1
-  }
-
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
-    echo "Error: Direct pushes to main/master are blocked" >&2
+    echo "Error: Direct pushes to main/master are blocked. Create a feature branch." >&2
     return 1
   fi
 
