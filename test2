@@ -78,10 +78,20 @@ urxvtd -q -o -f
 #start wm
 exec herbstluftwm
 
-
-chpwd() {
+# ---[ Auto-CD Function ]---
+chpwd_auto_cd() {
     emulate -L zsh
-    command -v gls >/dev/null && \
-        gls -lAhF --color=auto || \
-        ls -lAhF --color=auto
+    ls --color=auto
 }
+autoload -Uz add-zsh-hook
+add-zsh-hook chpwd chpwd_auto_cd
+
+och sen 
+
+emulate -L zsh
+# have to do a similar thing here
+# as in aliases.zsh
+command -v gls >/dev/null && \
+    gls -lAhF --color=auto || \
+    ls -lAhF --color=auto
+
