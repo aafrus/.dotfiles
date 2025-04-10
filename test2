@@ -79,163 +79,92 @@ urxvtd -q -o -f
 exec herbstluftwm
 
 
-1. Rensa upp kaoset:
-bash
-Copy
+Det låter som vi behöver justera din prompt och kontrollera aliasen. Här är lösningen:
+1. Fixa blixtsymbolen (⚡) i hemkatalogen
 
-# Ta bort alla trasiga länkar/filer
-rm -f ~/.zshrc ~/.zprofile ~/env.zsh ~/security.zsh
-
-# Återställ backup om du har någon
-[ -d ~/.config/zsh.bak ] && mv ~/.config/zsh.bak/* ~/.dotfiles/zsh/
-
-2. Skapa den perfekta strukturen:
-bash
-Copy
-
-# Skapa mappen (om den inte finns)
-mkdir -p ~/.dotfiles/zsh
-
-# Flytta ALL din ZSH-konfig hit:
-mv ~/.config/zsh/*.zsh ~/.dotfiles/zsh/ 2>/dev/null || echo "Inga filer att flytta"
-mv ~/.zshrc ~/.zprofile ~/.dotfiles/zsh/ 2>/dev/null || echo "Inga filer att flytta"
-
-Nu ska din ~/.dotfiles/zsh/ se ut exakt så här:
-Copy
-
-~/.dotfiles/zsh/
-├── .zprofile          # [[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && startx
-├── .zshrc             # Huvudfil (se nedan)
-├── aliases.zsh        # Alla dina alias
-├── completion.zsh     # Tab-completion
-├── env.zsh            # Miljövariabler (EDITOR, PATH etc)
-├── history.zsh        # HISTSIZE-inställningar
-├── keys.zsh           # Tangentbordsbindningar
-├── plugins.zsh        # Zinit-plugins
-├── prompt.zsh         # Din prompt
-└── security.zsh       # Säkerhetsaliases
-
-3. Skapa huvudfilen (~/.dotfiles/zsh/.zshrc):
+Ändra i ~/.dotfiles/zsh/prompt.zsh:
 zsh
 Copy
 
-#!/usr/bin/env zsh
-# ---[ Load all configs ]---
+# ---[ Git Status Check ]---
+git_prompt_info() {
+    # Only show in Git repos
+    [[ -n $(git rev-parse --is-inside-work-tree 2>/dev/null) ]] || return
+    
+    local ref dirty stat
+    ref=$(git symbolic-ref --short HEAD 2>/dev/null || 
+          git describe --tags --exact-match HEAD 2>/dev/null) || return
 
-# Ladda alla .zsh-filer i samma mapp
-for config in ~/.dotfiles/zsh/*.zsh; do
-  # Exkludera .zprofile och sig själv för att undvika loopar
-  [[ "$config" == *".zprofile" ]] && continue
-  [[ "$config" == *".zshrc" ]] && continue
-  source "$config"
-done
+    # Dirty check (⚡ only shows in dirty repos)
+    git diff --quiet --ignore-submodules 2>/dev/null || dirty=" ⚡"
 
-4. Skapa symlinks (manuellt enklast):
-bash
-Copy
+    # Upstream status
+    case $(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null) in
+        "") ;;       # No upstream
+        "0"*) ;;     # Equal
+        *"0") stat=" ▲" ;;   # Ahead
+        *) stat=" ▼" ;;      # Behind
+    esac
 
-ln -sv ~/.dotfiles/zsh/.zshrc ~/.zshrc
-ln -sv ~/.dotfiles/zsh/.zprofile ~/.zprofile
+    echo "%F{241}[%F{244}${ref}${dirty}${stat}%F{241}]"
+}
 
-(Du behöver inte symlinka andra filer - de laddas via .zshrc!)
-5. Testa direkt:
-bash
-Copy
+2. Fixa bat aliaset
 
-exec zsh
-echo $EDITOR  # Borde visa "nvim" om env.zsh laddades
-alias         # Borde visa dina aliases
-
-6. Git-uppsättning (för backup):
-bash
-Copy
-
-cd ~/.dotfiles
-git init
-git add .
-git commit -m "Snygg ZSH-konfiguration"
-git remote add origin git@github.com:dittanvandare/dotfiles.git
-git push -u origin main
-
-
-Det ser ut som att Zinit försöker installeras i fel katalog (rotmappen / istället för din hemkatalog). Låt oss fixa detta direkt:
-1. Åtgärda Zinit-sökvägen
-
-Redigera ~/.dotfiles/zsh/plugins.zsh och byt ut Zinit-installationen till detta:
+Redigera ~/.dotfiles/zsh/aliases.zsh:
 zsh
 Copy
 
-# ---[ Zinit Plugin Manager ]---
-ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
+# ---[ File Viewing ]---
+alias bat='bat --theme=TwoDark --style=header,grid'
+alias cat='bat --pager=never'
+alias ls='exa --group-directories-first --icons'
+alias ll='exa -l --group-directories-first --icons --git'
+alias tree='exa --tree --level=2'
 
-# Install Zinit if missing
-if [[ ! -f "$ZINIT_HOME/zinit.zsh" ]]; then
-  mkdir -p "$(dirname "$ZINIT_HOME")"
-  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
-fi
+3. Fixa cd-beteendet
 
-source "${ZINIT_HOME}/zinit.zsh"
+Lägg till detta i ~/.dotfiles/zsh/plugins.zsh:
+zsh
+Copy
 
-# ---[ Plugins ]---
-zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-autosuggestions
-zinit snippet OMZP::sudo
+# ---[ Directory Navigation ]---
+autoload -Uz chpwd_recent_dirs cdr
+setopt auto_cd
+setopt cdable_vars
 
-# ---[ Tools ]---
-(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
-(( $+commands[fzf] )) && source <(fzf --zsh)
+# Auto-ls after cd
+chpwd() {
+    emulate -L zsh
+    exa --group-directories-first --icons
+}
 
-2. Rensa gamla Zinit-filer
+4. Verifiera att allt fungerar
 bash
 Copy
 
-sudo rm -rf /zinit  # Ta bort felaktig installation i rotmappen
-rm -rf ~/.zinit     # Ta bort eventuell gammal installation
-
-3. Ladda om konfigurationen
-bash
-Copy
-
+# Ladda om konfigurationen
 exec zsh
 
-4. Verifiera att det fungerar
+# Testa:
+cd ~/some_directory  # Borde visa innehåll automatiskt
+git status           # Borde inte visa ⚡ i icke-Git-mappar
+bat aliases.zsh      # Borde visa filen med syntaxfärgning
+
+5. Om problem kvarstår:
+För bat:
 bash
 Copy
 
-# Kolla att Zinit laddades
-zinit self-update
+# Kontrollera installation
+command -v bat || sudo apt install bat  # Debian/Ubuntu
 
-# Testa plugins
-echo "Test"  # Borde visa syntaxfärgning
+# Testa direkt
+bat --plain --theme=TwoDark aliases.zsh
 
-Förklaring av ändringarna:
-
-    ZINIT_HOME pekar nu på ~/.local/share/zinit/ (XDG-kompatibelt)
-
-    mkdir -p skapar först alla nödvändiga kataloger
-
-    Rensning av felaktiga installationer
-
-Om problemet kvarstår:
-
-    Kontrollera att du har skrivrättigheter:
-
+För Git-prompt:
 bash
 Copy
 
-ls -ld ~/.local/share
-
-    Testa manuell installation:
-
-bash
-Copy
-
-mkdir -p ~/.local/share/zinit
-git clone https://github.com/zdharma-continuum/zinit.git ~/.local/share/zinit/zinit.git
-
-    Debugga plugins:
-
-bash
-Copy
-
-zsh -xv 2> ~/zsh_debug.log
+# Testa Git-status manuellt
+git rev-parse --is-inside-work-tree 2>/dev/null && echo "In Git repo" || echo "Not in Git repo"
