@@ -80,15 +80,14 @@ exec herbstluftwm
 
 
 # ---[ History Settings ]---
-export HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
+export HISTFILE=~/.local/share/zsh/history  # Explicit sökväg
 export HISTSIZE=100000
 export SAVEHIST=100000
 
-# ---[ History Options ]---
-setopt EXTENDED_HISTORY       # Save timestamp and duration
-setopt SHARE_HISTORY          # Share history between sessions
-setopt INC_APPEND_HISTORY     # Append immediately, not just on exit
-setopt HIST_IGNORE_ALL_DUPS   # Remove older duplicate entries
-setopt HIST_SAVE_NO_DUPS      # Don't save duplicates in history file
-setopt HIST_FIND_NO_DUPS      # Don't show duplicates when searching
-setopt HIST_REDUCE_BLANKS     # Remove superfluous blanks
+setopt EXTENDED_HISTORY       # Lagra tidstämpel och körtid
+setopt SHARE_HISTORY          # Dela historik mellan sessioner
+setopt INC_APPEND_HISTORY     # Skriv till fil direkt, inte vid avslut
+setopt HIST_IGNORE_ALL_DUPS   # Ta bort duplicerade kommandon
+setopt HIST_SAVE_NO_DUPS      # Spara inte duplicerade kommandon
+setopt HIST_FIND_NO_DUPS      # Visa inte duplicerade kommandon vid sökning
+setopt HIST_REDUCE_BLANKS     # Ta bort onödiga blanksteg
