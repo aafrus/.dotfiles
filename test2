@@ -79,15 +79,17 @@ urxvtd -q -o -f
 exec herbstluftwm
 
 
-# ---[ History Settings ]---
-export HISTFILE=~/.local/share/zsh/history  # Explicit sökväg
-export HISTSIZE=100000
-export SAVEHIST=100000
-
-setopt EXTENDED_HISTORY       # Lagra tidstämpel och körtid
-setopt SHARE_HISTORY          # Dela historik mellan sessioner
-setopt INC_APPEND_HISTORY     # Skriv till fil direkt, inte vid avslut
-setopt HIST_IGNORE_ALL_DUPS   # Ta bort duplicerade kommandon
-setopt HIST_SAVE_NO_DUPS      # Spara inte duplicerade kommandon
-setopt HIST_FIND_NO_DUPS      # Visa inte duplicerade kommandon vid sökning
-setopt HIST_REDUCE_BLANKS     # Ta bort onödiga blanksteg
+ ──── ─ tree                                                   ~/.dotfiles/zsh  [master⚡] 
+./
+├── functions/
+│   └── chpwd_auto_cd
+├── alias.zsh
+├── completion.zsh
+├── env.zsh
+├── history.zsh
+├── keys.zsh
+├── plugins.zsh
+├── prompt.zsh
+├── security.zsh
+├── .zprofile
+└── .zshrc
