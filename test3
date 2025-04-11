@@ -1,20 +1,96 @@
-completion.zsh
-# --------------------------------------------
-# Completion System Configuration
-# --------------------------------------------
+Lägg en minimal init.lua där (vi skippar .vimrc, det är 2025):
 
-# Initialize completion system
-autoload -Uz compinit && compinit
+-- ~/.config/nvim/init.lua
 
-# Completion styling
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*' menu no
+vim.opt.number = true             -- radnummer
+vim.opt.relativenumber = true     -- relativt radnummer
+vim.opt.clipboard = "unnamedplus" -- kopiera/klistra till systemet
+vim.opt.mouse = "a"               -- möjliggör mus
+vim.opt.termguicolors = true      -- färg
+vim.opt.cursorline = true         -- highlight på nuvarande rad
+vim.opt.scrolloff = 8             -- luft ovan/nedanför kursorn
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.updatetime = 300
 
-# FZF-tab previews
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
-zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+vim.g.mapleader = " "
 
-# FZF-tab configuration
-# show hidden files, but respect .gitignore
-zstyle ':fzf-tab:complete:*' fzf-command 'fd --type f --hidden --no-ignore-vcs'
+-- Mappings
+vim.keymap.set("n", "<C-s>", ":w<CR>")
+vim.keymap.set("i", "<C-s>", "<Esc>:w<CR>")
+
+-- Plugins (börjar enkelt, vi tar Packer)
+require("plugin-bootstrap")
+
+🧪 Steg 2: Plugin manager
+
+Vi kör Packer.
+Kör detta i terminalen:
+
+git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+ ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+
+Sen i din ~/.config/nvim/plugin-bootstrap.lua:
+
+-- plugin-bootstrap.lua
+
+vim.cmd [[packadd packer.nvim]]
+
+require('packer').startup(function()
+  use 'wbthomason/packer.nvim' -- Packer hanterar sig själv
+
+  -- Teman
+  use 'folke/tokyonight.nvim'
+
+  -- Filträd
+  use {
+    'nvim-tree/nvim-tree.lua',
+    requires = 'nvim-tree/nvim-web-devicons'
+  }
+
+  -- Fuzzy finder
+  use {
+    'nvim-telescope/telescope.nvim',
+    requires = { {'nvim-lua/plenary.nvim'} }
+  }
+
+  -- Status line
+  use 'nvim-lualine/lualine.nvim'
+end)
+
+I nvim, kör:
+
+:PackerSync
+
+🧪 Steg 3: Göra det skönt
+
+Lägg till i init.lua:
+
+-- Tema
+vim.cmd[[colorscheme tokyonight]]
+
+-- Lualine
+require('lualine').setup()
+
+-- NvimTree toggle
+vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>")
+
+-- Telescope find files
+vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>")
+vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>")
+
+🧪 Steg 4: Autocomplete & LSP (senare)
+
+Vi väntar lite med den. Vi gör sök, spara, utforskare, tema och clipboards först – sen tar vi in:
+
+    Autocompletion (nvim-cmp)
+
+    LSP (språkserver)
+
+    Formatter (null-ls)
+
+    Treesitter
+
+    Git (gitsigns.nvim)
