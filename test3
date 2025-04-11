@@ -1,6 +1,4 @@
-Lägg en minimal init.lua där (vi skippar .vimrc, det är 2025):
-
--- ~/.config/nvim/init.lua
+-- init.lua
 
 vim.opt.number = true             -- radnummer
 vim.opt.relativenumber = true     -- relativt radnummer
@@ -24,15 +22,6 @@ vim.keymap.set("i", "<C-s>", "<Esc>:w<CR>")
 -- Plugins (börjar enkelt, vi tar Packer)
 require("plugin-bootstrap")
 
-🧪 Steg 2: Plugin manager
-
-Vi kör Packer.
-Kör detta i terminalen:
-
-git clone --depth 1 https://github.com/wbthomason/packer.nvim\
- ~/.local/share/nvim/site/pack/packer/start/packer.nvim
-
-Sen i din ~/.config/nvim/plugin-bootstrap.lua:
 
 -- plugin-bootstrap.lua
 
@@ -60,14 +49,6 @@ require('packer').startup(function()
   use 'nvim-lualine/lualine.nvim'
 end)
 
-I nvim, kör:
-
-:PackerSync
-
-🧪 Steg 3: Göra det skönt
-
-Lägg till i init.lua:
-
 -- Tema
 vim.cmd[[colorscheme tokyonight]]
 
@@ -81,66 +62,5 @@ vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>")
 vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>")
 vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>")
 
-🧪 Steg 4: Autocomplete & LSP (senare)
-
-Vi väntar lite med den. Vi gör sök, spara, utforskare, tema och clipboards först – sen tar vi in:
-
-    Autocompletion (nvim-cmp)
-
-    LSP (språkserver)
-
-    Formatter (null-ls)
-
-    Treesitter
-
-    Git (gitsigns.nvim)
 
 
-
-
- git clone --depth 1 https://github.com/wbthomason/packer.nvim\  ~/.local/share/nvim/site/pack/packer/start/packer.nvim
-Cloning into '/home/ns/.local/share/nvim/site/pack/packer/start/packer.nvim'...
-fatal: unable to access 'https://github.com/wbthomason/packer.nvim /': URL rejected: Malformed input to a URL function
-
-
-
-git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
-
-
-Error detected while processing /home/ns/.config/nvim/init.lua:
-E5113: Error while calling lua chunk: /home/ns/.config/nvim/init.lua:21: module 'plugin-boot
-strap' not found:
-        no field package.preload['plugin-bootstrap']
-        no file './plugin-bootstrap.lua'
-        no file '/usr/share/luajit-2.1/plugin-bootstrap.lua'
-        no file '/usr/local/share/lua/5.1/plugin-bootstrap.lua'
-        no file '/usr/local/share/lua/5.1/plugin-bootstrap/init.lua'
-        no file '/usr/share/lua/5.1/plugin-bootstrap.lua'
-        no file '/usr/share/lua/5.1/plugin-bootstrap/init.lua'
-        no file './plugin-bootstrap.so'
-        no file '/usr/local/lib/lua/5.1/plugin-bootstrap.so'
-        no file '/usr/lib/lua/5.1/plugin-bootstrap.so'
-        no file '/usr/local/lib/lua/5.1/loadall.so'
-stack traceback:
-        [C]: in function 'require'
-        /home/ns/.config/nvim/init.lua:21: in main chunk
-
-
-
-Error detected while processing /home/ns/.config/nvim/init.lua:
-E5113: Error while calling lua chunk: /home/ns/.config/nvim/init.lua:21: module 'plugin-boot
-strap' not found:
-        no field package.preload['plugin-bootstrap']
-        no file './plugin-bootstrap.lua'
-        no file '/usr/share/luajit-2.1/plugin-bootstrap.lua'
-        no file '/usr/local/share/lua/5.1/plugin-bootstrap.lua'
-        no file '/usr/local/share/lua/5.1/plugin-bootstrap/init.lua'
-        no file '/usr/share/lua/5.1/plugin-bootstrap.lua'
-        no file '/usr/share/lua/5.1/plugin-bootstrap/init.lua'
-        no file './plugin-bootstrap.so'
-        no file '/usr/local/lib/lua/5.1/plugin-bootstrap.so'
-        no file '/usr/lib/lua/5.1/plugin-bootstrap.so'
-        no file '/usr/local/lib/lua/5.1/loadall.so'
-stack traceback:
-        [C]: in function 'require'
-        /home/ns/.config/nvim/init.lua:21: in main chunk
