@@ -106,3 +106,21 @@ fatal: unable to access 'https://github.com/wbthomason/packer.nvim /': URL rejec
 
 git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 
+
+Error detected while processing /home/ns/.config/nvim/init.lua:
+E5113: Error while calling lua chunk: /home/ns/.config/nvim/init.lua:21: module 'plugin-boot
+strap' not found:
+        no field package.preload['plugin-bootstrap']
+        no file './plugin-bootstrap.lua'
+        no file '/usr/share/luajit-2.1/plugin-bootstrap.lua'
+        no file '/usr/local/share/lua/5.1/plugin-bootstrap.lua'
+        no file '/usr/local/share/lua/5.1/plugin-bootstrap/init.lua'
+        no file '/usr/share/lua/5.1/plugin-bootstrap.lua'
+        no file '/usr/share/lua/5.1/plugin-bootstrap/init.lua'
+        no file './plugin-bootstrap.so'
+        no file '/usr/local/lib/lua/5.1/plugin-bootstrap.so'
+        no file '/usr/lib/lua/5.1/plugin-bootstrap.so'
+        no file '/usr/local/lib/lua/5.1/loadall.so'
+stack traceback:
+        [C]: in function 'require'
+        /home/ns/.config/nvim/init.lua:21: in main chunk
