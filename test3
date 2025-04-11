@@ -192,3 +192,14 @@ require('gitsigns').setup()
 
 -- Auto pairs
 require('nvim-autopairs').setup()
+
+
+
+Error detected while processing /home/ns/.config/nvim/init.lua:
+E5113: Error while calling lua chunk: vim/_init_packages.lua:0: /home/ns/.config/nvim/lua/pl
+ugin-bootstrap.lua:68: '<eof>' expected near 'vim'
+stack traceback:
+        [C]: in function 'error'
+        vim/_init_packages.lua: in function <vim/_init_packages.lua:0>
+        [C]: in function 'require'
+        /home/ns/.config/nvim/init.lua:42: in main chunk
