@@ -1,47 +1,3 @@
--- init.lua
-
--- Grundinställningar
-vim.opt.number = true             -- radnummer
-vim.opt.relativenumber = true     -- relativt radnummer
-vim.opt.clipboard = "unnamedplus" -- kopiera/klistra till systemet
-vim.opt.mouse = "a"               -- möjliggör mus
-vim.opt.termguicolors = true      -- färg
-vim.opt.cursorline = true         -- highlight på nuvarande rad
-vim.opt.scrolloff = 8             -- luft ovan/nedanför kursorn
-vim.opt.splitright = true         -- ny split till höger
-vim.opt.splitbelow = true         -- ny split nedåt
-vim.opt.ignorecase = true         -- case-insensitiv sökning
-vim.opt.smartcase = true          -- case-sensitiv vid stor bokstav
-vim.opt.updatetime = 300          -- snabbare git-gutter etc
-vim.opt.expandtab = true          -- tabs blir mellanslag
-vim.opt.shiftwidth = 2            -- antal mellanslag för autoindent
-vim.opt.tabstop = 2               -- antal mellanslag ett tabb representerar
-vim.opt.softtabstop = 2           -- antal mellanslag i insert-läge
-
--- Leader key
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-
--- Mappings (VSCode-liknande)
--- Spara fil
-vim.keymap.set({"n", "i", "v"}, "<C-s>", "<cmd>w<cr>", {desc = "Spara fil"})
-
--- Select all
-vim.keymap.set("n", "<C-a>", "ggVG", {desc = "Markera allt"})
-
--- Flytta mellan splits
-vim.keymap.set("n", "<C-h>", "<C-w>h", {desc = "Flytta till vänster split"})
-vim.keymap.set("n", "<C-j>", "<C-w>j", {desc = "Flytta till nedre split"})
-vim.keymap.set("n", "<C-k>", "<C-w>k", {desc = "Flytta till övre split"})
-vim.keymap.set("n", "<C-l>", "<C-w>l", {desc = "Flytta till höger split"})
-
--- Stäng buffer utan att stänga fönster
-vim.keymap.set("n", "<C-w>", "<cmd>bdelete<cr>", {desc = "Stäng buffer"})
-
--- Plugin-inställningar
-require("plugin-bootstrap")
-
-
 -- plugin-bootstrap.lua
 
 vim.cmd [[packadd packer.nvim]]
@@ -106,7 +62,9 @@ return require('packer').startup(function(use)
 
   -- Automatiska par av parenteser etc
   use 'windwp/nvim-autopairs'
-end)
+end) -- Detta är viktigt - denna 'end' avslutar Packer-funktionen
+
+-- Allt nedanför ska vara utanför Packer-funktionen
 
 -- Tema
 vim.cmd[[colorscheme tokyonight]]
@@ -192,14 +150,3 @@ require('gitsigns').setup()
 
 -- Auto pairs
 require('nvim-autopairs').setup()
-
-
-
-Error detected while processing /home/ns/.config/nvim/init.lua:
-E5113: Error while calling lua chunk: vim/_init_packages.lua:0: /home/ns/.config/nvim/lua/pl
-ugin-bootstrap.lua:68: '<eof>' expected near 'vim'
-stack traceback:
-        [C]: in function 'error'
-        vim/_init_packages.lua: in function <vim/_init_packages.lua:0>
-        [C]: in function 'require'
-        /home/ns/.config/nvim/init.lua:42: in main chunk
