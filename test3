@@ -1,5 +1,6 @@
 -- init.lua
 
+-- Grundinställningar
 vim.opt.number = true             -- radnummer
 vim.opt.relativenumber = true     -- relativt radnummer
 vim.opt.clipboard = "unnamedplus" -- kopiera/klistra till systemet
@@ -7,19 +8,37 @@ vim.opt.mouse = "a"               -- möjliggör mus
 vim.opt.termguicolors = true      -- färg
 vim.opt.cursorline = true         -- highlight på nuvarande rad
 vim.opt.scrolloff = 8             -- luft ovan/nedanför kursorn
-vim.opt.splitright = true
-vim.opt.splitbelow = true
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
-vim.opt.updatetime = 300
+vim.opt.splitright = true         -- ny split till höger
+vim.opt.splitbelow = true         -- ny split nedåt
+vim.opt.ignorecase = true         -- case-insensitiv sökning
+vim.opt.smartcase = true          -- case-sensitiv vid stor bokstav
+vim.opt.updatetime = 300          -- snabbare git-gutter etc
+vim.opt.expandtab = true          -- tabs blir mellanslag
+vim.opt.shiftwidth = 2            -- antal mellanslag för autoindent
+vim.opt.tabstop = 2               -- antal mellanslag ett tabb representerar
+vim.opt.softtabstop = 2           -- antal mellanslag i insert-läge
 
+-- Leader key
 vim.g.mapleader = " "
+vim.g.maplocalleader = " "
 
--- Mappings
-vim.keymap.set("n", "<C-s>", ":w<CR>")
-vim.keymap.set("i", "<C-s>", "<Esc>:w<CR>")
+-- Mappings (VSCode-liknande)
+-- Spara fil
+vim.keymap.set({"n", "i", "v"}, "<C-s>", "<cmd>w<cr>", {desc = "Spara fil"})
 
--- Plugins (börjar enkelt, vi tar Packer)
+-- Select all
+vim.keymap.set("n", "<C-a>", "ggVG", {desc = "Markera allt"})
+
+-- Flytta mellan splits
+vim.keymap.set("n", "<C-h>", "<C-w>h", {desc = "Flytta till vänster split"})
+vim.keymap.set("n", "<C-j>", "<C-w>j", {desc = "Flytta till nedre split"})
+vim.keymap.set("n", "<C-k>", "<C-w>k", {desc = "Flytta till övre split"})
+vim.keymap.set("n", "<C-l>", "<C-w>l", {desc = "Flytta till höger split"})
+
+-- Stäng buffer utan att stänga fönster
+vim.keymap.set("n", "<C-w>", "<cmd>bdelete<cr>", {desc = "Stäng buffer"})
+
+-- Plugin-inställningar
 require("plugin-bootstrap")
 
 
@@ -27,13 +46,15 @@ require("plugin-bootstrap")
 
 vim.cmd [[packadd packer.nvim]]
 
-require('packer').startup(function()
-  use 'wbthomason/packer.nvim' -- Packer hanterar sig själv
+return require('packer').startup(function(use)
+  -- Package manager
+  use 'wbthomason/packer.nvim'
 
   -- Teman
   use 'folke/tokyonight.nvim'
+  use 'navarasu/onedark.nvim'  -- Alternativt tema
 
-  -- Filträd
+  -- Filhantering
   use {
     'nvim-tree/nvim-tree.lua',
     requires = 'nvim-tree/nvim-web-devicons'
@@ -42,11 +63,49 @@ require('packer').startup(function()
   -- Fuzzy finder
   use {
     'nvim-telescope/telescope.nvim',
+    tag = '0.1.6',
     requires = { {'nvim-lua/plenary.nvim'} }
   }
 
   -- Status line
   use 'nvim-lualine/lualine.nvim'
+
+  -- Syntax highlighting
+  use {
+    'nvim-treesitter/nvim-treesitter',
+    run = ':TSUpdate'
+  }
+
+  -- LSP (Language Server Protocol)
+  use {
+    'neovim/nvim-lspconfig',
+    requires = {
+      'williamboman/mason.nvim',
+      'williamboman/mason-lspconfig.nvim',
+    }
+  }
+
+  -- Autocomplete
+  use {
+    'hrsh7th/nvim-cmp',
+    requires = {
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-path',
+      'hrsh7th/cmp-cmdline',
+      'L3MON4D3/LuaSnip',
+      'saadparwaiz1/cmp_luasnip',
+    }
+  }
+
+  -- Kommentarer
+  use 'tpope/vim-commentary'
+
+  -- Git integration
+  use 'lewis6991/gitsigns.nvim'
+
+  -- Automatiska par av parenteser etc
+  use 'windwp/nvim-autopairs'
 end)
 
 -- Tema
@@ -55,12 +114,81 @@ vim.cmd[[colorscheme tokyonight]]
 -- Lualine
 require('lualine').setup()
 
--- NvimTree toggle
+-- NvimTree
+require('nvim-tree').setup()
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>")
 
--- Telescope find files
-vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>")
-vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>")
+-- Telescope
+require('telescope').setup()
+vim.keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>")
+vim.keymap.set("n", "<leader>fg", "<cmd>Telescope live_grep<cr>")
+vim.keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>")
+vim.keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<cr>")
 
+-- Treesitter
+require('nvim-treesitter.configs').setup {
+  ensure_installed = { "lua", "python", "javascript", "typescript", "html", "css" },
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting = false,
+  },
+}
 
+-- LSP setup (enkel konfiguration)
+local lspconfig = require('lspconfig')
+local mason = require('mason')
+local mason_lspconfig = require('mason-lspconfig')
 
+mason.setup()
+mason_lspconfig.setup({
+  ensure_installed = { 'tsserver', 'pyright', 'lua_ls' }
+})
+
+-- Grundläggande LSP-inställningar
+local on_attach = function(client, bufnr)
+  -- Mappings här
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', {noremap = true})
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', {noremap = true})
+end
+
+-- Konfigurera servers
+mason_lspconfig.setup_handlers {
+  function(server_name)
+    lspconfig[server_name].setup {
+      on_attach = on_attach,
+    }
+  end,
+}
+
+-- Autocomplete (nvim-cmp)
+local cmp = require('cmp')
+cmp.setup({
+  snippet = {
+    expand = function(args)
+      require('luasnip').lsp_expand(args.body)
+    end,
+  },
+  mapping = cmp.mapping.preset.insert({
+    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.abort(),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+  }),
+  sources = cmp.config.sources({
+    { name = 'nvim_lsp' },
+    { name = 'luasnip' },
+  }, {
+    { name = 'buffer' },
+  })
+})
+
+-- Kommentarer
+vim.keymap.set("n", "gcc", "<Plug>CommentaryLine")
+vim.keymap.set("v", "gc", "<Plug>Commentary")
+
+-- Git-signs
+require('gitsigns').setup()
+
+-- Auto pairs
+require('nvim-autopairs').setup()
