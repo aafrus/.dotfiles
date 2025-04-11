@@ -94,3 +94,10 @@ Vi väntar lite med den. Vi gör sök, spara, utforskare, tema och clipboards f�
     Treesitter
 
     Git (gitsigns.nvim)
+
+
+
+
+ git clone --depth 1 https://github.com/wbthomason/packer.nvim\  ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+Cloning into '/home/ns/.local/share/nvim/site/pack/packer/start/packer.nvim'...
+fatal: unable to access 'https://github.com/wbthomason/packer.nvim /': URL rejected: Malformed input to a URL function
