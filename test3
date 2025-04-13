@@ -273,3 +273,66 @@ return {
   },
 }
 
+
+
+~/.config/nvim/colors/moondust.lua
+vim.cmd("colorscheme moondust")
+
+
+
+-- File: colors/moondust.lua
+-- Place this file in ~/.config/nvim/colors/moondust.lua
+
+vim.cmd("hi clear")
+if vim.fn.exists("syntax_on") then
+  vim.cmd("syntax reset")
+end
+
+vim.o.background = "dark"
+vim.g.colors_name = "moondust"
+
+-- Define the color palette
+local colors = {
+  bg       = "#161A1D",
+  fg       = "#B1B6B9",
+  cursor   = "#637179",
+  selection= "#1C4C82",
+  comment  = "#343F46",
+  red      = "#235D9F",
+  green    = "#637179",
+  yellow   = "#B1B6B9",
+  blue     = "#4D8FDB",
+  magenta  = "#2769B4",
+  cyan     = "#D2D4D5",
+  black    = "#1E2225",
+  white    = "#ffffff"
+}
+
+-- Highlight groups
+local highlights = {
+  Normal       = { fg = colors.fg, bg = colors.bg },
+  Cursor       = { fg = colors.bg, bg = colors.cursor },
+  Visual       = { bg = colors.selection },
+  Comment      = { fg = colors.comment, italic = true },
+  Constant     = { fg = colors.magenta },
+  Identifier   = { fg = colors.blue },
+  Statement    = { fg = colors.red },
+  PreProc      = { fg = colors.yellow },
+  Type         = { fg = colors.green },
+  Special      = { fg = colors.cyan },
+  LineNr       = { fg = colors.comment },
+  StatusLine   = { fg = colors.fg, bg = colors.comment },
+  VertSplit    = { fg = colors.comment },
+  Pmenu        = { fg = colors.fg, bg = colors.comment },
+  PmenuSel     = { bg = colors.selection },
+  Search       = { bg = colors.selection, fg = colors.white },
+  Error        = { fg = colors.white, bg = colors.red },
+  Todo         = { fg = colors.red, bg = colors.comment },
+}
+
+for group, opts in pairs(highlights) do
+  vim.api.nvim_set_hl(0, group, opts)
+end
+
+
+
