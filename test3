@@ -220,17 +220,56 @@ Treesitter parsers ~
 
 
 
- ──── ─ tree                                                                                                                                                 ~/.dotfiles/zsh  [master⚡] 
-./
-├── functions/
-├── alias.zsh
-├── completion.zsh
-├── env.zsh
-├── history.zsh
-├── keys.zsh
-├── plugins.zsh
-├── prompt.zsh
-├── security.zsh
-├── .zprofile
-└── .zshrc
+local wezterm = require 'wezterm'
+
+return {
+  -- Grundinställningar
+  color_scheme = "Tokyo Night",
+  font = wezterm.font_with_fallback({
+    "JetBrainsMono Nerd Font",
+    "Noto Color Emoji"
+  }),
+  font_size = 12.0,
+  line_height = 1.2,
+  enable_tab_bar = true,
+  hide_tab_bar_if_only_one_tab = true,
+  use_fancy_tab_bar = false,
+
+  -- Tangentbords-kortkommandon
+  keys = {
+    -- Ctrl+A för markera allt
+    {
+      key = "a",
+      mods = "CTRL",
+      action = wezterm.action.Multiple {
+        wezterm.action.SendKey { key = "Home", mods = "SHIFT" },
+        wezterm.action.SendKey { key = "End", mods = "SHIFT" },
+      },
+    },
+    -- Ctrl+C/V/X för kopiera/klistra/klipp
+    {
+      key = "c",
+      mods = "CTRL|SHIFT",
+      action = wezterm.action.CopyTo 'Clipboard',
+    },
+    {
+      key = "v",
+      mods = "CTRL|SHIFT",
+      action = wezterm.action.PasteFrom 'Clipboard',
+    },
+    {
+      key = "x",
+      mods = "CTRL|SHIFT",
+      action = wezterm.action.CopyTo 'ClipboardAndClearSelection',
+    },
+  },
+
+  -- Anpassade färger
+  colors = {
+    foreground = "#c0caf5",
+    background = "#1a1b26",
+    cursor_bg = "#c0caf5",
+    cursor_border = "#c0caf5",
+  },
+}
 
