@@ -1,18 +1,33 @@
--- ~/.config/nvim/lua/plugins/snacks.lua
 return {
   "folke/snacks.nvim",
-  event = "VeryLazy",  # Ladda endast när det behövs
-  config = function()
-    require("snacks").setup({
-      -- Här lägger du till din konfiguration
-      -- Se https://github.com/folke/snacks.nvim#%EF%B8%8F-configuration
-      border = "rounded",  # Exempelkonfig
-      icons = {
-        error = "",
-        warn = "",
-        info = "",
-        hint = "",
-      }
-    })
-  end
+  event = "VeryLazy",  # Ladda lazy
+  
+  opts = {  # Default konfiguration
+    border = "rounded",
+    timeout = 3000,
+    icons = {
+      error = "✗",
+      warn = "⚠",
+      info = "ℹ",
+      hint = "💡"
+    }
+  },
+  
+  -- Alternativt: config = function() ... end om du vill ha mer komplex setup
+}return {
+  "folke/snacks.nvim",
+  event = "VeryLazy",  # Ladda lazy
+  
+  opts = {  # Default konfiguration
+    border = "rounded",
+    timeout = 3000,
+    icons = {
+      error = "✗",
+      warn = "⚠",
+      info = "ℹ",
+      hint = "💡"
+    }
+  },
+  
+  -- Alternativt: config = function() ... end om du vill ha mer komplex setup
 }
