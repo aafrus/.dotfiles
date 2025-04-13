@@ -1,16 +1,1 @@
-return {
-  "folke/snacks.nvim",
-  event = "VeryLazy",
-  
-  -- Minimal fungerande konfig
-  opts = {
-    border = "single",  # Enklare än 'rounded'
-    timeout = 2000,
-    icons = {
-      error = "E",
-      warn = "W",
-      info = "I",
-      hint = "H"
-    }
-  }
-}
+
