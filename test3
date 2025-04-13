@@ -216,3 +216,21 @@ Treesitter parsers ~
 - OK Parser: vim                  ABI: 14, path: /usr/share/nvim/runtime/parser/vim.so
 - OK Parser: vimdoc               ABI: 14, path: /usr/share/nvim/runtime/parser/vimdoc.so
 
+
+
+
+
+ ──── ─ tree                                                                                                                                                 ~/.dotfiles/zsh  [master⚡] 
+./
+├── functions/
+├── alias.zsh
+├── completion.zsh
+├── env.zsh
+├── history.zsh
+├── keys.zsh
+├── plugins.zsh
+├── prompt.zsh
+├── security.zsh
+├── .zprofile
+└── .zshrc
+
