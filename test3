@@ -15,3 +15,17 @@ vim.keymap.set({'v', 'x'}, '<C-x>', '"+d', opts)
 
 -- Ctrl+Z = undo
 vim.keymap.set({'n', 'v', 'i'}, '<C-z>', '<C-o>u', opts)
+
+
+-- Auto enable paste mode when pasting
+vim.api.nvim_create_autocmd("InsertEnter", {
+  callback = function()
+    vim.opt.paste = true
+  end
+})
+
+vim.api.nvim_create_autocmd("InsertLeave", {
+  callback = function()
+    vim.opt.paste = false
+  end
+})
