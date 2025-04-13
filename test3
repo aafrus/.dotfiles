@@ -1,3 +1,41 @@
+-- init.lua
+
+require("config.lazy")
+
+-- Grundinställningar
+vim.opt.number = true             -- radnummer
+vim.opt.relativenumber = true     -- relativt radnummer
+vim.opt.clipboard = "unnamedplus" -- kopiera/klistra till systemet
+vim.opt.mouse = "a"               -- möjliggör mus
+vim.opt.termguicolors = true      -- färg
+vim.opt.cursorline = true         -- highlight på nuvarande rad
+vim.opt.scrolloff = 8             -- luft ovan/nedanför kursorn
+vim.opt.splitright = true         -- ny split till höger
+vim.opt.splitbelow = true         -- ny split nedåt
+vim.opt.ignorecase = true         -- case-insensitiv sökning
+vim.opt.smartcase = true          -- case-sensitiv vid stor bokstav
+vim.opt.updatetime = 300          -- snabbare git-gutter etc
+vim.opt.expandtab = true          -- tabs blir mellanslag
+vim.opt.shiftwidth = 2            -- antal mellanslag för autoindent
+vim.opt.tabstop = 2               -- antal mellanslag ett tabb representerar
+vim.opt.softtabstop = 2           -- antal mellanslag i insert-läge
+
+-- Mappings (VSCode-liknande)
+-- Spara fil
+vim.keymap.set({"n", "i", "v"}, "<C-s>", "<cmd>w<cr>", {desc = "Spara fil"})
+
+-- Select all
+vim.keymap.set("n", "<C-a>", "ggVG", {desc = "Markera allt"})
+
+-- Flytta mellan splits
+vim.keymap.set("n", "<C-h>", "<C-w>h", {desc = "Flytta till vänster split"})
+vim.keymap.set("n", "<C-j>", "<C-w>j", {desc = "Flytta till nedre split"})
+vim.keymap.set("n", "<C-k>", "<C-w>k", {desc = "Flytta till övre split"})
+vim.keymap.set("n", "<C-l>", "<C-w>l", {desc = "Flytta till höger split"})
+
+-- Stäng buffer utan att stänga fönster
+vim.keymap.set("n", "<C-w>", "<cmd>bdelete<cr>", {desc = "Stäng buffer"})
+
 -- Use vim.keymap.set for cleaner mapping
 local opts = { noremap = true, silent = true }
 
