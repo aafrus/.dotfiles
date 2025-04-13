@@ -373,3 +373,46 @@ return {
   hide_tab_bar_if_only_one_tab = true,  -- Redundant men bra att ha
   adjust_window_size_when_changing_font_size = false,  -- För stabil font-size
 }
+
+
+local colors = {
+  -- Basfärger från din JSON
+  foreground = "#B1B6B9",  -- Standardtext
+  background = "#161A1D",  -- Bakgrund
+  cursor_bg = "#B1B6B9",   -- Markörfärg (anpassad)
+
+  -- Ansi-färger (terminalens 16 färger)
+  ansi = {
+    "#1E2225",   -- Svart
+    "#E06C75",   -- Röd (anpassa om nödvändigt)
+    "#98C379",   -- Grön
+    "#D19A66",   -- Gul
+    "#61AFEF",   -- Blå
+    "#C678DD",   -- Magenta
+    "#56B6C2",   -- Cyan
+    "#ABB2BF",   -- Vit
+  },
+  brights = {
+    "#5C6370",   -- Ljus svart
+    "#E06C75",   -- Ljus röd
+    "#98C379",   -- Ljus grön
+    "#D19A66",   -- Ljus gul
+    "#61AFEF",   -- Ljus blå
+    "#C678DD",   -- Ljus magenta
+    "#56B6C2",   -- Ljus cyan
+    "#FFFFFF",   -- Ljus vit
+  },
+
+  -- Ytterligare färger från temat
+  tab_bar = {
+    background = "#1E2225",
+    active_tab = {
+      bg_color = "#161A1D",
+      fg_color = "#B1B6B9",
+    },
+    inactive_tab = {
+      bg_color = "#1E2225",
+      fg_color = "#637179",
+    },
+  },
+}
