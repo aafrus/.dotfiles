@@ -1,33 +1,16 @@
 return {
   "folke/snacks.nvim",
-  event = "VeryLazy",  # Ladda lazy
+  event = "VeryLazy",
   
-  opts = {  # Default konfiguration
-    border = "rounded",
-    timeout = 3000,
+  -- Minimal fungerande konfig
+  opts = {
+    border = "single",  # Enklare än 'rounded'
+    timeout = 2000,
     icons = {
-      error = "✗",
-      warn = "⚠",
-      info = "ℹ",
-      hint = "💡"
+      error = "E",
+      warn = "W",
+      info = "I",
+      hint = "H"
     }
-  },
-  
-  -- Alternativt: config = function() ... end om du vill ha mer komplex setup
-}return {
-  "folke/snacks.nvim",
-  event = "VeryLazy",  # Ladda lazy
-  
-  opts = {  # Default konfiguration
-    border = "rounded",
-    timeout = 3000,
-    icons = {
-      error = "✗",
-      warn = "⚠",
-      info = "ℹ",
-      hint = "💡"
-    }
-  },
-  
-  -- Alternativt: config = function() ... end om du vill ha mer komplex setup
+  }
 }
