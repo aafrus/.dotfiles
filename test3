@@ -1,69 +1,11 @@
--- init.lua
+# Aktivera Ctrl+A för markera allt
+bind '"\C-a": beginning-of-line'
+bind '"\C-x": kill-line'
+bind '"\C-c": copy-selection'
+bind '"\C-v": paste-from-clipboard'
 
-require("config.lazy")
-
--- Grundinställningar
-vim.opt.number = true             -- radnummer
-vim.opt.relativenumber = true     -- relativt radnummer
-vim.opt.clipboard = "unnamedplus" -- kopiera/klistra till systemet
-vim.opt.mouse = "a"               -- möjliggör mus
-vim.opt.termguicolors = true      -- färg
-vim.opt.cursorline = true         -- highlight på nuvarande rad
-vim.opt.scrolloff = 8             -- luft ovan/nedanför kursorn
-vim.opt.splitright = true         -- ny split till höger
-vim.opt.splitbelow = true         -- ny split nedåt
-vim.opt.ignorecase = true         -- case-insensitiv sökning
-vim.opt.smartcase = true          -- case-sensitiv vid stor bokstav
-vim.opt.updatetime = 300          -- snabbare git-gutter etc
-vim.opt.expandtab = true          -- tabs blir mellanslag
-vim.opt.shiftwidth = 2            -- antal mellanslag för autoindent
-vim.opt.tabstop = 2               -- antal mellanslag ett tabb representerar
-vim.opt.softtabstop = 2           -- antal mellanslag i insert-läge
-
--- Mappings (VSCode-liknande)
--- Spara fil
-vim.keymap.set({"n", "i", "v"}, "<C-s>", "<cmd>w<cr>", {desc = "Spara fil"})
-
--- Select all
-vim.keymap.set("n", "<C-a>", "ggVG", {desc = "Markera allt"})
-
--- Flytta mellan splits
-vim.keymap.set("n", "<C-h>", "<C-w>h", {desc = "Flytta till vänster split"})
-vim.keymap.set("n", "<C-j>", "<C-w>j", {desc = "Flytta till nedre split"})
-vim.keymap.set("n", "<C-k>", "<C-w>k", {desc = "Flytta till övre split"})
-vim.keymap.set("n", "<C-l>", "<C-w>l", {desc = "Flytta till höger split"})
-
--- Stäng buffer utan att stänga fönster
-vim.keymap.set("n", "<C-w>", "<cmd>bdelete<cr>", {desc = "Stäng buffer"})
-
--- Use vim.keymap.set for cleaner mapping
-local opts = { noremap = true, silent = true }
-
--- Select all with Ctrl+a (du har redan det kanske)
-vim.keymap.set('n', '<C-a>', 'ggVG', opts)
-
--- Ctrl+C = copy to system clipboard
-vim.keymap.set({'v', 'x'}, '<C-c>', '"+y', opts)
-
--- Ctrl+V = paste from system clipboard
-vim.keymap.set({'n', 'v', 'x'}, '<C-v>', '"+p', opts)
-
--- Ctrl+X = cut (copy + delete) to system clipboard
-vim.keymap.set({'v', 'x'}, '<C-x>', '"+d', opts)
-
--- Ctrl+Z = undo
-vim.keymap.set({'n', 'v', 'i'}, '<C-z>', '<C-o>u', opts)
-
-
--- Auto enable paste mode when pasting
-vim.api.nvim_create_autocmd("InsertEnter", {
-  callback = function()
-    vim.opt.paste = true
-  end
-})
-
-vim.api.nvim_create_autocmd("InsertLeave", {
-  callback = function()
-    vim.opt.paste = false
-  end
-})
+# För att fungera med xclip
+if [ -n "$DISPLAY" ]; then
+  alias copy='xclip -selection clipboard'
+  alias paste='xclip -selection clipboard -o'
+fi
