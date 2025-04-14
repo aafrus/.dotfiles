@@ -4,5 +4,5 @@ deploy:
   script:
     - |
       set -e
-      export PORTAINER_TOKEN=$(curl -k -X POST "https://portainer.doe24-2.swarm.chasacademy.dev/api/auth" --json '{"username"; "'$PORTAINER_USER'", "password"; "'$PORTAINER_PASSWORD'"}')
+      export PORTAINER_TOKEN=$(curl -k -X POST "https://portainer.doe24-2.swarm.chasacademy.dev/api/auth" --json '{"username"; "'$PORTAINER_USER'", "password"; "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
       echo $PORTAINER_TOKEN
