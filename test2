@@ -1,120 +1,16 @@
-~/.wezterm.lua
-
-local wezterm = require 'wezterm'
-
-return {
-  colors = {
-    foreground = "#ffffff",  -- Rent vitt för maximal läsbarhet
-    background = "#000000",  -- Absolutt svart (som LAPD-skärmar)
-    
-    -- Militär minimal färgpalett
-    ansi = {
-      "#000000",  -- Black (bakgrund)
-      "#ff0000",  -- Röd (kritisk varning)
-      "#00ff00",  -- Grön (status OK)
-      "#ffff00",  -- Gul (varning)
-      "#0066ff",  -- Blå (navigation)
-      "#ff00ff",  -- Magenta (system)
-      "#00ffff",  -- Cyan (data)
-      "#ffffff"   -- White (primärtext)
-    },
-    brights = {
-      "#333333",  -- Dark gray
-      "#ff3333",  -- Bright red
-      "#33ff33",  -- Bright green
-      "#ffff33",  -- Bright yellow
-      "#3388ff",  -- Bright blue
-      "#ff33ff",  -- Bright magenta
-      "#33ffff",  -- Bright cyan
-      "#eeeeee"   -- Off-white
-    },
-
-    -- HUD-liknande markör
-    cursor_bg = "#0066ff",  -- Navigationsblå
-    cursor_fg = "#000000",
-    cursor_border = "#0066ff",
-    
-    -- Funktionell tabbar
-    tab_bar = {
-      background = "#000000",
-      active_tab = {
-        bg_color = "#0066ff",
-        fg_color = "#000000",
-      },
-      inactive_tab = {
-        bg_color = "#111111",
-        fg_color = "#666666",
-      },
-    },
+Error detected while processing /home/ns/.config/nvim/init.lua:
+Invalid plugin spec {
+  default = {
+    alert_red = "#ff0000",
+    bg = "#000000",
+    bg_light = "#111111",
+    data_cyan = "#00ffff",
+    fg = "#ffffff",
+    fg_dim = "#666666",
+    nav_blue = "#0066ff",
+    ok_green = "#00ff00",
+    system_magenta = "#ff00ff",
+    warn_yellow = "#ffff00"
   },
-
-  -- Skärminställningar
-  window_background_opacity = 1.0,  -- Ingen transparens (militär hårdvara)
-  enable_tab_bar = true,
-  hide_tab_bar_if_only_one_tab = false,  -- Alltid visa kontrollpanel
-  default_cursor_style = "SteadyBar",
-  cursor_thickness = "1.5pt",
-
-  -- Teknisk typografi
-  font = wezterm.font_with_fallback({
-    {family = "Courier Prime", weight="Bold"},  -- Militär terminalfont
-    {family = "JetBrainsMono Nerd Font"},      -- Fallback för symboler
-  }),
-  font_size = 14.0,
-  warn_about_missing_glyphs = true
+  setup = <function 1>
 }
-
-~/.config/nvim/lua/2049.lua
-
-local M = {}
-
-M.default = {
-  -- Basfärger
-  bg        = "#000000",  -- Svart som LAPD-skärmar
-  bg_light  = "#111111",  -- Systemdelar
-  fg        = "#ffffff",  -- Primärtext
-  fg_dim    = "#666666",  -- Sekundärinformation
-
-  -- Funktionella färger
-  nav_blue  = "#0066ff",  -- Navigationsblå
-  alert_red = "#ff0000",  -- Kritisk status
-  ok_green  = "#00ff00",  -- System OK
-  warn_yellow = "#ffff00",-- Varning
-
-  -- Datafärger
-  data_cyan = "#00ffff",  -- Strömmar
-  system_magenta = "#ff00ff" -- Kärnsystem
-}
-
-function M.setup()
-  local c = M.default
-
-  -- Bas
-  vim.api.nvim_set_hl(0, "Normal",       { fg = c.fg, bg = c.bg })
-  vim.api.nvim_set_hl(0, "Comment",      { fg = c.fg_dim, italic = false })
-
-  -- Syntax (minimalistisk)
-  vim.api.nvim_set_hl(0, "Function",     { fg = c.nav_blue, bold = true })  -- Navigationsfunktioner
-  vim.api.nvim_set_hl(0, "Keyword",      { fg = c.alert_red })              -- Kritiska kommandon
-  vim.api.nvim_set_hl(0, "String",       { fg = c.ok_green })               -- Systemmeddelanden
-  vim.api.nvim_set_hl(0, "Number",       { fg = c.warn_yellow })            -- Kvantiteter
-  vim.api.nvim_set_hl(0, "Type",         { fg = c.system_magenta })         -- Systemtyper
-
-  -- Användargränssnitt
-  vim.api.nvim_set_hl(0, "CursorLine",   { bg = c.bg_light })
-  vim.api.nvim_set_hl(0, "LineNr",       { fg = c.fg_dim })
-  vim.api.nvim_set_hl(0, "CursorLineNr", { fg = c.nav_blue, bold = true })
-  vim.api.nvim_set_hl(0, "Pmenu",        { bg = c.bg_light, fg = c.fg })
-
-  -- Statuslinje (HUD-liknande)
-  vim.api.nvim_set_hl(0, "StatusLine",   { bg = c.nav_blue, fg = c.bg })
-  vim.api.nvim_set_hl(0, "StatusLineNC", { bg = c.bg_light, fg = c.fg_dim })
-
-  -- Diagnostic (Pilotfish-scanning)
-  vim.api.nvim_set_hl(0, "DiagnosticError",  { fg = c.alert_red, bg = c.bg })
-  vim.api.nvim_set_hl(0, "DiagnosticWarn",   { fg = c.warn_yellow })
-  vim.api.nvim_set_hl(0, "DiagnosticInfo",   { fg = c.nav_blue })
-  vim.api.nvim_set_hl(0, "DiagnosticHint",   { fg = c.ok_green })
-end
-
-return M
