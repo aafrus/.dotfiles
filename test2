@@ -1,29 +1,18 @@
-local M = {}
+return {
+  'olivercederborg/poimandres.nvim',
+  lazy = false,    -- Ladda direkt vid start
+  priority = 1000, -- Hög prioritet för färgschema
+  config = function()
+    require('poimandres').setup({
+      -- Valfria konfigurationer (lämna tom för standard)
+      bold_vert_split = false, 
+      dim_nc_background = false,
+      disable_background = false,
+      disable_float_background = false,
+      disable_italics = false,
+    })
 
-M.colors = {
-  bg = "#0c0c0c",      -- Mörk OLED-bakgrund
-  fg = "#a0a0a0",      -- Grå text
-  alert = "#8c5d4c",   -- K D6-display rödbrun
-  nav = "#3a5f8c",     -- Navigationsblått
-  drone = "#4c8c8c",   -- Pilotfish-cyan
-  system = "#4d6b5f",  -- Systemstatus grön
+    -- Aktivera temat
+    vim.cmd.colorscheme('poimandres')
+  end,
 }
-
-function M.apply()
-  -- Grundläggande syntax
-  vim.api.nvim_set_hl(0, "Normal", { fg = M.colors.fg, bg = M.colors.bg })
-  vim.api.nvim_set_hl(0, "Comment", { fg = "#5a5a5a", italic = true })
-
-  -- Syntaxgrupper
-  vim.api.nvim_set_hl(0, "Function", { fg = M.colors.nav })
-  vim.api.nvim_set_hl(0, "Keyword", { fg = M.colors.alert })
-  vim.api.nvim_set_hl(0, "String", { fg = M.colors.system })
-  
-  -- Registrera som colorscheme
-  vim.g.colors_name = "br2049"
-end
-
-return M
-
-
-require('plugins.2049').apply()
