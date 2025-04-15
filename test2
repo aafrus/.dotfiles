@@ -1,18 +1,48 @@
-return {
-  'olivercederborg/poimandres.nvim',
-  lazy = false,    -- Ladda direkt vid start
-  priority = 1000, -- Hög prioritet för färgschema
-  config = function()
-    require('poimandres').setup({
-      -- Valfria konfigurationer (lämna tom för standard)
-      bold_vert_split = false, 
-      dim_nc_background = false,
-      disable_background = false,
-      disable_float_background = false,
-      disable_italics = false,
-    })
+local M = {}
 
-    -- Aktivera temat
-    vim.cmd.colorscheme('poimandres')
-  end,
+M.colors = {
+  -- Brutal svartvitt
+  black     = "#000000",
+  white     = "#ffffff",
+  gray_dark = "#121212",
+  gray      = "#444444",
+  gray_light= "#888888",
+  
+  -- En enda accentfärg (grön som patina på metall)
+  accent    = "#5f875f"  -- Muted grön
 }
+
+function M.apply()
+  local c = M.colors
+
+  -- Bas
+  vim.api.nvim_set_hl(0, "Normal",       { fg = c.white, bg = c.black })
+  vim.api.nvim_set_hl(0, "Comment",      { fg = c.gray, italic = true })
+
+  -- Syntaxgrupper med accentfärg
+  vim.api.nvim_set_hl(0, "Function",     { fg = c.white, bold = true })
+  vim.api.nvim_set_hl(0, "Keyword",      { fg = c.white, bold = true })
+  vim.api.nvim_set_hl(0, "String",       { fg = c.gray_light })
+  vim.api.nvim_set_hl(0, "Number",       { fg = c.white })
+  vim.api.nvim_set_hl(0, "Type",         { fg = c.accent })        -- ENDA FÄRGEN
+
+  -- Gränssnitt
+  vim.api.nvim_set_hl(0, "CursorLine",   { bg = c.gray_dark })
+  vim.api.nvim_set_hl(0, "LineNr",       { fg = c.gray })
+  vim.api.nvim_set_hl(0, "CursorLineNr", { fg = c.accent, bold = true })
+  vim.api.nvim_set_hl(0, "StatusLine",   { bg = c.gray_dark, fg = c.white })
+
+  -- Diagnostic (använder accentfärgen)
+  vim.api.nvim_set_hl(0, "DiagnosticError", { fg = c.white })
+  vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = c.gray_light })
+  vim.api.nvim_set_hl(0, "DiagnosticInfo",  { fg = c.accent })
+  vim.api.nvim_set_hl(0, "DiagnosticHint",  { fg = c.gray })
+
+  -- Registrera som colorscheme
+  vim.g.colors_name = "blackmetal"
+end
+
+return M
+
+
+vim.cmd("colorscheme theme")
