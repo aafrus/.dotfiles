@@ -1,26 +1,37 @@
 ~/.wezterm.lua
 
- -- Monokromatisk bas
+return {
+  colors = {
+    foreground = "#c0c0c0",  -- Silvergrå text
+    background = "#080808",  -- Djup svart (behåller din önskan)
+    
+    -- Anpassad O-negative palett
     ansi = {
-      "#1a1a1a",  -- black
-      "#5f8787",  -- accent 1 (blågrön)
-      "#666666",  -- gray 1
-      "#87875f",  -- accent 2 (gulgrön)
-      "#888888",  -- gray 2
-      "#8181a6",  -- accent 3 (lila)
-      "#777777",  -- gray 3
-      "#d0d0d0"   -- white
+      "#080808",  -- Black
+      "#8b0000",  -- Blood red (accent 1)
+      "#4e4e4e",  -- Dark gray
+      "#660000",  -- Dark blood (accent 2)
+      "#3a3a3a",  -- Medium gray
+      "#420d0d",  -- Wine red
+      "#5a5a5a",  -- Light gray
+      "#a0a0a0"   -- Silver
     },
     brights = {
-      "#252525",
-      "#6f9f9f",
-      "#767676",
-      "#9f9f6f",
-      "#989898",
-      "#9191b6",
-      "#878787",
-      "#e0e0e0"
+      "#181818",
+      "#a80000",  -- Bright blood
+      "#666666",
+      "#800000",
+      "#4a4a4a",
+      "#5a1a1a",
+      "#6a6a6a",
+      "#b0b0b0"
     },
+
+    -- Cursor settings (blood red)
+    cursor_bg = "#8b0000",
+    cursor_fg = "#080808",
+    cursor_border = "#8b0000",
+  },
 
 
 ~/.config/nvim/lua/colors.lua
@@ -28,37 +39,34 @@
 vim.cmd("hi clear")
 vim.opt.background = "dark"
 
-local colors = {
-  bg       = "#080808",
-  fg       = "#e0e0e0",
-  gray1    = "#1a1a1a",
-  gray2    = "#666666",
-  gray3    = "#888888",
-  accent1  = "#5f8787",  -- Blågrön (funktioner)
-  accent2  = "#87875f",  -- Gulgrön (nyckelord)
-  accent3  = "#8181a6"   -- Lila (strängar/special)
+local palette = {
+  black     = "#080808",
+  blood     = "#8b0000",  -- Primary accent
+  blood_drk = "#420d0d",  -- Darker blood
+  gray_drk  = "#1a1a1a",
+  gray      = "#4e4e4e",
+  gray_lt   = "#6a6a6a",
+  silver    = "#c0c0c0"
 }
 
--- Grunder
-vim.api.nvim_set_hl(0, "Normal",       { fg = colors.fg, bg = colors.bg })
-vim.api.nvim_set_hl(0, "Comment",      { fg = colors.gray2, italic = true })
+-- Base
+vim.api.nvim_set_hl(0, "Normal",     {fg = palette.silver, bg = palette.black})
+vim.api.nvim_set_hl(0, "Comment",    {fg = palette.gray, italic=true})
 
 -- Syntax
-vim.api.nvim_set_hl(0, "Function",     { fg = colors.accent1 })
-vim.api.nvim_set_hl(0, "Keyword",      { fg = colors.accent2 })
-vim.api.nvim_set_hl(0, "String",       { fg = colors.accent3 })
-vim.api.nvim_set_hl(0, "Number",       { fg = colors.fg })
-vim.api.nvim_set_hl(0, "Type",         { fg = colors.accent1 })
+vim.api.nvim_set_hl(0, "Function",   {fg = palette.blood})
+vim.api.nvim_set_hl(0, "Keyword",    {fg = palette.blood_drk, bold=true})
+vim.api.nvim_set_hl(0, "String",     {fg = palette.gray_lt})
+vim.api.nvim_set_hl(0, "Number",     {fg = palette.silver})
 
 -- UI
-vim.api.nvim_set_hl(0, "LineNr",       { fg = colors.gray2 })
-vim.api.nvim_set_hl(0, "CursorLine",   { bg = colors.gray1 })
-vim.api.nvim_set_hl(0, "CursorLineNr", { fg = colors.accent1, bold = true })
-vim.api.nvim_set_hl(0, "Pmenu",        { bg = colors.gray1, fg = colors.fg })
+vim.api.nvim_set_hl(0, "LineNr",           {fg = palette.gray})
+vim.api.nvim_set_hl(0, "CursorLine",       {bg = palette.gray_drk})
+vim.api.nvim_set_hl(0, "CursorLineNr",     {fg = palette.blood, bold=true})
+vim.api.nvim_set_hl(0, "PmenuSel",         {bg = palette.blood_drk})
 
--- LSP
-vim.api.nvim_set_hl(0, "DiagnosticError", { fg = "#d78787" })  -- Lätt röd
-vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = colors.accent2 })
+-- LSP/Debug
+vim.api.nvim_set_hl(0, "DiagnosticError",  {fg = palette.blood})
+vim.api.nvim_set_hl(0, "DiagnosticWarn",   {fg = palette.blood_drk})
 
--- Aktivera temat
-vim.cmd("colorscheme custom_minimal")
+vim.cmd("colorscheme typeonegative")
