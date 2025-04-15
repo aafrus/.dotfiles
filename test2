@@ -1,26 +1,29 @@
-local colors = {
-  bg = "#0c0c0c",
-  fg = "#a0a0a0",
-  alert = "#8c5d4c",
-  nav = "#3a5f8c",
-  drone = "#4c8c8c",
-  system = "#4d6b5f",
-  data = "#5d4c8c"
+local M = {}
+
+M.colors = {
+  bg = "#0c0c0c",      -- Mörk OLED-bakgrund
+  fg = "#a0a0a0",      -- Grå text
+  alert = "#8c5d4c",   -- K D6-display rödbrun
+  nav = "#3a5f8c",     -- Navigationsblått
+  drone = "#4c8c8c",   -- Pilotfish-cyan
+  system = "#4d6b5f",  -- Systemstatus grön
 }
 
--- Grundläggande syntaxhighlightning
-vim.api.nvim_set_hl(0, "Normal", { fg = colors.fg, bg = colors.bg })
-vim.api.nvim_set_hl(0, "Comment", { fg = "#5a5a5a", italic = true })
-vim.api.nvim_set_hl(0, "Function", { fg = colors.nav })
-vim.api.nvim_set_hl(0, "Keyword", { fg = colors.alert })
-vim.api.nvim_set_hl(0, "String", { fg = colors.system })
-vim.api.nvim_set_hl(0, "Number", { fg = "#8c7c4c" })
-vim.api.nvim_set_hl(0, "Type", { fg = colors.drone })
+function M.apply()
+  -- Grundläggande syntax
+  vim.api.nvim_set_hl(0, "Normal", { fg = M.colors.fg, bg = M.colors.bg })
+  vim.api.nvim_set_hl(0, "Comment", { fg = "#5a5a5a", italic = true })
 
--- Gränssnittselement
-vim.api.nvim_set_hl(0, "CursorLine", { bg = "#181818" })
-vim.api.nvim_set_hl(0, "LineNr", { fg = "#4a4a4a" })
-vim.api.nvim_set_hl(0, "StatusLine", { bg = colors.nav, fg = colors.fg })
+  -- Syntaxgrupper
+  vim.api.nvim_set_hl(0, "Function", { fg = M.colors.nav })
+  vim.api.nvim_set_hl(0, "Keyword", { fg = M.colors.alert })
+  vim.api.nvim_set_hl(0, "String", { fg = M.colors.system })
+  
+  -- Registrera som colorscheme
+  vim.g.colors_name = "br2049"
+end
 
--- Registrera som colorscheme
-vim.cmd("colorscheme br2049")
+return M
+
+
+require('plugins.2049').apply()
