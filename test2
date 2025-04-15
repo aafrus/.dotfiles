@@ -1,64 +1,68 @@
 local wezterm = require 'wezterm'
 
 local colors = {
-  foreground = "#e0e0e0",
-  background = "#080808",
-  cursor_bg = "#c2c2b0",
-  cursor_fg = "#080808",
-  
- -- Monokromatisk bas
- ansi = {
-  "#1a1a1a",  -- black
-  "#5f8787",  -- accent 1 (blågrön)
-  "#666666",  -- gray 1
-  "#87875f",  -- accent 2 (gulgrön)
-  "#888888",  -- gray 2
-  "#8181a6",  -- accent 3 (lila)
-  "#777777",  -- gray 3
-  "#d0d0d0"   -- white
-},
-brights = {
-  "#252525",
-  "#6f9f9f",
-  "#767676",
-  "#9f9f6f",
-  "#989898",
-  "#9191b6",
-  "#878787",
-  "#e0e0e0"
-},
-  
+  foreground = "#c5c8c6",
+  background = "#1d1f21",
+  cursor_bg = "#c5c8c6",
+  cursor_fg = "#1d1f21",
+  cursor_border = "#c5c8c6",
+
+  ansi = {
+    "#1d1f21", -- black
+    "#cc6666", -- red
+    "#b5bd68", -- green
+    "#f0c674", -- yellow
+    "#81a2be", -- blue
+    "#b294bb", -- magenta
+    "#8abeb7", -- cyan
+    "#c5c8c6", -- white
+  },
+
+  brights = {
+    "#969896", -- bright black
+    "#cc6666",
+    "#b5bd68",
+    "#f0c674",
+    "#81a2be",
+    "#b294bb",
+    "#8abeb7",
+    "#ffffff", -- bright white
+  },
+
   tab_bar = {
-    background = "#121212",
+    background = "#1b1d1f",
     active_tab = {
-      bg_color = "#222222",
-      fg_color = "#c2c2b0",
+      bg_color = "#282a2e",
+      fg_color = "#c5c8c6",
+    },
+    inactive_tab = {
+      bg_color = "#1d1f21",
+      fg_color = "#707880",
+    },
+    inactive_tab_hover = {
+      bg_color = "#2c2f34",
+      fg_color = "#c5c8c6",
     },
   },
 }
 
 return {
-  -- Färger och transparens
-  color_scheme = "CustomMonochrome",
+  color_scheme = "CustomVesper",
   colors = colors,
   window_background_opacity = 0.95,
 
-  -- Tabbar-inställningar
   enable_tab_bar = false,
   hide_tab_bar_if_only_one_tab = true,
   window_decorations = "NONE",
 
-  -- Teckensnitt
   font = wezterm.font_with_fallback({
     { family = "JetBrainsMono Nerd Font", weight = "Regular" },
   }),
   font_size = 12.0,
 
-  -- Markörinställningar
   default_cursor_style = "SteadyBar",
   cursor_thickness = "1.5pt",
 
-  -- Fönsterpadding
   window_padding = {
     left = 5,
     right = 5,
@@ -66,9 +70,8 @@ return {
     bottom = 5,
   },
 
-  -- Diverse
   use_fancy_tab_bar = false,
   adjust_window_size_when_changing_font_size = false,
   warn_about_missing_glyphs = false,
-  window_close_confirmation = "NeverPrompt"
+  window_close_confirmation = "NeverPrompt",
 }
