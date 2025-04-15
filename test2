@@ -1,37 +1,26 @@
-local M = {}
-
-M.colors = {
-  -- Exakta färger från referenserna
-  bg        = "#0c0c0c",    -- Displaybakgrund
-  bg_light  = "#181818",    -- Underpaneler
-  fg        = "#a0a0a0",    -- Primärtext (som K's UI)
-  
-  -- Muted accentfärger
-  alert     = "#8c5d4c",    -- K D6-display
-  nav       = "#3a5f8c",    -- Navigationsblått
-  drone     = "#4c8c8c",    -- Pilotfish-cyan
-  system    = "#4d6b5f",    -- Systemstatus
-  data      = "#5d4c8c",    -- Datalila
+local colors = {
+  bg = "#0c0c0c",
+  fg = "#a0a0a0",
+  alert = "#8c5d4c",
+  nav = "#3a5f8c",
+  drone = "#4c8c8c",
+  system = "#4d6b5f",
+  data = "#5d4c8c"
 }
 
-function M.setup()
-  local c = M.colors
+-- Grundläggande syntaxhighlightning
+vim.api.nvim_set_hl(0, "Normal", { fg = colors.fg, bg = colors.bg })
+vim.api.nvim_set_hl(0, "Comment", { fg = "#5a5a5a", italic = true })
+vim.api.nvim_set_hl(0, "Function", { fg = colors.nav })
+vim.api.nvim_set_hl(0, "Keyword", { fg = colors.alert })
+vim.api.nvim_set_hl(0, "String", { fg = colors.system })
+vim.api.nvim_set_hl(0, "Number", { fg = "#8c7c4c" })
+vim.api.nvim_set_hl(0, "Type", { fg = colors.drone })
 
-  -- Bas
-  vim.api.nvim_set_hl(0, "Normal",       { fg = c.fg, bg = c.bg })
-  vim.api.nvim_set_hl(0, "Comment",      { fg = "#5a5a5a", italic = true })
+-- Gränssnittselement
+vim.api.nvim_set_hl(0, "CursorLine", { bg = "#181818" })
+vim.api.nvim_set_hl(0, "LineNr", { fg = "#4a4a4a" })
+vim.api.nvim_set_hl(0, "StatusLine", { bg = colors.nav, fg = colors.fg })
 
-  -- Syntax
-  vim.api.nvim_set_hl(0, "Function",     { fg = c.nav })         -- Navigation
-  vim.api.nvim_set_hl(0, "Keyword",      { fg = c.alert })       -- Varningar
-  vim.api.nvim_set_hl(0, "String",       { fg = c.system })      -- System
-  vim.api.nvim_set_hl(0, "Number",       { fg = "#8c7c4c" })     -- Kvantiteter
-  vim.api.nvim_set_hl(0, "Type",         { fg = c.drone })       -- Drönardata
-
-  -- UI
-  vim.api.nvim_set_hl(0, "CursorLine",   { bg = c.bg_light })
-  vim.api.nvim_set_hl(0, "LineNr",       { fg = "#4a4a4a" })
-  vim.api.nvim_set_hl(0, "StatusLine",   { bg = c.nav, fg = c.fg })
-end
-
-return M
+-- Registrera som colorscheme
+vim.cmd("colorscheme br2049")
