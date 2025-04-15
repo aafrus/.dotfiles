@@ -1,64 +1,44 @@
-Error detected while processing /home/ns/.config/nvim/init.lua:
-Invalid plugin spec {
-  apply = <function 1>,
-  colors = {
-    accent = "#5f875f",
-    black = "#000000",
-    gray = "#444444",
-    gray_dark = "#121212",
-    gray_light = "#888888",
-    white = "#ffffff"
-  }
+local M = {}
+
+M.colors = {
+  black     = "#000000",
+  white     = "#ffffff",
+  gray_dark = "#121212",
+  gray      = "#444444",
+  gray_light= "#888888",
+  accent    = "#5f875f"  -- Muted grön
 }
-E5113: Error while calling lua chunk: /home/ns/.config/nvim/init.lua:45: Vim:E185: Cannot fi
-nd color scheme 'blackmetal'
-stack traceback:
-        [C]: in function 'colorscheme'
-        /home/ns/.config/nvim/init.lua:45: in main chunk
+
+function M.load()
+  local c = M.colors
+
+  -- Registrera först temat
+  vim.g.colors_name = "blackmetal"
+
+  -- Grundinställningar
+  vim.api.nvim_set_hl(0, "Normal",       { fg = c.white, bg = c.black })
+  vim.api.nvim_set_hl(0, "Comment",      { fg = c.gray, italic = true })
+
+  -- Syntax
+  vim.api.nvim_set_hl(0, "Function",     { fg = c.white, bold = true })
+  vim.api.nvim_set_hl(0, "Keyword",      { fg = c.white, bold = true })
+  vim.api.nvim_set_hl(0, "String",       { fg = c.gray_light })
+  vim.api.nvim_set_hl(0, "Number",       { fg = c.white })
+  vim.api.nvim_set_hl(0, "Type",         { fg = c.accent })
+
+  -- Gränssnitt
+  vim.api.nvim_set_hl(0, "CursorLine",   { bg = c.gray_dark })
+  vim.api.nvim_set_hl(0, "LineNr",       { fg = c.gray })
+  vim.api.nvim_set_hl(0, "CursorLineNr", { fg = c.accent, bold = true })
+  vim.api.nvim_set_hl(0, "StatusLine",   { bg = c.gray_dark, fg = c.white })
+end
+
+return M
 
 
--- init.lua
 
-require("config.lazy")
+-- Ladda temat FÖRE colorscheme-kommandot
+require('plugins.theme').load()
 
--- Grundinställningar
-vim.opt.termguicolors = true
-vim.opt.number = true             -- radnummer
-vim.opt.relativenumber = true     -- relativt radnummer
-vim.opt.clipboard = "unnamedplus" -- kopiera/klistra till systemet
-vim.opt.mouse = "a"               -- möjliggör mus
-vim.opt.termguicolors = true      -- färg
-vim.opt.cursorline = true         -- highlight på nuvarande rad
-vim.opt.scrolloff = 8             -- luft ovan/nedanför kursorn
-vim.opt.splitright = true         -- ny split till höger
-vim.opt.splitbelow = true         -- ny split nedåt
-vim.opt.ignorecase = true         -- case-insensitiv sökning
-vim.opt.smartcase = true          -- case-sensitiv vid stor bokstav
-vim.opt.updatetime = 300          -- snabbare git-gutter etc
-vim.opt.expandtab = true          -- tabs blir mellanslag
-vim.opt.shiftwidth = 2            -- antal mellanslag för autoindent
-vim.opt.tabstop = 2               -- antal mellanslag ett tabb representerar
-vim.opt.softtabstop = 2           -- antal mellanslag i insert-läge
-
--- Spara fil
-vim.keymap.set({"n", "i", "v"}, "<C-s>", "<cmd>w<cr>", {desc = "Spara fil"})
-
--- Select all
-vim.keymap.set("n", "<C-a>", "ggVG", {desc = "Markera allt"})
-
-vim.keymap.set("n", "<C-w>", "<cmd>bdelete<cr>", {desc = "Stäng buffer"})
-
--- Use vim.keymap.set for cleaner mapping
-local opts = { noremap = true, silent = true }
-
--- Ctrl+C = copy to system clipboard
-vim.keymap.set({'v', 'x'}, '<C-c>', '"+y', opts)
-
--- Ctrl+V = paste from system clipboard
-vim.keymap.set({'n', 'v', 'x'}, '<C-v>', '"+p', opts)
-
--- Ctrl+X = cut (copy + delete) to system clipboard
-vim.keymap.set({'v', 'x'}, '<C-x>', '"+d', opts)
-
-
+-- Använd temat
 vim.cmd.colorscheme('blackmetal')
