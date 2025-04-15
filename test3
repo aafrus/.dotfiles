@@ -1,69 +1,66 @@
 local wezterm = require 'wezterm'
 
-return {
-  color_scheme = "CustomMonochrome",
-  colors = {
-    foreground = "#c2c2b0",
-    background = "#080808",
-    cursor_bg = "#c2c2b0",
-    cursor_fg = "#080808",
-    
-    ansi = {
-      "#222222",  -- black
-      "#5f8787",  -- red
-      "#666666",  -- green
-      "#87875f",  -- yellow
-      "#888888",  -- blue
-      "#8181a6",  -- magenta
-      "#777777",  -- cyan
-      "#c1c1c1"   -- white
-    },
-    brights = {
-      "#222222",  -- black
-      "#5f8787",  -- red
-      "#666666",  -- green
-      "#87875f",  -- yellow
-      "#888888",  -- blue
-      "#8181a6",  -- magenta
-      "#777777",  -- cyan
-      "#c1c1c1"   -- white
-    },
-    
-    -- Extra anpassade färger
-    tab_bar = {
-      background = "#121212",
-      active_tab = {
-        bg_color = "#222222",
-        fg_color = "#c2c2b0",
-      },
+local colors = {
+  foreground = "#c2c2b0",
+  background = "#080808",
+  cursor_bg = "#c2c2b0",
+  cursor_fg = "#080808",
+  
+  ansi = {
+    "#222222",  -- black
+    "#5f8787",  -- red
+    "#666666",  -- green
+    "#87875f",  -- yellow
+    "#888888",  -- blue
+    "#8181a6",  -- magenta
+    "#777777",  -- cyan
+    "#c1c1c1"   -- white
+  },
+  brights = {
+    "#222222",  -- black
+    "#5f8787",  -- red
+    "#666666",  -- green
+    "#87875f",  -- yellow
+    "#888888",  -- blue
+    "#8181a6",  -- magenta
+    "#777777",  -- cyan
+    "#c1c1c1"   -- white
+  },
+  
+  tab_bar = {
+    background = "#121212",
+    active_tab = {
+      bg_color = "#222222",
+      fg_color = "#c2c2b0",
     },
   },
-  window_background_opacity = 0.95,  -- Lätt genomskinlighet
 }
 
 return {
-  -- Disable tab bar completely
+  -- Färger och transparens
+  color_scheme = "CustomMonochrome",
+  colors = colors,
+  window_background_opacity = 0.95,
+
+  -- Tabbar-inställningar
   enable_tab_bar = false,
   hide_tab_bar_if_only_one_tab = true,
   window_decorations = "NONE",
 
-  -- Font settings
+  -- Teckensnitt
   font = wezterm.font_with_fallback({
     { family = "JetBrainsMono Nerd Font", weight = "Regular" },
   }),
   font_size = 12.0,
 
-  -- Cursor settings (fixed blinking bar)
+  -- Markörinställningar
   default_cursor_style = "BlinkingBar",
-  cursor_blink_rate = 500,  -- Faster blink rate (500ms)
-  cursor_blink_ease_in = "Linear",  -- Smoother blink
+  cursor_blink_rate = 500,
+  cursor_blink_ease_in = "Linear",
   cursor_thickness = "1.5pt",
-  force_reverse_video_cursor = true,  -- THIS IS THE FIX FOR SQUARE CURSOR
+  force_reverse_video_cursor = true,
 
-  -- Colors
-  colors = colors,
-
-  -- Window padding
+  -- Fönsterpadding
   window_padding = {
     left = 5,
     right = 5,
@@ -71,9 +68,9 @@ return {
     bottom = 5,
   },
 
-  -- Misc
+  -- Diverse
   use_fancy_tab_bar = false,
   adjust_window_size_when_changing_font_size = false,
   warn_about_missing_glyphs = false,
-	window_close_confirmation = "NeverPrompt"
+  window_close_confirmation = "NeverPrompt"
 }
