@@ -4,120 +4,117 @@ local wezterm = require 'wezterm'
 
 return {
   colors = {
-    foreground = "#e0e0e0",  -- Blekt neonljus
-    background = "#0a0a12",  -- Djup blåsvart (nattstad)
+    foreground = "#ffffff",  -- Rent vitt för maximal läsbarhet
+    background = "#000000",  -- Absolutt svart (som LAPD-skärmar)
     
-    -- Blade Runner 2049 färgpalett
+    -- Militär minimal färgpalett
     ansi = {
-      "#0a0a12",  -- Space black
-      "#ff2a6d",  -- Neonrosa (accent 1)
-      "#05d9e8",  -- Cyan (accent 2)
-      "#d300c5",  -- Magenta
-      "#75d1f0",  -- Blåljus
-      "#c79af4",  -- Lila
-      "#00f2ea",  -- Stark cyan
-      "#e0e0e0"   -- Blekt ljus
+      "#000000",  -- Black (bakgrund)
+      "#ff0000",  -- Röd (kritisk varning)
+      "#00ff00",  -- Grön (status OK)
+      "#ffff00",  -- Gul (varning)
+      "#0066ff",  -- Blå (navigation)
+      "#ff00ff",  -- Magenta (system)
+      "#00ffff",  -- Cyan (data)
+      "#ffffff"   -- White (primärtext)
     },
     brights = {
-      "#1a1a2e",
-      "#ff4d88",
-      "#15f9f8",
-      "#e31dd5",
-      "#95e1ff",
-      "#d7aafc",
-      "#20fff8",
-      "#f0f0f0"
+      "#333333",  -- Dark gray
+      "#ff3333",  -- Bright red
+      "#33ff33",  -- Bright green
+      "#ffff33",  -- Bright yellow
+      "#3388ff",  -- Bright blue
+      "#ff33ff",  -- Bright magenta
+      "#33ffff",  -- Bright cyan
+      "#eeeeee"   -- Off-white
     },
 
-    -- UI-anpassningar
-    cursor_bg = "#05d9e8",  -- Cyan markör
-    cursor_fg = "#0a0a12",
-    cursor_border = "#05d9e8",
+    -- HUD-liknande markör
+    cursor_bg = "#0066ff",  -- Navigationsblå
+    cursor_fg = "#000000",
+    cursor_border = "#0066ff",
     
+    -- Funktionell tabbar
     tab_bar = {
-      background = "#0a0a12",
+      background = "#000000",
       active_tab = {
-        bg_color = "#1a1a2e",
-        fg_color = "#05d9e8",
+        bg_color = "#0066ff",
+        fg_color = "#000000",
+      },
+      inactive_tab = {
+        bg_color = "#111111",
+        fg_color = "#666666",
       },
     },
   },
 
-  window_background_opacity = 0.92,
+  -- Skärminställningar
+  window_background_opacity = 1.0,  -- Ingen transparens (militär hårdvara)
   enable_tab_bar = true,
-  hide_tab_bar_if_only_one_tab = true,
+  hide_tab_bar_if_only_one_tab = false,  -- Alltid visa kontrollpanel
   default_cursor_style = "SteadyBar",
-  cursor_thickness = "2pt",
+  cursor_thickness = "1.5pt",
 
+  -- Teknisk typografi
   font = wezterm.font_with_fallback({
-    {family = "JetBrainsMono Nerd Font", weight="Medium"},
-    {family = "Bebas Neue", weight="Regular"},  -- För Blade Runner-känsla
+    {family = "Courier Prime", weight="Bold"},  -- Militär terminalfont
+    {family = "JetBrainsMono Nerd Font"},      -- Fallback för symboler
   }),
-  font_size = 13.0,
-  warn_about_missing_glyphs = false
+  font_size = 14.0,
+  warn_about_missing_glyphs = true
 }
 
-~/.config/nvim/lua/bladerunner.lua
+~/.config/nvim/lua/2049.lua
 
 local M = {}
 
-local hsl = function(h, s, l)
-  local hex = require("vesper.hsl").hslToHex(h, s, l)
-  return hex:upper()
-end
-
----@class Palette
 M.default = {
-  none = "NONE",
-  bg = hsl(240, 30, 5),       -- #0a0a12
-  bg_dark = hsl(240, 30, 8),  -- #121220
-  bg_light = hsl(240, 20, 12),-- #1a1a2e
-  
-  fg = hsl(0, 0, 88),         -- #e0e0e0
-  fg_dark = hsl(0, 0, 60),    -- #999999
-  
-  -- Neon accents
-  neon_pink = hsl(340, 100, 59),  -- #ff2a6d
-  neon_cyan = hsl(185, 92, 56),   -- #05d9e8
-  neon_blue = hsl(198, 85, 70),   -- #75d1f0
-  
-  -- Syntaxgrupper
-  red = hsl(355, 80, 60),
-  orange = hsl(20, 100, 60),
-  yellow = hsl(45, 100, 60),
-  green = hsl(120, 60, 55),
-  purple = hsl(290, 80, 70),
+  -- Basfärger
+  bg        = "#000000",  -- Svart som LAPD-skärmar
+  bg_light  = "#111111",  -- Systemdelar
+  fg        = "#ffffff",  -- Primärtext
+  fg_dim    = "#666666",  -- Sekundärinformation
+
+  -- Funktionella färger
+  nav_blue  = "#0066ff",  -- Navigationsblå
+  alert_red = "#ff0000",  -- Kritisk status
+  ok_green  = "#00ff00",  -- System OK
+  warn_yellow = "#ffff00",-- Varning
+
+  -- Datafärger
+  data_cyan = "#00ffff",  -- Strömmar
+  system_magenta = "#ff00ff" -- Kärnsystem
 }
 
 function M.setup()
-  local colors = M.default
-  
-  -- Base
-  vim.api.nvim_set_hl(0, "Normal", { fg = colors.fg, bg = colors.bg })
-  vim.api.nvim_set_hl(0, "Comment", { fg = colors.fg_dark, italic = true })
+  local c = M.default
 
-  -- Syntax
-  vim.api.nvim_set_hl(0, "Function", { fg = colors.neon_cyan, bold = true })
-  vim.api.nvim_set_hl(0, "Keyword", { fg = colors.neon_pink })
-  vim.api.nvim_set_hl(0, "String", { fg = colors.neon_blue })
-  vim.api.nvim_set_hl(0, "Number", { fg = colors.yellow })
-  vim.api.nvim_set_hl(0, "Type", { fg = colors.neon_cyan })
+  -- Bas
+  vim.api.nvim_set_hl(0, "Normal",       { fg = c.fg, bg = c.bg })
+  vim.api.nvim_set_hl(0, "Comment",      { fg = c.fg_dim, italic = false })
 
-  -- UI
-  vim.api.nvim_set_hl(0, "CursorLine", { bg = colors.bg_dark })
-  vim.api.nvim_set_hl(0, "LineNr", { fg = colors.fg_dark })
-  vim.api.nvim_set_hl(0, "CursorLineNr", { fg = colors.neon_pink, bold = true })
-  vim.api.nvim_set_hl(0, "PmenuSel", { bg = colors.neon_pink, fg = colors.bg })
+  -- Syntax (minimalistisk)
+  vim.api.nvim_set_hl(0, "Function",     { fg = c.nav_blue, bold = true })  -- Navigationsfunktioner
+  vim.api.nvim_set_hl(0, "Keyword",      { fg = c.alert_red })              -- Kritiska kommandon
+  vim.api.nvim_set_hl(0, "String",       { fg = c.ok_green })               -- Systemmeddelanden
+  vim.api.nvim_set_hl(0, "Number",       { fg = c.warn_yellow })            -- Kvantiteter
+  vim.api.nvim_set_hl(0, "Type",         { fg = c.system_magenta })         -- Systemtyper
 
-  -- LSP
-  vim.api.nvim_set_hl(0, "DiagnosticError", { fg = colors.red })
-  vim.api.nvim_set_hl(0, "DiagnosticWarn", { fg = colors.orange })
-  vim.api.nvim_set_hl(0, "DiagnosticInfo", { fg = colors.neon_cyan })
-  vim.api.nvim_set_hl(0, "DiagnosticHint", { fg = colors.purple })
+  -- Användargränssnitt
+  vim.api.nvim_set_hl(0, "CursorLine",   { bg = c.bg_light })
+  vim.api.nvim_set_hl(0, "LineNr",       { fg = c.fg_dim })
+  vim.api.nvim_set_hl(0, "CursorLineNr", { fg = c.nav_blue, bold = true })
+  vim.api.nvim_set_hl(0, "Pmenu",        { bg = c.bg_light, fg = c.fg })
 
-  -- Treesitter (om du använder det)
-  vim.api.nvim_set_hl(0, "@property", { fg = colors.neon_blue })
-  vim.api.nvim_set_hl(0, "@variable", { fg = colors.fg })
+  -- Statuslinje (HUD-liknande)
+  vim.api.nvim_set_hl(0, "StatusLine",   { bg = c.nav_blue, fg = c.bg })
+  vim.api.nvim_set_hl(0, "StatusLineNC", { bg = c.bg_light, fg = c.fg_dim })
+
+  -- Diagnostic (Pilotfish-scanning)
+  vim.api.nvim_set_hl(0, "DiagnosticError",  { fg = c.alert_red, bg = c.bg })
+  vim.api.nvim_set_hl(0, "DiagnosticWarn",   { fg = c.warn_yellow })
+  vim.api.nvim_set_hl(0, "DiagnosticInfo",   { fg = c.nav_blue })
+  vim.api.nvim_set_hl(0, "DiagnosticHint",   { fg = c.ok_green })
 end
 
 return M
