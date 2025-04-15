@@ -1,1 +1,86 @@
+~/.wezterm.lua
 
+return {
+  color_scheme = "CustomMonochrome",
+  colors = {
+    foreground = "#c2c2b0",
+    background = "#080808",
+    cursor_bg = "#c2c2b0",
+    cursor_fg = "#080808",
+    
+    ansi = {
+      "#222222",  -- black
+      "#5f8787",  -- red
+      "#666666",  -- green
+      "#87875f",  -- yellow
+      "#888888",  -- blue
+      "#8181a6",  -- magenta
+      "#777777",  -- cyan
+      "#c1c1c1"   -- white
+    },
+    brights = {
+      "#222222",  -- black
+      "#5f8787",  -- red
+      "#666666",  -- green
+      "#87875f",  -- yellow
+      "#888888",  -- blue
+      "#8181a6",  -- magenta
+      "#777777",  -- cyan
+      "#c1c1c1"   -- white
+    },
+    
+    -- Extra anpassade färger
+    tab_bar = {
+      background = "#121212",
+      active_tab = {
+        bg_color = "#222222",
+        fg_color = "#c2c2b0",
+      },
+    },
+  },
+  window_background_opacity = 0.95,  -- Lätt genomskinlighet
+}
+
+
+~/.config/nvim/lua/colors.lua
+
+vim.cmd([[
+  highlight clear
+  syntax reset
+  set background=dark
+  let g:colors_name = "custom_mono"
+]])
+
+local palette = {
+  bg       = "#080808",
+  fg       = "#c2c2b0",
+  gray1    = "#222222",
+  gray2    = "#666666",
+  gray3    = "#888888",
+  accent1  = "#5f8787",  -- Blågrön
+  accent2  = "#87875f",  -- Gulaktig
+}
+
+-- Grunder
+vim.api.nvim_set_hl(0, "Normal",       { fg = palette.fg, bg = palette.bg })
+vim.api.nvim_set_hl(0, "Comment",      { fg = palette.gray2, italic = true })
+
+-- Syntax
+vim.api.nvim_set_hl(0, "String",       { fg = palette.gray3 })
+vim.api.nvim_set_hl(0, "Number",       { fg = palette.fg })
+vim.api.nvim_set_hl(0, "Function",     { fg = palette.accent1 })
+vim.api.nvim_set_hl(0, "Keyword",      { fg = palette.accent2 })
+
+-- UI
+vim.api.nvim_set_hl(0, "LineNr",       { fg = palette.gray2 })
+vim.api.nvim_set_hl(0, "CursorLineNr", { fg = palette.accent1, bold = true })
+vim.api.nvim_set_hl(0, "VertSplit",    { fg = palette.gray1, bg = palette.bg })
+vim.api.nvim_set_hl(0, "StatusLine",   { fg = palette.fg, bg = palette.gray1 })
+
+-- LSP och diagnostics
+vim.api.nvim_set_hl(0, "DiagnosticError", { fg = palette.accent1 })
+vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = palette.accent2 })
+
+-- Treesitter (om du använder det)
+vim.api.nvim_set_hl(0, "@property",    { link = "Normal" })
+vim.api.nvim_set_hl(0, "@variable",    { fg = palette.fg })
