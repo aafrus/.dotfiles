@@ -1,66 +1,68 @@
 local wezterm = require 'wezterm'
 
 local colors = {
-  foreground = "#c2c2b0",
-  background = "#080808",
-  cursor_bg = "#c2c2b0",
-  cursor_fg = "#080808",
-  
+  foreground = "#cccccc", -- fg blandad vit/svart (80%)
+  background = "#101010", -- bg
+  cursor_bg = "#cccccc",
+  cursor_fg = "#101010",
+  cursor_border = "#cccccc",
+
   ansi = {
-    "#222222",  -- black
-    "#5f8787",  -- red
-    "#666666",  -- green
-    "#87875f",  -- yellow
-    "#888888",  -- blue
-    "#8181a6",  -- magenta
-    "#777777",  -- cyan
-    "#c1c1c1"   -- white
+    "#343434", -- black
+    "#FF8080", -- red
+    "#99FFE4", -- green (light green)
+    "#FFC799", -- yellow (dark)
+    "#65737E", -- blue (symbol/purpleDark alt)
+    "#FFCFA8", -- magenta (orangeLight/purple)
+    "#99FFE4", -- cyan (same as green)
+    "#FEFEFE", -- white (fgAlt)
   },
+
   brights = {
-    "#222222",  -- black
-    "#5f8787",  -- red
-    "#666666",  -- green
-    "#87875f",  -- yellow
-    "#888888",  -- blue
-    "#8181a6",  -- magenta
-    "#777777",  -- cyan
-    "#c1c1c1"   -- white
+    "#505050", -- bright black (fgDisabled)
+    "#FF8080", -- bright red
+    "#99FFE4", -- bright green
+    "#FFC799", -- bright yellow
+    "#65737E", -- bright blue
+    "#FFCFA8", -- bright magenta
+    "#A0A0A0", -- bright cyan (primary)
+    "#FFFFFF", -- bright white
   },
-  
+
   tab_bar = {
-    background = "#121212",
+    background = "#161616", -- bgDark
     active_tab = {
-      bg_color = "#222222",
-      fg_color = "#c2c2b0",
+      bg_color = "#232323", -- bgDarker
+      fg_color = "#FFFFFF", -- secondary
+    },
+    inactive_tab = {
+      bg_color = "#101010", -- bg
+      fg_color = "#65737E", -- fgInactive
+    },
+    inactive_tab_hover = {
+      bg_color = "#282828", -- bgFloat
+      fg_color = "#FFFFFF", -- secondary
     },
   },
 }
 
 return {
-  -- Färger och transparens
-  color_scheme = "CustomMonochrome",
+  color_scheme = "VesperCustom",
   colors = colors,
   window_background_opacity = 0.95,
 
-  -- Tabbar-inställningar
   enable_tab_bar = false,
   hide_tab_bar_if_only_one_tab = true,
   window_decorations = "NONE",
 
-  -- Teckensnitt
   font = wezterm.font_with_fallback({
     { family = "JetBrainsMono Nerd Font", weight = "Regular" },
   }),
   font_size = 12.0,
 
-  -- Markörinställningar
-  default_cursor_style = "BlinkingBar",
-  cursor_blink_rate = 500,
-  cursor_blink_ease_in = "Linear",
+  default_cursor_style = "SteadyBar",
   cursor_thickness = "1.5pt",
-  force_reverse_video_cursor = true,
 
-  -- Fönsterpadding
   window_padding = {
     left = 5,
     right = 5,
@@ -68,9 +70,8 @@ return {
     bottom = 5,
   },
 
-  -- Diverse
   use_fancy_tab_bar = false,
   adjust_window_size_when_changing_font_size = false,
   warn_about_missing_glyphs = false,
-  window_close_confirmation = "NeverPrompt"
+  window_close_confirmation = "NeverPrompt",
 }
