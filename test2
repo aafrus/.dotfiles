@@ -6,13 +6,19 @@ M.colors = {
   gray_dark = "#121212",
   gray      = "#444444",
   gray_light= "#888888",
-  accent    = "#5f875f"  -- Muted grön
+  accent    = "#5f875f"
 }
 
-function M.setup()
+function M.load()
+  -- Först rensa alla befintliga highlights
+  vim.cmd("hi clear")
+  if vim.fn.exists("syntax_on") == 1 then
+    vim.cmd("syntax reset")
+  end
+
   local c = M.colors
 
-  -- Skapa en global colorscheme-tabell
+  -- Måste sätta colors_name INNAN highlights
   vim.g.colors_name = "blackmetal"
 
   -- Grundinställningar
@@ -31,12 +37,17 @@ function M.setup()
   vim.api.nvim_set_hl(0, "LineNr",       { fg = c.gray })
   vim.api.nvim_set_hl(0, "CursorLineNr", { fg = c.accent, bold = true })
   vim.api.nvim_set_hl(0, "StatusLine",   { bg = c.gray_dark, fg = c.white })
-
-  -- Registrera temat korrekt
-  vim.cmd("hi clear")
-  if vim.fn.exists("syntax_on") then
-    vim.cmd("syntax reset")
-  end
 end
 
 return M
+
+
+-- Ladda och aktivera temat
+vim.opt.termguicolors = true
+local status, _ = pcall(require, 'plugins.theme')
+if status then
+  require('plugins.theme').load()
+  vim.cmd("colorscheme blackmetal")
+else
+  vim.notify("Failed to load blackmetal theme", vim.log.levels.ERROR)
+end
