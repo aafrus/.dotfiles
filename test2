@@ -1,77 +1,49 @@
-local wezterm = require 'wezterm'
+-- ~/.config/nvim/lua/colors/mytheme/colors.lua
+
+local mix = require("vesper.utils").mix
 
 local colors = {
-  foreground = "#cccccc", -- fg blandad vit/svart (80%)
-  background = "#101010", -- bg
-  cursor_bg = "#cccccc",
-  cursor_fg = "#101010",
-  cursor_border = "#cccccc",
+  white = "#E4E4D4",
+  black = "#1C1C1C",
+  bg = "#0F0F0F",
+  bgDark = "#1A1A1A",
+  bgDarker = "#222222",
+  bgFloat = "#1C1C1C",
+  bgOption = "#2A2A2A",
 
-  ansi = {
-    "#343434", -- black
-    "#FF8080", -- red
-    "#99FFE4", -- green (light green)
-    "#FFC799", -- yellow (dark)
-    "#65737E", -- blue (symbol/purpleDark alt)
-    "#FFCFA8", -- magenta (orangeLight/purple)
-    "#99FFE4", -- cyan (same as green)
-    "#FEFEFE", -- white (fgAlt)
-  },
+  fg = "#DADAC8",
+  fgAlt = "#EEEEEE",
+  fgCommand = "#FFD580",
+  fgInactive = "#5C5C5C",
+  fgDisabled = "#3A3A3A",
+  fgLineNr = "#444444",
+  fgSelection = "#2C2C2C",
+  fgSelectionInactive = "#444444",
 
-  brights = {
-    "#505050", -- bright black (fgDisabled)
-    "#FF8080", -- bright red
-    "#99FFE4", -- bright green
-    "#FFC799", -- bright yellow
-    "#65737E", -- bright blue
-    "#FFCFA8", -- bright magenta
-    "#A0A0A0", -- bright cyan (primary)
-    "#FFFFFF", -- bright white
-  },
+  border = "#3F3F3F",
+  borderFocus = "#808080",
+  borderDarker = "#AFAFAF",
 
-  tab_bar = {
-    background = "#161616", -- bgDark
-    active_tab = {
-      bg_color = "#232323", -- bgDarker
-      fg_color = "#FFFFFF", -- secondary
-    },
-    inactive_tab = {
-      bg_color = "#101010", -- bg
-      fg_color = "#65737E", -- fgInactive
-    },
-    inactive_tab_hover = {
-      bg_color = "#282828", -- bgFloat
-      fg_color = "#FFFFFF", -- secondary
-    },
-  },
+  greenLight = "#A3C9A8",
+  red = "#D16969",
+  purple = "#C586C0",
+  redDark = "#B85656",
+  orange = "#D8A657",
+  primary = "#CCCCAA",
+  comment = "#707070",
+  orangeLight = "#FFD580",
+  green = "#B5CEA8",
+  yellowDark = "#D7BA7D",
+  purpleDark = "#B4A0E0",
+  symbol = "#9CDCFE",
+  secondary = "#FFFFFF",
+
+  terminalbrightblack = "#2C2C2C",
+
+  error = "#FF6C6B",
+  warn = "#ECBE7B",
+  info = "#51AFEF",
+  hint = "#98BE65",
 }
 
-return {
-  color_scheme = "VesperCustom",
-  colors = colors,
-  window_background_opacity = 0.95,
-
-  enable_tab_bar = false,
-  hide_tab_bar_if_only_one_tab = true,
-  window_decorations = "NONE",
-
-  font = wezterm.font_with_fallback({
-    { family = "JetBrainsMono Nerd Font", weight = "Regular" },
-  }),
-  font_size = 12.0,
-
-  default_cursor_style = "SteadyBar",
-  cursor_thickness = "1.5pt",
-
-  window_padding = {
-    left = 5,
-    right = 5,
-    top = 5,
-    bottom = 5,
-  },
-
-  use_fancy_tab_bar = false,
-  adjust_window_size_when_changing_font_size = false,
-  warn_about_missing_glyphs = false,
-  window_close_confirmation = "NeverPrompt",
-}
+return colors
