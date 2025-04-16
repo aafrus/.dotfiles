@@ -4,23 +4,18 @@ deploy:
   script:
     - |
       set -e
-      # 1. Hämta token
       export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" \
         --json '{"username": "'"$PORTAINER_USER"'", "password": "'"$PORTAINER_PASSWORD"'"}' | jq -r '.jwt')
       [ -z "$PORTAINER_TOKEN" ] && { echo "Failed to get token"; exit 1; }
 
-      # 2. Sätt variabler
       export STACK_NAME="${CI_PROJECT_NAMESPACE}-${CI_COMMIT_REF_NAME}"
       export DOCKER_TAG=$([ "$CI_COMMIT_REF_NAME" = "$CI_DEFAULT_BRANCH" ] && echo "latest" || echo "$CI_COMMIT_REF_NAME")
       
-      echo "Deploying stack: $STACK_NAME with tag: $DOCKER_TAG"
-
-      # 3. Generera compose-fil
       envsubst < docker-compose.yml > deployable-compose.yml
-      echo "Generated compose file:"
+      echo "=== GENERATED COMPOSE FILE ==="
       cat deployable-compose.yml
+      echo "============================="
 
-      # 4. Hämta Portainer-metadata
       ENDPOINT_ID=$(curl -s -H "Authorization: Bearer $PORTAINER_TOKEN" \
         "https://portainer.cc25.chasacademy.dev/api/endpoints" \
         | jq -r '.[] | select(.Name == "primary") | .Id')
@@ -29,12 +24,10 @@ deploy:
         "https://portainer.cc25.chasacademy.dev/api/endpoints" \
         | jq -r '.[] | select(.Name == "primary") | .Snapshots[0].DockerSnapshotRaw.Info.Swarm.Cluster.ID')
 
-      # 5. Kolla om stack finns
       STACK_ID=$(curl -s -H "Authorization: Bearer $PORTAINER_TOKEN" \
         "https://portainer.cc25.chasacademy.dev/api/stacks" \
         | jq -r --arg name "$STACK_NAME" '.[] | select(.Name == $name) | .Id')
 
-      # 6. Skapa eller uppdatera stack
       if [ -z "$STACK_ID" ]; then
         echo "Creating new stack: $STACK_NAME"
         curl -X POST \
@@ -42,14 +35,11 @@ deploy:
           -F "Name=$STACK_NAME" \
           -F "SwarmID=$SWARM_ID" \
           -F "file=@deployable-compose.yml" \
-          "https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID"
+          "https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" | jq
       else
         echo "Updating stack $STACK_ID"
         curl -X PUT \
           -H "Authorization: Bearer $PORTAINER_TOKEN" \
           -F "file=@deployable-compose.yml" \
-          "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID"
+          "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" | jq
       fi
-
-
-{"message":"Ignoring unsupported options: restart\n\nSince --detach=false was not specified, tasks will be created in the background.\nIn a future release, --detach=false will become the default.\ninvalid reference format\n","details":"Ignoring unsupported options: restart\n\nSince --detach=false was not specified, tasks will be created in the background.\nIn a future release, --detach=false will become the default.\ninvalid reference format\n"}
