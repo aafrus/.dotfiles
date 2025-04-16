@@ -1,111 +1,52 @@
-local wezterm = require 'wezterm'
+deploy:
+  image: $CI_REGISTRY_IMAGE/utils:latest
+  stage: deploy
+  script:
+    - |
+      set -e
+      # 1. Hämta token
+      export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" \
+        --json '{"username": "'"$PORTAINER_USER"'", "password": "'"$PORTAINER_PASSWORD"'"}' | jq -r '.jwt')
+      [ -z "$PORTAINER_TOKEN" ] && { echo "Failed to get token"; exit 1; }
 
-return {
-  colors = {
-    foreground = "#e0e0e0",  -- Blekt displayljus
-    background = "#0a0a0a",  -- Djup OLED-svart
-    
-    -- HUD-färger från referensbilderna
-    ansi = {
-      "#0a0a0a",  -- Bakgrund
-      "#ff3a5c",  -- Varningsrött (K D6 display)
-      "#00c8a0",  -- Systemgrönt
-      "#ffac38",  -- Statusgult
-      "#0088ff",  -- Navigationsblått
-      "#b280ff",  -- Datalila
-      "#00d4ff",  -- Drönar-cyan
-      "#e0e0e0"   -- Primärtext
-    },
-    brights = {
-      "#1a1a1a",
-      "#ff5a7c",
-      "#20e8c0",
-      "#ffcc58",
-      "#20a8ff",
-      "#c2a0ff",
-      "#30e4ff",
-      "#ffffff"
-    },
+      # 2. Sätt variabler
+      export STACK_NAME="${CI_PROJECT_NAMESPACE}-${CI_COMMIT_REF_NAME}"
+      export DOCKER_TAG=$([ "$CI_COMMIT_REF_NAME" = "$CI_DEFAULT_BRANCH" ] && echo "latest" || echo "$CI_COMMIT_REF_NAME")
+      
+      echo "Deploying stack: $STACK_NAME with tag: $DOCKER_TAG"
 
-    -- Markörinställningar (som HUD-pekare)
-    cursor_bg = "#00d4ff",  -- Cyan som drönarskärmen
-    cursor_fg = "#0a0a0a",
-    cursor_border = "#00d4ff",
-    
-    -- Tabbar som LAPD-systempaneler
-    tab_bar = {
-      background = "#0a0a0a",
-      active_tab = {
-        bg_color = "#0088ff",  -- Navigationsblått
-        fg_color = "#0a0a0a",
-      },
-      inactive_tab = {
-        bg_color = "#1a1a1a",
-        fg_color = "#666666",
-      },
-    },
-  },
+      # 3. Generera compose-fil
+      envsubst < docker-compose.yml > deployable-compose.yml
+      echo "Generated compose file:"
+      cat deployable-compose.yml
 
-  -- Displayinställningar
-  window_background_opacity = 0.98,
-  enable_tab_bar = true,
-  default_cursor_style = "SteadyBar",
-  cursor_thickness = "2pt",
+      # 4. Hämta Portainer-metadata
+      ENDPOINT_ID=$(curl -s -H "Authorization: Bearer $PORTAINER_TOKEN" \
+        "https://portainer.cc25.chasacademy.dev/api/endpoints" \
+        | jq -r '.[] | select(.Name == "primary") | .Id')
+      
+      SWARM_ID=$(curl -s -H "Authorization: Bearer $PORTAINER_TOKEN" \
+        "https://portainer.cc25.chasacademy.dev/api/endpoints" \
+        | jq -r '.[] | select(.Name == "primary") | .Snapshots[0].DockerSnapshotRaw.Info.Swarm.Cluster.ID')
 
-  -- Teknisk typografi (som LAPD-systemfont)
-  font = wezterm.font_with_fallback({
-    {family = "Courier Prime", weight="Bold"},  -- Fixerad bredd
-    {family = "JetBrainsMono Nerd Font"},      -- Symbolstöd
-  }),
-  font_size = 14.0,
-  line_height = 1.1,
-}
+      # 5. Kolla om stack finns
+      STACK_ID=$(curl -s -H "Authorization: Bearer $PORTAINER_TOKEN" \
+        "https://portainer.cc25.chasacademy.dev/api/stacks" \
+        | jq -r --arg name "$STACK_NAME" '.[] | select(.Name == $name) | .Id')
 
-
-blalaalla 
-
-
-local M = {}
-
-M.colors = {
-  -- Basfärger från referenserna
-  bg        = "#0a0a0a",    -- Djup OLED-bakgrund
-  bg_light  = "#1a1a1a",    -- Underpaneler
-  fg        = "#e0e0e0",    -- Primärtext
-  
-  -- HUD-accentfärger
-  alert     = "#ff3a5c",    -- K D6-varningar
-  nav       = "#0088ff",    -- Navigationsblått
-  drone     = "#00d4ff",    -- Pilotfish-cyan
-  system    = "#00c8a0",    -- Systemstatus
-  data      = "#b280ff",    -- Datalila
-}
-
-function M.setup()
-  local c = M.colors
-
-  -- Syntaxgrupper
-  vim.api.nvim_set_hl(0, "Normal",       { fg = c.fg, bg = c.bg })
-  vim.api.nvim_set_hl(0, "Comment",      { fg = "#666666", italic = true })
-
-  -- HUD-liknande syntax
-  vim.api.nvim_set_hl(0, "Function",     { fg = c.nav, bold = true })    -- Navigationsfunktioner
-  vim.api.nvim_set_hl(0, "Keyword",      { fg = c.alert })               -- Kritiska kommandon
-  vim.api.nvim_set_hl(0, "String",       { fg = c.system })              -- Systemmeddelanden
-  vim.api.nvim_set_hl(0, "Number",       { fg = "#ffac38" })             -- Kvantiteter (gult)
-  vim.api.nvim_set_hl(0, "Type",         { fg = c.drone })               -- Drönardata
-
-  -- Gränssnittselement
-  vim.api.nvim_set_hl(0, "CursorLine",   { bg = c.bg_light })
-  vim.api.nvim_set_hl(0, "LineNr",       { fg = "#444444" })
-  vim.api.nvim_set_hl(0, "CursorLineNr", { fg = c.drone, bold = true })  -- Cyan som drönarskärm
-  vim.api.nvim_set_hl(0, "StatusLine",   { bg = c.nav, fg = c.bg })      -- Navigationspanel
-
-  -- Diagnostic (som systemvarningar)
-  vim.api.nvim_set_hl(0, "DiagnosticError",  { fg = c.alert })
-  vim.api.nvim_set_hl(0, "DiagnosticWarn",   { fg = "#ffac38" })
-  vim.api.nvim_set_hl(0, "DiagnosticInfo",   { fg = c.drone })
-  vim.api.nvim_set_hl(0, "DiagnosticHint",   { fg = c.system })
-end
-
-return M
+      # 6. Skapa eller uppdatera stack
+      if [ -z "$STACK_ID" ]; then
+        echo "Creating new stack: $STACK_NAME"
+        curl -X POST \
+          -H "Authorization: Bearer $PORTAINER_TOKEN" \
+          -F "Name=$STACK_NAME" \
+          -F "SwarmID=$SWARM_ID" \
+          -F "file=@deployable-compose.yml" \
+          "https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID"
+      else
+        echo "Updating stack $STACK_ID"
+        curl -X PUT \
+          -H "Authorization: Bearer $PORTAINER_TOKEN" \
+          -F "file=@deployable-compose.yml" \
+          "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID"
+      fi
