@@ -50,3 +50,6 @@ deploy:
           -F "file=@deployable-compose.yml" \
           "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID"
       fi
+
+
+{"message":"Ignoring unsupported options: restart\n\nSince --detach=false was not specified, tasks will be created in the background.\nIn a future release, --detach=false will become the default.\ninvalid reference format\n","details":"Ignoring unsupported options: restart\n\nSince --detach=false was not specified, tasks will be created in the background.\nIn a future release, --detach=false will become the default.\ninvalid reference format\n"}
