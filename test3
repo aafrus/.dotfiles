@@ -1,28 +1,48 @@
-───────┼────────────────────────────────────────────────────────────────────────────────────
-   1   │ services:
-   2   │   api:
-   3   │     image: registry.chasacademy.dev/chas-challenge-2025/group-15/test-projekt:${$DO
-       │ CKER_TAG}
-   4   │     restart: always
-   5   │     networks:
-   6   │       - traefik-public
-   7   │     deploy:
-   8   │       mode: replicated
-   9   │       replicas: 1
-  10   │       labels:
-  11   │         - traefik.enable=true
-  12   │         - traefik.docker.network=traefik-public
-  13   │         - traefik.constraint-label=traefik-public
-  14   │         - traefik.http.routers.${STACK_NAME}-http.rule=Host(`${STACK_NAME}.cc25.cha
-       │ sacademy.dev`)
-  15   │         - traefik.http.routers.${STACK_NAME}-http.entrypoints=http
-  16   │         - traefik.http.routers.${STACK_NAME}-http.middlewares=https-redirect
-  17   │         - traefik.http.routers.${STACK_NAME}-https.rule=Host(`${STACK_NAME}.cc25.ch
-       │ asacademy.dev`)
-  18   │         - traefik.http.routers.${STACK_NAME}-https.entrypoints=https
-  19   │         - traefik.http.routers.${STACK_NAME}-https.tls=true
-  20   │         - traefik.http.routers.${STACK_NAME}-https.tls.certresolver=le
-  21   │         - traefik.http.services.${STACK_NAME}.loadbalancer.server.port=8000
-  22   │ networks:
-  23   │   traefik-public:
-  24   │     external: true
+deploy:
+  image: $CI_REGISTRY_IMAGE/utils:latest
+  stage: deploy
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - If: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - |
+      set -e
+      export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" \
+        --json '{"username": "'"$PORTAINER_USER"'", "password": "'"$PORTAINER_PASSWORD"'"}' | jq -r '.jwt')
+      [ -z "$PORTAINER_TOKEN" ] && { echo "Failed to get token"; exit 1; }
+
+      export STACK_NAME="${CI_PROJECT_NAMESPACE}-${CI_COMMIT_REF_NAME}"
+      export DOCKER_TAG=$([ "$CI_COMMIT_REF_NAME" = "$CI_DEFAULT_BRANCH" ] && echo "latest" || echo "$CI_COMMIT_REF_NAME")
+      
+      envsubst < docker-compose.yml > deployable-compose.yml
+      echo "=== GENERATED COMPOSE FILE ==="
+      cat deployable-compose.yml
+      echo "============================="
+
+      ENDPOINT_ID=$(curl -s -H "Authorization: Bearer $PORTAINER_TOKEN" \
+        "https://portainer.cc25.chasacademy.dev/api/endpoints" \
+        | jq -r '.[] | select(.Name == "primary") | .Id')
+      
+      SWARM_ID=$(curl -s -H "Authorization: Bearer $PORTAINER_TOKEN" \
+        "https://portainer.cc25.chasacademy.dev/api/endpoints" \
+        | jq -r '.[] | select(.Name == "primary") | .Snapshots[0].DockerSnapshotRaw.Info.Swarm.Cluster.ID')
+
+      STACK_ID=$(curl -s -H "Authorization: Bearer $PORTAINER_TOKEN" \
+        "https://portainer.cc25.chasacademy.dev/api/stacks" \
+        | jq -r --arg name "$STACK_NAME" '.[] | select(.Name == $name) | .Id')
+
+      if [ -z "$STACK_ID" ]; then
+        echo "Creating new stack: $STACK_NAME"
+        curl -X POST \
+          -H "Authorization: Bearer $PORTAINER_TOKEN" \
+          -F "Name=$STACK_NAME" \
+          -F "SwarmID=$SWARM_ID" \
+          -F "file=@deployable-compose.yml" \
+          "https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" | jq
+      else
+        echo "Updating stack $STACK_ID"
+        curl -X PUT \
+          -H "Authorization: Bearer $PORTAINER_TOKEN" \
+          -F "file=@deployable-compose.yml" \
+          "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" | jq
+      fi
