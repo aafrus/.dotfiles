@@ -1,16 +1,23 @@
 deploy:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: deploy
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   script:
     - |
       set -e
       export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
-      export STACK_NAME=$CI_PROJECT_NAMESPACE-$CI_COMMIT_REF_NAME
+      
+      # Slugifiera STACK_NAME så den är kompatibel med Traefik och labels
+      RAW_STACK_NAME="$CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME"
+      STACK_NAME=$(echo "$RAW_STACK_NAME" | tr '/_' '-' | tr '[:upper:]' '[:lower:]')
+      export STACK_NAME
       echo "Stack: $STACK_NAME"
 
       if [[ "$CI_COMMIT_REF_NAME" = $CI_DEFAULT_BRANCH ]]; then DOCKER_TAG=latest; else DOCKER_TAG=$CI_COMMIT_REF_NAME; fi
       export DOCKER_TAG
-      echo "Stack: $STACK_NAME"
+      echo "Docker tag: $DOCKER_TAG"
 
       echo "Filling in the template file with envvars..."
       envsubst <docker-compose.yml>deployable-compose.yml
@@ -23,13 +30,17 @@ deploy:
       echo "Swarm: $SWARM_ID"
 
       echo "Checking if STACK_NAME is present..."
-      STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq \ '.[] | select(.Name == "'STACK_NAME'") | .Id')
+      STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
 
       echo "Stack id: \"$STACK_ID\""
       if [[ "$STACK_ID" = "" ]]
       then 
         echo "Creating stack $STACK_NAME"
-        curl -X POST https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID -H "Authorization: Bearer $PORTAINER_TOKEN" -F Name="$STACK_NAME" -F SwarmID="$SWARM_ID" -F file=@deployable-compose.yml | jq 
+        curl -X POST https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID \
+          -H "Authorization: Bearer $PORTAINER_TOKEN" \
+          -F Name="$STACK_NAME" \
+          -F SwarmID="$SWARM_ID" \
+          -F file=@deployable-compose.yml | jq 
       else 
         echo "I need to update the stack" 
       fi
