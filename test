@@ -5,6 +5,7 @@ variables:
   STACK_NAME: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
   PORTAINER_URL: "https://portainer.cc25.chasacademy.dev"
 
+# 🔄 Återanvändbara block
 .use_scripts: &use_scripts
   before_script:
     - chmod +x ./scripts/*
@@ -17,6 +18,7 @@ variables:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes: [Dockerfile, "*.py", requirements*]
 
+# 🏗️ Byggjobb
 build-api:
   image: docker:20
   stage: build
@@ -39,6 +41,7 @@ build-utils:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes: [Dockerfile-utils]
 
+# 🧪 Tester
 unit-tests:
   image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
   stage: test
@@ -50,6 +53,7 @@ unit-tests:
       cobertura: coverage.xml
   needs: [build-test]
 
+# 🚀 Deployment
 deploy:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: deploy
@@ -64,15 +68,19 @@ deploy:
     paths: [.ci_cache]
   needs: [build-utils, unit-tests]
 
+# 🛑 Stopp-miljö (Uppdaterad med nytt skript)
 stop_review:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: teardown
   <<: *use_scripts
-  script: ./scripts/stop
+  script: ./scripts/stop  # Anropar det nya skriptet här
   environment:
     name: review/$CI_COMMIT_REF_NAME
     action: stop
+    auto_stop_in: 1 day  # Automatisk rensning efter 1 dag
   when: manual
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
 
 
 
