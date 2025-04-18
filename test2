@@ -1,1 +1,10 @@
-for file in scripts/*.sh; do mv "$file" "${file%.sh}"; done
+├── docker-compose.yml
+├── Dockerfile
+├── Dockerfile-utils
+├── .gitignore
+├── .gitlab-ci.yml
+├── main.py
+├── README.md
+├── requirements-dev.txt
+├── requirements.txt
+└── test_main.py
