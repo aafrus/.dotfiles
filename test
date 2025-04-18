@@ -5,7 +5,7 @@ variables:
   STACK_NAME: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
   PORTAINER_URL: "https://portainer.cc25.chasacademy.dev"
 
-# 🔄 Återanvändbara block
+# 🔄 Reusable blocks
 .use_scripts: &use_scripts
   before_script:
     - chmod +x ./scripts/*
@@ -18,7 +18,7 @@ variables:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes: [Dockerfile, "*.py", requirements*]
 
-# 🏗️ Byggjobb
+# 🏗️ Build
 build-api:
   image: docker:20
   stage: build
@@ -41,7 +41,7 @@ build-utils:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes: [Dockerfile-utils]
 
-# 🧪 Tester
+# 🧪 Testing
 unit-tests:
   image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
   stage: test
@@ -68,27 +68,24 @@ deploy:
     paths: [.ci_cache]
   needs: [build-utils, unit-tests]
 
-# 🛑 Stopp-miljö (Uppdaterad med nytt skript)
+# 🛑 Environment Stop
 stop_review:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: teardown
   <<: *use_scripts
-  script: ./scripts/stop  # Anropar det nya skriptet här
+  script: ./scripts/stop
   environment:
     name: review/$CI_COMMIT_REF_NAME
     action: stop
-    auto_stop_in: 1 day  # Automatisk rensning efter 1 dag
   when: manual
   rules:
     - if: $CI_MERGE_REQUEST_ID
 
 
 
-2. Skriptfiler i /scripts
+2. /scripts
 
-build (hanterar alla byggen):
-bash
-Copy
+build:
 
 #!/bin/bash
 set -eo pipefail
@@ -106,38 +103,33 @@ docker buildx build \
   --target="$target" \
   "$@" .
 
-test (använder din requirements-dev.txt):
-bash
-Copy
+test:
 
 #!/bin/bash
 pytest --cov --cov-report=xml --cov-fail-under=90
 
-deploy (förenklad deployment):
-bash
-Copy
+deploy:
 
 #!/bin/bash
 set -eo pipefail
 
 source ./scripts/auth
 envsubst <docker-compose.yml >deployable-compose.yml
-source ./scripts/manage_stack
+source ./scripts/stack
 
-3. Hjälpskript
 
 auth:
-bash
-Copy
 
 #!/bin/bash
 export PORTAINER_TOKEN=$(curl -sS "$PORTAINER_URL/api/auth" \
   --json "{\"username\":\"$PORTAINER_USER\",\"password\":\"$PORTAINER_PASSWORD\"}" \
   | jq -r '.jwt')
 
-manage_stack:
-bash
-Copy
+export ENDPOINT_ID=$(curl -sS "$PORTAINER_URL/api/endpoints" \
+  -H "Authorization: Bearer $PORTAINER_TOKEN" \
+  | jq -r '.[] | select(.Name=="primary").Id')
+
+stack:
 
 #!/bin/bash
 stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
@@ -147,30 +139,30 @@ stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
 [ -z "$stack_id" ] && ./scripts/create_stack || ./scripts/update_stack
 
 
-
+stop:
 
 #!/bin/bash
 set -eo pipefail
 
-echo "=== SAFE MODE ==="
-echo "Tar endast bort $STACK_NAME om den finns"
+echo "=== SAFETY CHECK ==="
+echo "Only removing $STACK_NAME if it exists"
 
 source ./scripts/auth
 
-# Hämta stack-ID (fail-safe)
+# Get stack ID (fail-safe)
 stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
   -H "Authorization: Bearer $PORTAINER_TOKEN" \
   | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id') || true
 
-[ -z "$stack_id" ] && { echo "Stack finns redan inte - inget att göra"; exit 0; }
+[ -z "$stack_id" ] && { echo "Stack already gone - nothing to do"; exit 0; }
 
-# Bekräfta innan borttagning
-echo "=== ATT TA BORT ==="
+# Confirmation prompt
+echo "=== CONFIRM DELETION ==="
 echo "Stack: $STACK_NAME (ID: $stack_id)"
-echo "Tryck ENTER för att fortsätta, CTRL+C för att avbryta"
+echo "Press ENTER to continue, CTRL+C to abort"
 read -r
 
-# Utför borttagning
+# Execute deletion
 curl -sS -X DELETE "$PORTAINER_URL/api/stacks/$stack_id?endpointId=$ENDPOINT_ID" \
   -H "Authorization: Bearer $PORTAINER_TOKEN"
-echo "Stack borttagen"
+echo "Stack removed successfully"
