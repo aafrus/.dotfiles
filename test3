@@ -1,40 +1,47 @@
-1. .gitlab-ci.yml (Ultrakompakt version)
-yaml
-Copy
-
 stages: [build, test, deploy, teardown]
 
 variables:
   DOCKER_TAG: $([ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ] && echo "latest" || echo "$CI_COMMIT_REF_NAME")
   STACK_NAME: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
-  COMPOSE_FILE: "deployable-compose.yml"
+  PORTAINER_URL: "https://portainer.cc25.chasacademy.dev"
 
+# 🔄 Återanvändbara block
 .use_scripts: &use_scripts
   before_script:
     - chmod +x ./scripts/*.sh
-    - [ -f "./.ci_cache" ] && source ./.ci_cache
+    - [ -f ".ci_cache" ] && source .ci_cache
 
-.build_template: &build_config
+.docker_rules: &docker_rules
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      changes: [Dockerfile*, "*.py", requirements*]
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes: [Dockerfile*, "*.py", requirements*]
+
+# 🏗️ Build Jobs
+build-api:
+  image: docker:20
+  stage: build
+  <<: [*use_scripts, *docker_rules]
+  script: ./scripts/build.sh --target=base --tag=$DOCKER_TAG
+
+build-utils:
   image: docker:20
   stage: build
   <<: *use_scripts
-  script: ./scripts/build.sh
+  script: ./scripts/build.sh --target=utils --tag=latest -f Dockerfile-utils
   rules:
-    changes: [Dockerfile, "*.py", requirements*]
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes: [Dockerfile-utils]
 
-build-api:
-  <<: *build_config
-  variables:
-    TARGET: "base"
-    TAG: "$DOCKER_TAG"
-
-build-test:
-  <<: *build_config
-  variables:
-    TARGET: "test"
-    TAG: "test-$DOCKER_TAG"
+# 🧪 Test Job
+unit-tests:
+  image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
   stage: test
+  script: ./scripts/test.sh
+  <<: [*docker_rules]
 
+# 🚀 Deploy Jobs
 deploy:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: deploy
@@ -45,96 +52,118 @@ deploy:
     url: https://$STACK_NAME.cc25.chasacademy.dev/docs
     on_stop: stop_review
   cache:
-    key: $CI_COMMIT_REF_SLUG
+    key: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG
     paths: [.ci_cache]
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
 stop_review:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: teardown
+  <<: *use_scripts
   script: ./scripts/stop.sh
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
   when: manual
 
-2. Skriptfiler i /scripts
-build.sh (Bygger alla images)
+
+
+🛠️ Superoptimerade Skript
+
+Allt i /scripts-mappen:
+1. build.sh (Bygger ALLA images)
 bash
 Copy
 
 #!/bin/bash
 set -eo pipefail
+
+# Parse arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -f|--file) DOCKERFILE="$2"; shift ;;
+        -t|--target) TARGET="$2"; shift ;;
+        --tag) TAG="$2"; shift ;;
+        *) echo "Unknown parameter: $1"; exit 1 ;;
+    esac
+    shift
+done
 
 docker buildx build \
   --cache-from=$CI_REGISTRY_IMAGE:latest \
-  -t $CI_REGISTRY_IMAGE:$TAG \
+  -t $CI_REGISTRY_IMAGE:${TAG:-latest} \
   --push \
-  --target=$TARGET .
+  --target=${TARGET:-base} \
+  -f ${DOCKERFILE:-Dockerfile} .
 
-deploy.sh (Smart deployment med cache)
+2. test.sh (Kör tester)
+bash
+Copy
+
+#!/bin/bash
+pytest --cov --cov-fail-under=90
+
+3. deploy.sh (Smart deployment)
 bash
 Copy
 
 #!/bin/bash
 set -eo pipefail
 
-# Snabbautentisering med cache
-[ -z "$PORTAINER_TOKEN" ] && {
-  source ./scripts/auth.sh
-  echo "export PORTAINER_TOKEN=$PORTAINER_TOKEN" >> .ci_cache
-}
+# Auth + cache
+source ./scripts/auth.sh
+echo "export PORTAINER_TOKEN=$PORTAINER_TOKEN" > .ci_cache
 
-# Effektiv stackhantering
-envsubst <docker-compose.yml >$COMPOSE_FILE
-source ./scripts/stack.sh
+# Stack management
+envsubst <docker-compose.yml | tee deployable-compose.yml |
+  ./scripts/stack.sh | tee -a .ci_cache
 
-# Cacha relevanta variabler
-echo "export STACK_ID=$STACK_ID" >> .ci_cache
-
-auth.sh (Autentisering)
+4. auth.sh (Delad autentisering)
 bash
 Copy
 
 #!/bin/bash
-export PORTAINER_TOKEN=$(curl -sS -X POST "$PORTAINER_URL/api/auth" \
-  --json '{"username":"'$PORTAINER_USER'","password":"'$PORTAINER_PASSWORD'"}' \
+export PORTAINER_TOKEN=$(curl -sSf "$PORTAINER_URL/api/auth" \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"$PORTAINER_USER\",\"password\":\"$PORTAINER_PASSWORD\"}" \
   | jq -r '.jwt')
 
-export ENDPOINT_ID=$(curl -sS "$PORTAINER_URL/api/endpoints" \
+export ENDPOINT_ID=$(curl -sSf "$PORTAINER_URL/api/endpoints" \
   -H "Authorization: Bearer $PORTAINER_TOKEN" \
   | jq -r '.[] | select(.Name=="primary").Id')
 
-stack.sh (Stackhantering)
+5. stack.sh (Effektiv stackhantering)
 bash
 Copy
 
 #!/bin/bash
-STACK_ID=$(curl -sS "$PORTAINER_URL/api/stacks" \
+STACK_ID=$(curl -sSf "$PORTAINER_URL/api/stacks" \
   -H "Authorization: Bearer $PORTAINER_TOKEN" \
   | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
 
-if [ -z "$STACK_ID" ]; then
-  curl -sS -X POST "$PORTAINER_URL/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" \
+if [[ -z "$STACK_ID" ]]; then
+  curl -sSf -X POST "$PORTAINER_URL/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" \
     -H "Authorization: Bearer $PORTAINER_TOKEN" \
     -F Name="$STACK_NAME" \
     -F SwarmID="$SWARM_ID" \
-    -F file=@$COMPOSE_FILE | jq
+    -F file=@deployable-compose.yml | jq
 else
-  curl -sS -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
+  curl -sSf -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
     -H "Authorization: Bearer $PORTAINER_TOKEN" \
-    --json @<(jq -n --arg content "$(cat $COMPOSE_FILE)" \
-    '{"prune":true,"pullImage":true,"stackFileContent":$content}') | jq
+    --json @<(jq -n --arg content "$(cat deployable-compose.yml)" \
+    '{"prune":true,"pullImage":true,"stackFileContent":$content}')
 fi
 
-stop.sh (Rensning)
+echo "export STACK_ID=$STACK_ID"
+
+6. stop.sh (Rensning)
 bash
 Copy
 
 #!/bin/bash
 set -eo pipefail
-
 source ./scripts/auth.sh
-STACK_ID=$(curl -sS "$PORTAINER_URL/api/stacks" \
-  -H "Authorization: Bearer $PORTAINER_TOKEN" \
-  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
+./scripts/stack.sh --action=delete
 
-[ -n "$STACK_ID" ] && curl -sS -X DELETE \
-  "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
-  -H "Authorization: Bearer $PORTAINER_TOKEN"
