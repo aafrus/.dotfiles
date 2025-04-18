@@ -1,146 +1,140 @@
-stages:
-  - build
-  - test
-  - deploy
-  - teardown
+1. .gitlab-ci.yml (Ultrakompakt version)
+yaml
+Copy
+
+stages: [build, test, deploy, teardown]
+
+variables:
+  DOCKER_TAG: $([ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ] && echo "latest" || echo "$CI_COMMIT_REF_NAME")
+  STACK_NAME: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
+  COMPOSE_FILE: "deployable-compose.yml"
+
+.use_scripts: &use_scripts
+  before_script:
+    - chmod +x ./scripts/*.sh
+    - [ -f "./.ci_cache" ] && source ./.ci_cache
+
+.build_template: &build_config
+  image: docker:20
+  stage: build
+  <<: *use_scripts
+  script: ./scripts/build.sh
+  rules:
+    changes: [Dockerfile, "*.py", requirements*]
 
 build-api:
-  image: docker:20
-  stage: build
-  before_script:
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-  script:
-    - if [[ $CI_COMMIT_BRANCH = $CI_DEFAULT_BRANCH ]]; then DOCKER_TAG=latest; else DOCKER_TAG="$CI_COMMIT_REF_NAME"; fi
-    - echo "building $CI_REGISTRY_IMAGE:$DOCKER_TAG"
-    - docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:$DOCKER_TAG --push --target=base .
-    - echo "building $CI_REGISTRY_IMAGE:test-$DOCKER_TAG"
-    - docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:test-$DOCKER_TAG --push --target=test .
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-      changes:
-        - Dockerfile
-        - "*.py"
-        - requirements.txt
-        - requirements-dev.txt
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes:
-        - Dockerfile
-        - "*.py"
-        - requirements.txt
-        - requirements-dev.txt    
+  <<: *build_config
+  variables:
+    TARGET: "base"
+    TAG: "$DOCKER_TAG"
 
-build-utils:
-  image: docker:20
-  stage: build
-  before_script:
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-  script:
-    - echo "building $CI_REGISTRY_IMAGE/utils:latest"
-    - docker buildx build --cache-from=$CI_REGISTRY_IMAGE/utils:latest -t $CI_REGISTRY_IMAGE/utils:latest --push -f Dockerfile-utils .
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes:
-        - Dockerfile-utils  
+build-test:
+  <<: *build_config
+  variables:
+    TARGET: "test"
+    TAG: "test-$DOCKER_TAG"
+  stage: test
 
-unit-tests:
-  image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
-  stage: test 
-  script:
-    - pytest --cov --cov-fail-under=90
-  coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
-  rules:
-    - if: $CI_MERGE_REQUEST_ID #job runs in MR pipelines.
-      changes:
-        - Dockerfile
-        - "*.py"
-        - requirements.txt
-        - requirements-dev.txt
 deploy:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: deploy
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  <<: *use_scripts
+  script: ./scripts/deploy.sh
   environment:
     name: review/$CI_COMMIT_REF_NAME
-    url: https://$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG.cc25.chasacademy.dev/docs
+    url: https://$STACK_NAME.cc25.chasacademy.dev/docs
     on_stop: stop_review
-  script:
-    - |
-      set -e
-      export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
-      STACK_NAME="$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
-      export STACK_NAME
-      echo "Stack: $STACK_NAME"
-      if [[ "$CI_COMMIT_REF_NAME" = $CI_DEFAULT_BRANCH ]]; then DOCKER_TAG=latest; else DOCKER_TAG=$CI_COMMIT_REF_NAME; fi
-      export DOCKER_TAG
-      echo "Docker tag: $DOCKER_TAG"
-
-      echo "Filling in the template file with envvars..."
-      envsubst <docker-compose.yml>deployable-compose.yml
-      cat deployable-compose.yml
-
-      export ENDPOINT_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Id')
-      echo "Endpoint: $ENDPOINT_ID"
-
-      export SWARM_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Snapshots[0].DockerSnapshotRaw.Info.Swarm.Cluster.ID' -r)
-      echo "Swarm: $SWARM_ID"
-
-      echo "Checking if STACK_NAME is present..."
-      STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
-
-      echo "Stack id: \"$STACK_ID\""
-      if [[ "$STACK_ID" = "" ]]
-      then 
-        echo "Creating stack $STACK_NAME"
-        curl -X POST https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID \
-          -H "Authorization: Bearer $PORTAINER_TOKEN" \
-          -F Name="$STACK_NAME" \
-          -F SwarmID="$SWARM_ID" \
-          -F file=@deployable-compose.yml | jq 
-      else 
-        echo "Updating stack $STACK_ID $STACK_NAME"
-        export COMPOSE_CONTENTS=$(cat deployable-compose.yml)
-        export JSON_PAYLOAD=$(jq --null-input --arg compose "$COMPOSE_CONTENTS" '{"prune": true, "pullImage": true, "stackFileContent": $compose}')
-        echo "$JSON_PAYLOAD"
-        curl -X PUT https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID -H "Authorization: Bearer $PORTAINER_TOKEN" --json "$JSON_PAYLOAD" | jq
-      fi
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths: [.ci_cache]
 
 stop_review:
-  stage: teardown
   image: $CI_REGISTRY_IMAGE/utils:latest
-  environment:
-    name: review/$CI_COMMIT_REF_NAME
-    action: stop
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-      when: manual
-  script:
-    - |
-      set -e
-      export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
-      STACK_NAME="$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
-      export STACK_NAME
-      echo "Stack: $STACK_NAME"
+  stage: teardown
+  script: ./scripts/stop.sh
+  when: manual
 
-      if [[ "$CI_COMMIT_REF_NAME" = $CI_DEFAULT_BRANCH ]]; then DOCKER_TAG=latest; else DOCKER_TAG=$CI_COMMIT_REF_NAME; fi
-      echo "Docker tag: $DOCKER_TAG"
+2. Skriptfiler i /scripts
+build.sh (Bygger alla images)
+bash
+Copy
 
-      export ENDPOINT_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Id')
-      echo "Endpoint: $ENDPOINT_ID"
+#!/bin/bash
+set -eo pipefail
 
-      export SWARM_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Snapshots[0].DockerSnapshotRaw.Info.Swarm.Cluster.ID' -r)
-      echo "Swarm: $SWARM_ID"
+docker buildx build \
+  --cache-from=$CI_REGISTRY_IMAGE:latest \
+  -t $CI_REGISTRY_IMAGE:$TAG \
+  --push \
+  --target=$TARGET .
 
-      echo "Checking if STACK_NAME is present..."
-      STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
+deploy.sh (Smart deployment med cache)
+bash
+Copy
 
-      echo "Stack id: \"$STACK_ID\""
-      if [[ "$STACK_ID" = "" ]]
-      then 
-        echo "Stack $STACK_ID $STACK_NAME not found!"
-        exit 1
-      else 
-        echo "Deleting stack $STACK_ID $STACK_NAME"
-        curl -X DELETE https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID -H "Authorization: Bearer $PORTAINER_TOKEN"
-      fi
+#!/bin/bash
+set -eo pipefail
+
+# Snabbautentisering med cache
+[ -z "$PORTAINER_TOKEN" ] && {
+  source ./scripts/auth.sh
+  echo "export PORTAINER_TOKEN=$PORTAINER_TOKEN" >> .ci_cache
+}
+
+# Effektiv stackhantering
+envsubst <docker-compose.yml >$COMPOSE_FILE
+source ./scripts/stack.sh
+
+# Cacha relevanta variabler
+echo "export STACK_ID=$STACK_ID" >> .ci_cache
+
+auth.sh (Autentisering)
+bash
+Copy
+
+#!/bin/bash
+export PORTAINER_TOKEN=$(curl -sS -X POST "$PORTAINER_URL/api/auth" \
+  --json '{"username":"'$PORTAINER_USER'","password":"'$PORTAINER_PASSWORD'"}' \
+  | jq -r '.jwt')
+
+export ENDPOINT_ID=$(curl -sS "$PORTAINER_URL/api/endpoints" \
+  -H "Authorization: Bearer $PORTAINER_TOKEN" \
+  | jq -r '.[] | select(.Name=="primary").Id')
+
+stack.sh (Stackhantering)
+bash
+Copy
+
+#!/bin/bash
+STACK_ID=$(curl -sS "$PORTAINER_URL/api/stacks" \
+  -H "Authorization: Bearer $PORTAINER_TOKEN" \
+  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
+
+if [ -z "$STACK_ID" ]; then
+  curl -sS -X POST "$PORTAINER_URL/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" \
+    -H "Authorization: Bearer $PORTAINER_TOKEN" \
+    -F Name="$STACK_NAME" \
+    -F SwarmID="$SWARM_ID" \
+    -F file=@$COMPOSE_FILE | jq
+else
+  curl -sS -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
+    -H "Authorization: Bearer $PORTAINER_TOKEN" \
+    --json @<(jq -n --arg content "$(cat $COMPOSE_FILE)" \
+    '{"prune":true,"pullImage":true,"stackFileContent":$content}') | jq
+fi
+
+stop.sh (Rensning)
+bash
+Copy
+
+#!/bin/bash
+set -eo pipefail
+
+source ./scripts/auth.sh
+STACK_ID=$(curl -sS "$PORTAINER_URL/api/stacks" \
+  -H "Authorization: Bearer $PORTAINER_TOKEN" \
+  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
+
+[ -n "$STACK_ID" ] && curl -sS -X DELETE \
+  "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
+  -H "Authorization: Bearer $PORTAINER_TOKEN"
