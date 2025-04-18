@@ -1,3 +1,7 @@
+.gitlab-ci.yml (nu mycket kortare):
+yaml
+Copy
+
 stages:
   - build
   - test
@@ -23,14 +27,13 @@ build-api:
   <<: *build-settings
   stage: build
   script:
-    - docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:$DOCKER_TAG --push --target=base .
-    - docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:test-$DOCKER_TAG --push --target=test .
+    - ./scripts/build.sh api
 
 build-utils:
   <<: *build-settings
   stage: build
   script:
-    - docker buildx build --cache-from=$CI_REGISTRY_IMAGE/utils:latest -t $CI_REGISTRY_IMAGE/utils:latest --push -f Dockerfile-utils .
+    - ./scripts/build.sh utils
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes:
@@ -38,9 +41,9 @@ build-utils:
 
 unit-tests:
   image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
-  stage: test 
+  stage: test
   script:
-    - pytest --cov --cov-fail-under=90
+    - ./scripts/test.sh
   coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   rules:
     - if: $CI_MERGE_REQUEST_ID
@@ -49,134 +52,101 @@ unit-tests:
         - "*.py"
         - requirements*.txt
 
-.portainer-settings: &portainer-settings
-  image: $CI_REGISTRY_IMAGE/utils:latest
-  before_script:
-    - export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
-    - export ENDPOINT_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Id')
-    - export SWARM_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Snapshots[0].DockerSnapshotRaw.Info.Swarm.Cluster.ID' -r)
-
 deploy:
-  <<: *portainer-settings
+  image: $CI_REGISTRY_IMAGE/utils:latest
   stage: deploy
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$STACK_NAME.cc25.chasacademy.dev/docs
     on_stop: stop_review
   script:
-    - envsubst <docker-compose.yml>deployable-compose.yml
-    - STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
-    - |
-      if [ -z "$STACK_ID" ]; then
-        curl -X POST "https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" \
-          -H "Authorization: Bearer $PORTAINER_TOKEN" \
-          -F Name="$STACK_NAME" \
-          -F SwarmID="$SWARM_ID" \
-          -F file=@deployable-compose.yml | jq
-      else
-        curl -X PUT "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
-          -H "Authorization: Bearer $PORTAINER_TOKEN" \
-          --json "{\"prune\": true, \"pullImage\": true, \"stackFileContent\": \"$(cat deployable-compose.yml)\"}" | jq
-      fi
+    - ./scripts/deploy.sh
   rules:
     - if: $CI_MERGE_REQUEST_ID || $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
 stop_review:
-  <<: *portainer-settings
+  image: $CI_REGISTRY_IMAGE/utils:latest
   stage: teardown
   environment:
     name: review/$CI_COMMIT_REF_NAME
     action: stop
   script:
-    - STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
-    - [ -z "$STACK_ID" ] && echo "Stack not found!" && exit 1
-    - curl -X DELETE "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" -H "Authorization: Bearer $PORTAINER_TOKEN"
+    - ./scripts/stop_review.sh
   rules:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
 
+2. Skriptfilerna:
 
-
-2. /scripts
-
-build:
-
-#!/bin/bash
-set -eo pipefail
-
-target=$1
-tag=$2
-shift 2
-
-docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-
-docker buildx build \
-  --cache-from="$CI_REGISTRY_IMAGE:latest" \
-  -t "$CI_REGISTRY_IMAGE:$tag" \
-  --push \
-  --target="$target" \
-  "$@" .
-
-test:
+scripts/build.sh:
+bash
+Copy
 
 #!/bin/bash
-pytest --cov --cov-report=xml --cov-fail-under=90
+set -e
 
-deploy:
+if [ "$1" = "api" ]; then
+  echo "Building API images..."
+  docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:$DOCKER_TAG --push --target=base .
+  docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:test-$DOCKER_TAG --push --target=test .
+elif [ "$1" = "utils" ]; then
+  echo "Building utils image..."
+  docker buildx build --cache-from=$CI_REGISTRY_IMAGE/utils:latest -t $CI_REGISTRY_IMAGE/utils:latest --push -f Dockerfile-utils .
+fi
 
-#!/bin/bash
-set -eo pipefail
-
-source ./scripts/auth
-envsubst <docker-compose.yml >deployable-compose.yml
-source ./scripts/stack
-
-
-auth:
-
-#!/bin/bash
-export PORTAINER_TOKEN=$(curl -sS "$PORTAINER_URL/api/auth" \
-  --json "{\"username\":\"$PORTAINER_USER\",\"password\":\"$PORTAINER_PASSWORD\"}" \
-  | jq -r '.jwt')
-
-export ENDPOINT_ID=$(curl -sS "$PORTAINER_URL/api/endpoints" \
-  -H "Authorization: Bearer $PORTAINER_TOKEN" \
-  | jq -r '.[] | select(.Name=="primary").Id')
-
-stack:
+scripts/deploy.sh:
+bash
+Copy
 
 #!/bin/bash
-stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
-  -H "Authorization: Bearer $PORTAINER_TOKEN" \
-  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
+set -e
 
-[ -z "$stack_id" ] && ./scripts/create_stack || ./scripts/update_stack
+export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
+export ENDPOINT_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Id')
+export SWARM_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Snapshots[0].DockerSnapshotRaw.Info.Swarm.Cluster.ID' -r)
 
+envsubst <docker-compose.yml>deployable-compose.yml
+STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
 
-stop:
+if [ -z "$STACK_ID" ]; then
+  echo "Creating new stack..."
+  curl -X POST "https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" \
+    -H "Authorization: Bearer $PORTAINER_TOKEN" \
+    -F Name="$STACK_NAME" \
+    -F SwarmID="$SWARM_ID" \
+    -F file=@deployable-compose.yml | jq
+else
+  echo "Updating existing stack..."
+  curl -X PUT "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
+    -H "Authorization: Bearer $PORTAINER_TOKEN" \
+    --json "{\"prune\": true, \"pullImage\": true, \"stackFileContent\": \"$(cat deployable-compose.yml)\"}" | jq
+fi
+
+scripts/stop_review.sh:
+bash
+Copy
 
 #!/bin/bash
-set -eo pipefail
+set -e
 
-echo "=== SAFETY CHECK ==="
-echo "Only removing $STACK_NAME if it exists"
+export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
+export ENDPOINT_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Id')
 
-source ./scripts/auth
+STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
 
-# Get stack ID (fail-safe)
-stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
-  -H "Authorization: Bearer $PORTAINER_TOKEN" \
-  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id') || true
+if [ -z "$STACK_ID" ]; then
+  echo "Stack not found!"
+  exit 1
+else
+  echo "Deleting stack..."
+  curl -X DELETE "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" -H "Authorization: Bearer $PORTAINER_TOKEN"
+fi
 
-[ -z "$stack_id" ] && { echo "Stack already gone - nothing to do"; exit 0; }
+scripts/test.sh:
+bash
+Copy
 
-# Confirmation prompt
-echo "=== CONFIRM DELETION ==="
-echo "Stack: $STACK_NAME (ID: $stack_id)"
-echo "Press ENTER to continue, CTRL+C to abort"
-read -r
+#!/bin/bash
+set -e
 
-# Execute deletion
-curl -sS -X DELETE "$PORTAINER_URL/api/stacks/$stack_id?endpointId=$ENDPOINT_ID" \
-  -H "Authorization: Bearer $PORTAINER_TOKEN"
-echo "Stack removed successfully"
+pytest --cov --cov-fail-under=90
