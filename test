@@ -1,69 +1,79 @@
-stages: [build, test, deploy, teardown]
+stages: 
+  - build
+  - test
+  - deploy
+  - teardown
 
 variables:
   DOCKER_TAG: $([ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ] && echo "latest" || echo "$CI_COMMIT_REF_NAME")
   STACK_NAME: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
   PORTAINER_URL: "https://portainer.cc25.chasacademy.dev"
 
-# 🔄 Reusable blocks
 .use_scripts: &use_scripts
   before_script:
     - chmod +x ./scripts/*
-    - [ -f ".ci_cache" ] && source .ci_cache
+    - if [ -f ".ci_cache" ]; then source .ci_cache; fi
 
-.docker_rules: &docker_rules
+.docker_rules:
   rules:
     - if: $CI_MERGE_REQUEST_ID
-      changes: [Dockerfile, "*.py", requirements.txt, requirements-dev.txt]
+      changes:
+        - Dockerfile
+        - "*.py"
+        - requirements.txt
+        - requirements-dev.txt
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes: [Dockerfile, "*.py", requirements.txt, requirements-dev.txt]
+      changes:
+        - Dockerfile
+        - "*.py"
+        - requirements.txt
+        - requirements-dev.txt
 
-# 🏗️ Build
 build-api:
   image: docker:20
   stage: build
-  <<: *use_scripts
+  before_script:
+    - *use_scripts
   script: ./scripts/build base $DOCKER_TAG
   rules:
-    - <<: *docker_rules
+    - !reference [.docker_rules, rules]
 
 build-test:
   image: docker:20
   stage: build
-  <<: *use_scripts
+  before_script:
+    - *use_scripts
   script: ./scripts/build test test-$DOCKER_TAG
   needs: [build-api]
   rules:
-    - <<: *docker_rules
+    - !reference [.docker_rules, rules]
 
 build-utils:
   image: docker:20
   stage: build
-  <<: *use_scripts
+  before_script:
+    - *use_scripts
   script: ./scripts/build utils latest -f Dockerfile-utils
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes: [Dockerfile-utils]
 
-# 🧪 Testing
 unit-tests:
   image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
   stage: test
-  <<: *use_scripts
+  before_script:
+    - *use_scripts
   script: ./scripts/test
   coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
-  artifacts:
-    reports:
-      cobertura: coverage.xml
   needs: [build-test]
   rules:
-    - <<: *docker_rules
+    - !reference [.docker_rules, rules]
 
-# 🚀 Deployment
 deploy:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: deploy
-  <<: *use_scripts
+  before_script:
+    - *use_scripts
   script: ./scripts/deploy
   environment:
     name: review/$CI_COMMIT_REF_NAME
@@ -77,11 +87,11 @@ deploy:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
-# 🛑 Environment Stop
 stop_review:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: teardown
-  <<: *use_scripts
+  before_script:
+    - *use_scripts
   script: ./scripts/stop
   environment:
     name: review/$CI_COMMIT_REF_NAME
