@@ -1,169 +1,137 @@
-stages: [build, test, deploy, teardown]
+       │ File: requirements-dev.txt
+   1   │ httpx
+   2   │ pytest
+   3   │ pytest-cov
+   4   │ coverage
 
-variables:
-  DOCKER_TAG: $([ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ] && echo "latest" || echo "$CI_COMMIT_REF_NAME")
-  STACK_NAME: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
-  PORTAINER_URL: "https://portainer.cc25.chasacademy.dev"
 
-# 🔄 Återanvändbara block
-.use_scripts: &use_scripts
-  before_script:
-    - chmod +x ./scripts/*.sh
-    - [ -f ".ci_cache" ] && source .ci_cache
-
-.docker_rules: &docker_rules
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-      changes: [Dockerfile*, "*.py", requirements*]
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes: [Dockerfile*, "*.py", requirements*]
-
-# 🏗️ Build Jobs
-build-api:
-  image: docker:20
-  stage: build
-  <<: [*use_scripts, *docker_rules]
-  script: ./scripts/build.sh --target=base --tag=$DOCKER_TAG
-
-build-utils:
-  image: docker:20
-  stage: build
-  <<: *use_scripts
-  script: ./scripts/build.sh --target=utils --tag=latest -f Dockerfile-utils
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes: [Dockerfile-utils]
-
-# 🧪 Test Job
-unit-tests:
-  image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
-  stage: test
-  script: ./scripts/test.sh
-  <<: [*docker_rules]
-
-# 🚀 Deploy Jobs
-deploy:
-  image: $CI_REGISTRY_IMAGE/utils:latest
-  stage: deploy
-  <<: *use_scripts
-  script: ./scripts/deploy.sh
-  environment:
-    name: review/$CI_COMMIT_REF_NAME
-    url: https://$STACK_NAME.cc25.chasacademy.dev/docs
-    on_stop: stop_review
-  cache:
-    key: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG
-    paths: [.ci_cache]
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-
-stop_review:
-  image: $CI_REGISTRY_IMAGE/utils:latest
-  stage: teardown
-  <<: *use_scripts
-  script: ./scripts/stop.sh
-  environment:
-    name: review/$CI_COMMIT_REF_NAME
-    action: stop
-  when: manual
+       │ File: requirements.txt
+   1   │ fastapi[standard]
 
 
 
-🛠️ Superoptimerade Skript
+       │ File: test_main.py
+───────┼────────────────────────────────────────────────────────────────────────────────────
+   1   │ from fastapi.testclient import TestClient
+   2   │
+   3   │ from main import app
+   4   │
+   5   │ client = TestClient(app)
+   6   │
+   7   │
+   8   │ def test_read_main():
+   9   │     response = client.get("/")
+  10   │     assert response.status_code == 200
+  11   │     assert response.json() == {"Hello": "Värld!"}
+  12   │
+  13   │
+  14   │ def test_read_item():
+  15   │     response = client.get("/items/12?q=a")
+  16   │     assert response.status_code == 200
+  17   │     assert response.json() == {"item_id": 12, "q": "a"}
+  18   │
+  19   │
+  20   │ def test_who():
+  21   │     response = client.get("/who")
+  22   │     assert response.status_code == 200
+  23   │     assert "hostname" in response.json().keys()
 
-Allt i /scripts-mappen:
-1. build.sh (Bygger ALLA images)
-bash
-Copy
 
-#!/bin/bash
-set -eo pipefail
 
-# Parse arguments
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        -f|--file) DOCKERFILE="$2"; shift ;;
-        -t|--target) TARGET="$2"; shift ;;
-        --tag) TAG="$2"; shift ;;
-        *) echo "Unknown parameter: $1"; exit 1 ;;
-    esac
-    shift
-done
+      │ File: main.py
+───────┼────────────────────────────────────────────────────────────────────────────────────
+   1   │ from typing import Union
+   2   │ import random
+   3   │ import subprocess
+   4   │
+   5   │ from fastapi import FastAPI
+   6   │
+   7   │ app = FastAPI()
+   8   │
+   9   │
+  10   │ @app.get("/")
+  11   │ def read_root():
+  12   │     """Our root endpoint.
+  13   │
+  14   │     It greets the user.
+  15   │     """
+  16   │     return {"Hello": "Värld!"}
+  17   │
+  18   │
+  19   │ @app.get("/items/{item_id}")
+  20   │ def read_item(item_id: int, q: Union[str, None] = None):
+  21   │     """Get an item by its id.
+  22   │
+  23   │     You can use a query parameter `q` as well if you want to.
+  24   │     """
+  25   │     return {"item_id": item_id, "q": q}
+  26   │
+  27   │
+  28   │ @app.get("/who")
+  29   │ def who():
+  30   │     """Returns the hostname of the container handling the request.
+  31   │
+  32   │     """
+  33   │     r = subprocess.run("hostname", stdout=subprocess.PIPE)
+  34   │     return {"hostname": r.stdout.decode()}
 
-docker buildx build \
-  --cache-from=$CI_REGISTRY_IMAGE:latest \
-  -t $CI_REGISTRY_IMAGE:${TAG:-latest} \
-  --push \
-  --target=${TARGET:-base} \
-  -f ${DOCKERFILE:-Dockerfile} .
 
-2. test.sh (Kör tester)
-bash
-Copy
 
-#!/bin/bash
-pytest --cov --cov-fail-under=90
+       │ File: Dockerfile-utils
+───────┼────────────────────────────────────────────────────────────────────────────────────
+   1   │ FROM alpine:latest
+   2   │ RUN apk --no-cache add curl
+   3   │ RUN apk --no-cache add jq
+   4   │ RUN apk --no-cache add envsubst
 
-3. deploy.sh (Smart deployment)
-bash
-Copy
 
-#!/bin/bash
-set -eo pipefail
 
-# Auth + cache
-source ./scripts/auth.sh
-echo "export PORTAINER_TOKEN=$PORTAINER_TOKEN" > .ci_cache
+       │ File: Dockerfile
+───────┼────────────────────────────────────────────────────────────────────────────────────
+   1   │ FROM python:3.13-alpine AS base
+   2   │ WORKDIR /api
+   3   │ COPY requirements.txt .
+   4   │ RUN pip install -r requirements.txt
+   5   │ COPY *.py .
+   6   │ ENTRYPOINT ["fastapi", "run", "main.py"]
+   7   │
+   8   │ FROM python:3.13-alpine AS test
+   9   │ WORKDIR /api
+  10   │ COPY requirements-dev.txt .
+  11   │ RUN pip install -r requirements-dev.txt
+  12   │ COPY requirements.txt .
+  13   │ RUN pip install -r requirements.txt
+  14   │ COPY *.py .
+  15   │ ENTRYPOINT sh
 
-# Stack management
-envsubst <docker-compose.yml | tee deployable-compose.yml |
-  ./scripts/stack.sh | tee -a .ci_cache
 
-4. auth.sh (Delad autentisering)
-bash
-Copy
 
-#!/bin/bash
-export PORTAINER_TOKEN=$(curl -sSf "$PORTAINER_URL/api/auth" \
-  -H "Content-Type: application/json" \
-  -d "{\"username\":\"$PORTAINER_USER\",\"password\":\"$PORTAINER_PASSWORD\"}" \
-  | jq -r '.jwt')
-
-export ENDPOINT_ID=$(curl -sSf "$PORTAINER_URL/api/endpoints" \
-  -H "Authorization: Bearer $PORTAINER_TOKEN" \
-  | jq -r '.[] | select(.Name=="primary").Id')
-
-5. stack.sh (Effektiv stackhantering)
-bash
-Copy
-
-#!/bin/bash
-STACK_ID=$(curl -sSf "$PORTAINER_URL/api/stacks" \
-  -H "Authorization: Bearer $PORTAINER_TOKEN" \
-  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
-
-if [[ -z "$STACK_ID" ]]; then
-  curl -sSf -X POST "$PORTAINER_URL/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" \
-    -H "Authorization: Bearer $PORTAINER_TOKEN" \
-    -F Name="$STACK_NAME" \
-    -F SwarmID="$SWARM_ID" \
-    -F file=@deployable-compose.yml | jq
-else
-  curl -sSf -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
-    -H "Authorization: Bearer $PORTAINER_TOKEN" \
-    --json @<(jq -n --arg content "$(cat deployable-compose.yml)" \
-    '{"prune":true,"pullImage":true,"stackFileContent":$content}')
-fi
-
-echo "export STACK_ID=$STACK_ID"
-
-6. stop.sh (Rensning)
-bash
-Copy
-
-#!/bin/bash
-set -eo pipefail
-source ./scripts/auth.sh
-./scripts/stack.sh --action=delete
-
+       │ File: docker-compose.yml
+───────┼────────────────────────────────────────────────────────────────────────────────────
+   1   │ services:
+   2   │   api:
+   3   │     image: registry.chasacademy.dev/chas-challenge-2025/group-15/test-projekt:${DOC
+       │ KER_TAG}
+   4   │     restart: always
+   5   │     networks:
+   6   │       - traefik-public
+   7   │     deploy:
+   8   │       mode: replicated
+   9   │       replicas: 1
+  10   │       labels:
+  11   │         - traefik.enable=true
+  12   │         - traefik.docker.network=traefik-public
+  13   │         - traefik.constraint-label=traefik-public
+  14   │         - traefik.http.routers.${STACK_NAME}-http.rule=Host(`${STACK_NAME}.cc25.cha
+       │ sacademy.dev`)
+  15   │         - traefik.http.routers.${STACK_NAME}-http.entrypoints=http
+  16   │         - traefik.http.routers.${STACK_NAME}-http.middlewares=https-redirect
+  17   │         - traefik.http.routers.${STACK_NAME}-https.rule=Host(`${STACK_NAME}.cc25.ch
+       │ asacademy.dev`)
+  18   │         - traefik.http.routers.${STACK_NAME}-https.entrypoints=https
+  19   │         - traefik.http.routers.${STACK_NAME}-https.tls=true
+  20   │         - traefik.http.routers.${STACK_NAME}-https.tls.certresolver=le
+  21   │         - traefik.http.services.${STACK_NAME}.loadbalancer.server.port=8000
+  22   │ networks:
+  23   │   traefik-public:
+  24   │     external: true
