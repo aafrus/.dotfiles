@@ -5,7 +5,6 @@ variables:
   STACK_NAME: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
   PORTAINER_URL: "https://portainer.cc25.chasacademy.dev"
 
-# 🔄 Reuseable block
 .use_scripts: &use_scripts
   before_script:
     - chmod +x ./scripts/*
@@ -14,34 +13,43 @@ variables:
 .docker_rules: &docker_rules
   rules:
     - if: $CI_MERGE_REQUEST_ID
-      changes: [Dockerfile*, "*.py", requirements*]
+      changes: [Dockerfile, "*.py", requirements*]
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes: [Dockerfile*, "*.py", requirements*]
+      changes: [Dockerfile, "*.py", requirements*]
 
-# 🏗️ Build Jobs
 build-api:
   image: docker:20
   stage: build
   <<: [*use_scripts, *docker_rules]
-  script: ./scripts/build --target=base --tag=$DOCKER_TAG
+  script: ./scripts/build base $DOCKER_TAG
+
+build-test:
+  image: docker:20
+  stage: build
+  <<: [*use_scripts, *docker_rules]
+  script: ./scripts/build test test-$DOCKER_TAG
+  needs: [build-api]
 
 build-utils:
   image: docker:20
   stage: build
   <<: *use_scripts
-  script: ./scripts/build --target=utils --tag=latest -f Dockerfile-utils
+  script: ./scripts/build utils latest -f Dockerfile-utils
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes: [Dockerfile-utils]
 
-# 🧪 Test Job
 unit-tests:
   image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
   stage: test
+  <<: *use_scripts
   script: ./scripts/test
-  <<: [*docker_rules]
+  coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+  needs: [build-test]
 
-# 🚀 Deploy Jobs
 deploy:
   image: $CI_REGISTRY_IMAGE/utils:latest
   stage: deploy
@@ -52,11 +60,9 @@ deploy:
     url: https://$STACK_NAME.cc25.chasacademy.dev/docs
     on_stop: stop_review
   cache:
-    key: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG
+    key: $CI_COMMIT_REF_SLUG
     paths: [.ci_cache]
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  needs: [build-utils, unit-tests]
 
 stop_review:
   image: $CI_REGISTRY_IMAGE/utils:latest
@@ -67,3 +73,67 @@ stop_review:
     name: review/$CI_COMMIT_REF_NAME
     action: stop
   when: manual
+
+
+
+2. Skriptfiler i /scripts
+
+build (hanterar alla byggen):
+bash
+Copy
+
+#!/bin/bash
+set -eo pipefail
+
+target=$1
+tag=$2
+shift 2
+
+docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+
+docker buildx build \
+  --cache-from="$CI_REGISTRY_IMAGE:latest" \
+  -t "$CI_REGISTRY_IMAGE:$tag" \
+  --push \
+  --target="$target" \
+  "$@" .
+
+test (använder din requirements-dev.txt):
+bash
+Copy
+
+#!/bin/bash
+pytest --cov --cov-report=xml --cov-fail-under=90
+
+deploy (förenklad deployment):
+bash
+Copy
+
+#!/bin/bash
+set -eo pipefail
+
+source ./scripts/auth
+envsubst <docker-compose.yml >deployable-compose.yml
+source ./scripts/manage_stack
+
+3. Hjälpskript
+
+auth:
+bash
+Copy
+
+#!/bin/bash
+export PORTAINER_TOKEN=$(curl -sS "$PORTAINER_URL/api/auth" \
+  --json "{\"username\":\"$PORTAINER_USER\",\"password\":\"$PORTAINER_PASSWORD\"}" \
+  | jq -r '.jwt')
+
+manage_stack:
+bash
+Copy
+
+#!/bin/bash
+stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
+  -H "Authorization: Bearer $PORTAINER_TOKEN" \
+  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
+
+[ -z "$stack_id" ] && ./scripts/create_stack || ./scripts/update_stack
