@@ -81,73 +81,90 @@ stop_review:
 
 
 
-2. Skriptfilerna:
+2. Skriptfilerna (utan .sh):
 
-scripts/build.sh:
+scripts/build:
 bash
 Copy
 
 #!/bin/bash
 set -e
 
-if [ "$1" = "api" ]; then
-  echo "Building API images..."
-  docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:$DOCKER_TAG --push --target=base .
-  docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:test-$DOCKER_TAG --push --target=test .
-elif [ "$1" = "utils" ]; then
-  echo "Building utils image..."
-  docker buildx build --cache-from=$CI_REGISTRY_IMAGE/utils:latest -t $CI_REGISTRY_IMAGE/utils:latest --push -f Dockerfile-utils .
-fi
+case "$1" in
+  api)
+    echo "Building API images..."
+    docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:$DOCKER_TAG --push --target=base .
+    docker buildx build --cache-from=$CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:test-$DOCKER_TAG --push --target=test .
+    ;;
+  utils)
+    echo "Building utils image..."
+    docker buildx build --cache-from=$CI_REGISTRY_IMAGE/utils:latest -t $CI_REGISTRY_IMAGE/utils:latest --push -f Dockerfile-utils .
+    ;;
+  *)
+    echo "Usage: $0 {api|utils}"
+    exit 1
+    ;;
+esac
 
-scripts/deploy.sh:
+scripts/deploy:
 bash
 Copy
 
 #!/bin/bash
 set -e
 
-export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
-export ENDPOINT_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Id')
-export SWARM_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Snapshots[0].DockerSnapshotRaw.Info.Swarm.Cluster.ID' -r)
+# Hämta Portainer-token
+TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" \
+  --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
 
-envsubst <docker-compose.yml>deployable-compose.yml
-STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
+# Hämta endpoint-ID
+ENDPOINT=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints \
+  -H "Authorization: Bearer $TOKEN" | jq '.[] | select(.Name == "primary") | .Id')
+
+# Skapa deployable compose-fil
+envsubst <docker-compose.yml >deployable-compose.yml
+
+# Kolla om stacken finns
+STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks \
+  -H "Authorization: Bearer $TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
 
 if [ -z "$STACK_ID" ]; then
-  echo "Creating new stack..."
-  curl -X POST "https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT_ID" \
-    -H "Authorization: Bearer $PORTAINER_TOKEN" \
+  echo "Creating new stack $STACK_NAME..."
+  curl -X POST "https://portainer.cc25.chasacademy.dev/api/stacks/create/swarm/file?endpointId=$ENDPOINT" \
+    -H "Authorization: Bearer $TOKEN" \
     -F Name="$STACK_NAME" \
     -F SwarmID="$SWARM_ID" \
     -F file=@deployable-compose.yml | jq
 else
-  echo "Updating existing stack..."
-  curl -X PUT "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
-    -H "Authorization: Bearer $PORTAINER_TOKEN" \
+  echo "Updating stack $STACK_NAME (ID: $STACK_ID)..."
+  curl -X PUT "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT" \
+    -H "Authorization: Bearer $TOKEN" \
     --json "{\"prune\": true, \"pullImage\": true, \"stackFileContent\": \"$(cat deployable-compose.yml)\"}" | jq
 fi
 
-scripts/stop_review.sh:
+scripts/stop:
 bash
 Copy
 
 #!/bin/bash
 set -e
 
-export PORTAINER_TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
-export ENDPOINT_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "primary") | .Id')
+TOKEN=$(curl -s -X POST "https://portainer.cc25.chasacademy.dev/api/auth" \
+  --json '{"username": "'$PORTAINER_USER'", "password": "'$PORTAINER_PASSWORD'"}' | jq -r '.jwt')
 
-STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks -H "Authorization: Bearer $PORTAINER_TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
+STACK_ID=$(curl -s https://portainer.cc25.chasacademy.dev/api/stacks \
+  -H "Authorization: Bearer $TOKEN" | jq '.[] | select(.Name == "'$STACK_NAME'") | .Id')
 
 if [ -z "$STACK_ID" ]; then
-  echo "Stack not found!"
+  echo "Error: Stack $STACK_NAME not found!"
   exit 1
 else
-  echo "Deleting stack..."
-  curl -X DELETE "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" -H "Authorization: Bearer $PORTAINER_TOKEN"
+  echo "Deleting stack $STACK_NAME..."
+  curl -X DELETE "https://portainer.cc25.chasacademy.dev/api/stacks/$STACK_ID" \
+    -H "Authorization: Bearer $TOKEN"
 fi
 
-scripts/test.sh:
+scripts/test:
 bash
 Copy
 
