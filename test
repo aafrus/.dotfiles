@@ -152,20 +152,25 @@ stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
 #!/bin/bash
 set -eo pipefail
 
-# Ladda autentisering
+echo "=== SAFE MODE ==="
+echo "Tar endast bort $STACK_NAME om den finns"
+
 source ./scripts/auth
 
-# Hämta stack-ID
+# Hämta stack-ID (fail-safe)
 stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
   -H "Authorization: Bearer $PORTAINER_TOKEN" \
-  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
+  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id') || true
 
-# Verifiera och ta bort
-if [ -z "$stack_id" ]; then
-  echo "Stack $STACK_NAME not found!"
-  exit 1
-else
-  echo "Deleting stack $stack_id"
-  curl -sS -X DELETE "$PORTAINER_URL/api/stacks/$stack_id?endpointId=$ENDPOINT_ID" \
-    -H "Authorization: Bearer $PORTAINER_TOKEN"
-fi
+[ -z "$stack_id" ] && { echo "Stack finns redan inte - inget att göra"; exit 0; }
+
+# Bekräfta innan borttagning
+echo "=== ATT TA BORT ==="
+echo "Stack: $STACK_NAME (ID: $stack_id)"
+echo "Tryck ENTER för att fortsätta, CTRL+C för att avbryta"
+read -r
+
+# Utför borttagning
+curl -sS -X DELETE "$PORTAINER_URL/api/stacks/$stack_id?endpointId=$ENDPOINT_ID" \
+  -H "Authorization: Bearer $PORTAINER_TOKEN"
+echo "Stack borttagen"
