@@ -1,204 +1,69 @@
-~/.dotfiles/zsh/.zprofile
-zsh
-Copy
+stages: [build, test, deploy, teardown]
 
-#!/usr/bin/env zsh
-# ---[ Auto-start X11 ]----------------------------------
-[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && startx
+variables:
+  DOCKER_TAG: $([ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ] && echo "latest" || echo "$CI_COMMIT_REF_NAME")
+  STACK_NAME: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_REF_SLUG"
+  PORTAINER_URL: "https://portainer.cc25.chasacademy.dev"
 
-~/.dotfiles/zsh/.zshrc
-zsh
-Copy
+# 🔄 Reuseable block
+.use_scripts: &use_scripts
+  before_script:
+    - chmod +x ./scripts/*
+    - [ -f ".ci_cache" ] && source .ci_cache
 
-#!/usr/bin/env zsh
-# ---[ Main Configuration ]------------------------------
-# XDG Base Directory Specification
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CACHE_HOME="$HOME/.cache"
+.docker_rules: &docker_rules
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      changes: [Dockerfile*, "*.py", requirements*]
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes: [Dockerfile*, "*.py", requirements*]
 
-# ---[ Source Config Files ]-----------------------------
-# Load modular config files
-for config in "$XDG_CONFIG_HOME"/zsh/*.zsh; do
-  source "$config"
-done
+# 🏗️ Build Jobs
+build-api:
+  image: docker:20
+  stage: build
+  <<: [*use_scripts, *docker_rules]
+  script: ./scripts/build --target=base --tag=$DOCKER_TAG
 
-# Load flat config files
-source ~/env.zsh
-source ~/security.zsh
+build-utils:
+  image: docker:20
+  stage: build
+  <<: *use_scripts
+  script: ./scripts/build --target=utils --tag=latest -f Dockerfile-utils
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes: [Dockerfile-utils]
 
-~/.dotfiles/zsh/env.zsh
-zsh
-Copy
+# 🧪 Test Job
+unit-tests:
+  image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
+  stage: test
+  script: ./scripts/test
+  <<: [*docker_rules]
 
-# ---[ Environment Variables ]---------------------------
-# Core
-export EDITOR='nvim'
-export VISUAL='nvim'
-export PATH="$HOME/.local/bin:$PATH"
+# 🚀 Deploy Jobs
+deploy:
+  image: $CI_REGISTRY_IMAGE/utils:latest
+  stage: deploy
+  <<: *use_scripts
+  script: ./scripts/deploy
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: https://$STACK_NAME.cc25.chasacademy.dev/docs
+    on_stop: stop_review
+  cache:
+    key: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG
+    paths: [.ci_cache]
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
-# Internationalization
-export LANG='en_US.UTF-8'
-export LC_ALL='en_US.UTF-8'
-
-# Custom
-export GPG_TTY=$(tty)
-export TERM='xterm-256color'
-
-~/.dotfiles/zsh/security.zsh
-zsh
-Copy
-
-# ---[ Security Aliases ]--------------------------------
-# AV Tools
-alias checkrootkits="sudo rkhunter --update; sudo rkhunter --propupd; sudo rkhunter --sk --check"
-alias checkvirus="clamscan --recursive=yes --infected /home"
-alias updateantivirus="sudo freshclam"
-
-# System Monitoring
-alias listports="sudo netstat -tulnp"
-alias checkauth="sudo tail -n 20 /var/log/auth.log"
-
-~/.dotfiles/zsh/history.zsh
-zsh
-Copy
-
-# ---[ History Settings ]--------------------------------
-export HISTFILE="$XDG_DATA_HOME/zsh/history"
-export HISTSIZE=100000
-export SAVEHIST=100000
-
-# History Behavior
-setopt HIST_IGNORE_SPACE         # Ignore space-prefixed commands
-setopt HIST_IGNORE_ALL_DUPS      # Remove older duplicates
-setopt HIST_SAVE_NO_DUPS         # Don't save duplicates
-setopt HIST_FIND_NO_DUPS         # Don't show duplicates in search
-setopt SHARE_HISTORY             # Share history across sessions
-setopt APPEND_HISTORY            # Append rather than overwrite
-setopt EXTENDED_HISTORY          # Save timestamps and duration
-
-~/.dotfiles/zsh/completion.zsh
-zsh
-Copy
-
-# ---[ Completion System ]-------------------------------
-autoload -Uz compinit
-compinit -u -d "$XDG_CACHE_HOME/zsh/zcompdump"
-
-# ---[ Completion Styles ]-------------------------------
-zstyle ':completion:*' menu no
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-
-# ---[ FZF-Tab Integration ]----------------------------
-if (( $+commands[fzf] )); then
-  zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
-  zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
-fi
-
-~/.dotfiles/zsh/plugins.zsh
-zsh
-Copy
-
-# ---[ Zinit Plugin Manager ]----------------------------
-ZINIT_HOME="${XDG_DATA_HOME}/zinit/zinit.git"
-
-# Initialize or install Zinit
-if [[ ! -f "${ZINIT_HOME}/zinit.zsh" ]]; then
-    mkdir -p "${ZINIT_HOME}"
-    git clone https://github.com/zdharma-continuum/zinit.git "${ZINIT_HOME}"
-fi
-source "${ZINIT_HOME}/zinit.zsh"
-
-# ---[ Plugins ]-----------------------------------------
-# OMZ Plugins
-zinit snippet OMZP::sudo
-
-# Syntax Highlighting
-zinit light zsh-users/zsh-syntax-highlighting
-
-# Autosuggestions
-zinit light zsh-users/zsh-autosuggestions
-
-# ---[ Tools ]-------------------------------------------
-# Zoxide (smarter cd)
-(( $+commands[zoxide] )) && eval "$(zoxide init --cmd cd zsh)"
-
-# FZF Fuzzy Finder
-(( $+commands[fzf] )) && source <(fzf --zsh)
-
-# ---[ Finalize ]----------------------------------------
-zinit cdreplay -q  # Process all zinit commands
-
-~/.dotfiles/zsh/keys.zsh
-zsh
-Copy
-
-# ---[ Key Bindings ]------------------------------------
-# Vi Mode
-bindkey -v
-
-# Navigation
-bindkey '^h' backward-char
-bindkey '^l' forward-char
-
-# History Search
-bindkey '^j' history-search-backward
-bindkey '^k' history-search-forward
-bindkey '^R' history-incremental-search-backward
-
-# Text Manipulation
-bindkey '^z' kill-region
-
-# Autosuggestions
-bindkey '^f' autosuggest-accept
-
-~/.dotfiles/zsh/prompt.zsh
-zsh
-Copy
-
-# ---[ Prompt Configuration ]----------------------------
-# Enable colors and substitution
-autoload -Uz colors vcs_info && colors
-setopt PROMPT_SUBST
-
-# ---[ Git Symbols ]-------------------------------------
-ICO_DIRTY="⚡"
-ICO_AHEAD="▲"
-ICO_BEHIND="▼"
-ICO_DIVERGED="⥮"
-
-# ---[ Git Status Prompt ]-------------------------------
-git_prompt_info() {
-    # Current reference (branch/tag/commit)
-    local ref=$(git symbolic-ref --short HEAD 2>/dev/null || 
-                git describe --tags --exact-match HEAD 2>/dev/null) || return
-
-    # Dirty working directory
-    local dirty=""
-    git diff --quiet --ignore-submodules 2>/dev/null || dirty=$ICO_DIRTY
-
-    # Upstream status
-    local stat=""
-    case $(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null) in
-        "") ;;       # No upstream
-        "0"*) ;;     # Equal
-        *"0") stat=$ICO_AHEAD ;;   # Ahead
-        *) stat=$ICO_DIVERGED ;;   # Diverged
-    esac
-
-    echo "%F{241}[%F{244}${ref}${dirty}${stat}%F{241}]"
-}
-
-# ---[ Main Prompt ]-------------------------------------
-case "${(%):-%N}" in
-    *vim*)
-        PROMPT='%F{9}─────%f ' ;;     # Red in Vim
-    *ssh*)
-        PROMPT='%F{13}%m%f ' ;;       # Purple for SSH
-    *)
-        PROMPT='%F{11}─────%f ' ;;    # Yellow normally
-esac
-
-# Right Prompt (directory + git info)
-RPROMPT='%F{8}%~ $(git_prompt_info)%f'
+stop_review:
+  image: $CI_REGISTRY_IMAGE/utils:latest
+  stage: teardown
+  <<: *use_scripts
+  script: ./scripts/stop
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
