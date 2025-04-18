@@ -14,23 +14,27 @@ variables:
 .docker_rules: &docker_rules
   rules:
     - if: $CI_MERGE_REQUEST_ID
-      changes: [Dockerfile, "*.py", requirements*]
+      changes: [Dockerfile, "*.py", requirements.txt, requirements-dev.txt]
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes: [Dockerfile, "*.py", requirements*]
+      changes: [Dockerfile, "*.py", requirements.txt, requirements-dev.txt]
 
 # 🏗️ Build
 build-api:
   image: docker:20
   stage: build
-  <<: [*use_scripts, *docker_rules]
+  <<: *use_scripts
   script: ./scripts/build base $DOCKER_TAG
+  rules:
+    - <<: *docker_rules
 
 build-test:
   image: docker:20
   stage: build
-  <<: [*use_scripts, *docker_rules]
+  <<: *use_scripts
   script: ./scripts/build test test-$DOCKER_TAG
   needs: [build-api]
+  rules:
+    - <<: *docker_rules
 
 build-utils:
   image: docker:20
@@ -52,6 +56,8 @@ unit-tests:
     reports:
       cobertura: coverage.xml
   needs: [build-test]
+  rules:
+    - <<: *docker_rules
 
 # 🚀 Deployment
 deploy:
@@ -67,6 +73,9 @@ deploy:
     key: $CI_COMMIT_REF_SLUG
     paths: [.ci_cache]
   needs: [build-utils, unit-tests]
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
 # 🛑 Environment Stop
 stop_review:
