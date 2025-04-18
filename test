@@ -137,3 +137,27 @@ stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
   | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
 
 [ -z "$stack_id" ] && ./scripts/create_stack || ./scripts/update_stack
+
+
+
+
+#!/bin/bash
+set -eo pipefail
+
+# Ladda autentisering
+source ./scripts/auth
+
+# Hämta stack-ID
+stack_id=$(curl -sS "$PORTAINER_URL/api/stacks" \
+  -H "Authorization: Bearer $PORTAINER_TOKEN" \
+  | jq -r --arg name "$STACK_NAME" '.[] | select(.Name==$name) | .Id')
+
+# Verifiera och ta bort
+if [ -z "$stack_id" ]; then
+  echo "Stack $STACK_NAME not found!"
+  exit 1
+else
+  echo "Deleting stack $stack_id"
+  curl -sS -X DELETE "$PORTAINER_URL/api/stacks/$stack_id?endpointId=$ENDPOINT_ID" \
+    -H "Authorization: Bearer $PORTAINER_TOKEN"
+fi
