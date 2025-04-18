@@ -1,7 +1,3 @@
-.gitlab-ci.yml (nu mycket kortare):
-yaml
-Copy
-
 stages:
   - build
   - test
@@ -27,13 +23,13 @@ build-api:
   <<: *build-settings
   stage: build
   script:
-    - ./scripts/build.sh api
+    - ./scripts/build api
 
 build-utils:
   <<: *build-settings
   stage: build
   script:
-    - ./scripts/build.sh utils
+    - ./scripts/build utils
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes:
@@ -43,7 +39,7 @@ unit-tests:
   image: $CI_REGISTRY_IMAGE:test-$CI_COMMIT_REF_NAME
   stage: test
   script:
-    - ./scripts/test.sh
+    - ./scripts/test
   coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   rules:
     - if: $CI_MERGE_REQUEST_ID
@@ -60,7 +56,7 @@ deploy:
     url: https://$STACK_NAME.cc25.chasacademy.dev/docs
     on_stop: stop_review
   script:
-    - ./scripts/deploy.sh
+    - ./scripts/deploy
   rules:
     - if: $CI_MERGE_REQUEST_ID || $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
@@ -71,10 +67,19 @@ stop_review:
     name: review/$CI_COMMIT_REF_NAME
     action: stop
   script:
-    - ./scripts/stop_review.sh
+    - ./scripts/stop
   rules:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
+
+
+
+
+
+
+
+
+
 
 2. Skriptfilerna:
 
