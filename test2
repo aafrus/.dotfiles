@@ -1,1 +1,1 @@
-
+for file in scripts/*.sh; do mv "$file" "${file%.sh}"; done
