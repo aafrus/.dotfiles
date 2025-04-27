@@ -4,33 +4,33 @@
 *.cursorColor:  #d0d0d0
 
 ! black
-*.color0:       #252525
-*.color8:       #252525
+*.color0:       #101010
+*.color8:       #303030
 
 ! red
-*.color1:       #808080
-*.color9:       #808080
+*.color1:       #606060
+*.color9:       #606060
 
 ! green
-*.color2:       #606060
-*.color10:      #606060
+*.color2:       #707070
+*.color10:      #707070
 
 ! yellow
-*.color3:       #4a4a4a
-*.color11:      #4a4a4a
+*.color3:       #808080
+*.color11:      #808080
 
 ! blue
-*.color4:       #3a3a3a
-*.color12:      #3a3a3a
+*.color4:       #909090
+*.color12:      #909090
 
 ! magenta
-*.color5:       #808080
-*.color13:      #808080
+*.color5:       #a0a0a0
+*.color13:      #a0a0a0
 
 ! cyan
-*.color6:       #606060
-*.color14:      #606060
+*.color6:       #b0b0b0
+*.color14:      #b0b0b0
 
 ! white
 *.color7:       #d0d0d0
-*.color15:      #d0d0d0
+*.color15:      #ffffff
