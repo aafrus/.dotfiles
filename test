@@ -17,8 +17,9 @@
   networking.networkmanager.enable = true;
 
   # Timezone and NTP synchronization.
-  time.timezone = "Europe/Stockholm";
-  services.timesyncd.enable = true; # Added for time synchronization
+  # This section needs to be configured correctly.
+  time.timeZone = "Europe/Stockholm";
+  services.timesyncd.enable = true;
 
   # Internationalization and keyboard layout support.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -48,6 +49,7 @@
     rxvt-unicode # uRxvt, your terminal emulator
     zsh
     bash
+    gedit # Added for easier editing
   ];
 
   # Create a file in the user's home directory that automatically starts the X server.
