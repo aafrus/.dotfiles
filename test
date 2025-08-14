@@ -30,10 +30,10 @@
   services.xserver.displayManager.lightdm.enable = false;
 
   # Konfigurera gettyservice för automatisk inloggning på tty1.
-  services.getty.autologinUser = "dittanvändarnamn";
+  services.getty.autologinUser = "ns";
 
   # Användarkonfiguration. Byt ut dittanvändarnamn.
-  users.users.dittanvändarnamn = {
+  users.users.ns = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "video" ];
   };
