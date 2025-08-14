@@ -2,65 +2,65 @@
 { config, pkgs, ... }:
 
 {
-  # Importera hårdvarukonfigurationen från nätverksskanningen.
+  # Import hardware configuration from the network scan.
   imports = [
     ./hardware-configuration.nix
   ];
 
-  # Använd systemd-boot som bootloader.
+  # Use systemd-boot as the bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Nätverksinställningar.
+  # Network settings.
   networking.hostName = "T-1000";
   networking.wireless.enable = true;
   networking.networkmanager.enable = true;
 
-  # Tidszon.
+  # Timezone.
   time.timezone = "Europe/Stockholm";
 
-  # Stöd för internationalisering och tangentbordslayout.
+  # Internationalization and keyboard layout support.
   i18n.defaultLocale = "en_US.UTF-8";
   services.xserver.layout = "se";
 
-  # Aktivera X-servern.
+  # Enable the X server.
   services.xserver.enable = true;
 
-  # Inaktivera display managers (som LightDM, GDM, etc.)
+  # Disable display managers (such as LightDM, GDM, etc.)
   services.xserver.displayManager.lightdm.enable = false;
 
-  # Konfigurera gettyservice för automatisk inloggning på tty1.
+  # Configure the getty service for automatic login on tty1.
   services.getty.autologinUser = "ns";
 
-  # Användarkonfiguration. Byt ut dittanvändarnamn.
+  # User configuration.
   users.users.ns = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "video" ];
   };
 
-  # Systempaket, inkl. CWM, xinit och urxvt.
+  # System packages, including CWM, xinit, and urxvt.
   environment.systemPackages = with pkgs; [
-    cwm # Din önskade window manager
-    xorg.xinit # Krävs för att köra startx
-    rxvt-unicode # uRxvt, din terminalemulator
+    cwm # Your desired window manager
+    xorg.xinit # Required to run startx
+    rxvt-unicode # uRxvt, your terminal emulator
   ];
 
-  # Skapa en fil i användarens hemkatalog som startar X-servern automatiskt.
+  # Create a file in the user's home directory that automatically starts the X server.
   environment.etc."skel/.zprofile".source = pkgs.writeText "zprofile" ''
     if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
       exec startx
     fi
   '';
 
-  # Skapa .xinitrc som säger åt startx att starta CWM.
+  # Create .xinitrc which tells startx to start CWM.
   environment.etc."skel/.xinitrc".source = pkgs.writeText "xinitrc" ''
     #!/bin/sh
     exec cwm
   '';
 
-  # Andra tjänster.
+  # Other services.
   services.printing.enable = true;
   services.pipewire.enable = true;
 
-  # ... lägg till resten av din konfiguration här om det behövs.
+  # ... add the rest of your configuration here if needed.
 }
