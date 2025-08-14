@@ -16,8 +16,9 @@
   networking.wireless.enable = true;
   networking.networkmanager.enable = true;
 
-  # Timezone.
+  # Timezone and NTP synchronization.
   time.timezone = "Europe/Stockholm";
+  services.timesyncd.enable = true; # Added for time synchronization
 
   # Internationalization and keyboard layout support.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -50,8 +51,8 @@
   ];
 
   # Create a file in the user's home directory that automatically starts the X server.
-  # This file uses the more generic .profile, which is sourced by both bash and zsh.
-  environment.etc."skel/.profile".source = pkgs.writeText "profile" ''
+  # This file uses .zprofile, which is sourced by zsh login shells, making it more reliable.
+  environment.etc."skel/.zprofile".source = pkgs.writeText "zprofile" ''
     if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
       exec startx
     fi
