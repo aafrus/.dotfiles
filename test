@@ -36,17 +36,22 @@
   users.users.ns = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "video" ];
+    # Set zsh as the default shell for this user.
+    shell = pkgs.zsh;
   };
 
-  # System packages, including CWM, xinit, and urxvt.
+  # System packages, including CWM, xinit, urxvt, and common shells.
   environment.systemPackages = with pkgs; [
     cwm # Your desired window manager
     xorg.xinit # Required to run startx
     rxvt-unicode # uRxvt, your terminal emulator
+    zsh
+    bash
   ];
 
   # Create a file in the user's home directory that automatically starts the X server.
-  environment.etc."skel/.zprofile".source = pkgs.writeText "zprofile" ''
+  # This file uses the more generic .profile, which is sourced by both bash and zsh.
+  environment.etc."skel/.profile".source = pkgs.writeText "profile" ''
     if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
       exec startx
     fi
