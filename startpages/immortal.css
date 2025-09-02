@@ -611,8 +611,16 @@ Global styling - Icons
 
 /* remove stuff */
 
-/* Hide close button on tabs in vertical bar */
-/* #tabbrowser-tabs .tabbrowser-tab .tab-close-button { display: none !important; } */
+/* Hide the tab close button by default */
+.tabbrowser-tab .tab-close-button {
+  opacity: 0;
+  transition: opacity 150ms ease-in-out; /* Adds a smooth fade effect */
+}
+
+/* Show the close button when hovering over the tab */
+.tabbrowser-tab:hover .tab-close-button {
+  opacity: 1;
+}
 
 /* hide window controls */
 .titlebar-buttonbox-container { display: none; }
@@ -766,5 +774,89 @@ tab {
 	--tab-min-height: 20px !important;
 }
 
-/* smaller pinned tabs */
+/* --- TABS: Grayscale icons with color on hover/select (Guaranteed Text Color) --- */
+
+/* Make all tab icons grayscale by default */
+.tabbrowser-tab .tab-icon-image {
+  filter: grayscale(100%) !important;
+  transition: filter 150ms ease-in-out;
+}
+
+/* Restore color on the selected tab AND when hovering over any tab */
+/* .tabbrowser-tab[selected] .tab-icon-image,
+.tabbrowser-tab:hover .tab-icon-image {
+  filter: none !important;
+} */
+
+/* remove shadow under full vertical tab */
+#tabbrowser-tabs[orient="vertical"][overflow]::after {
+  content: none !important;
+}
+
+/* 1. URL BAR: Hide location/identity icon until hover */
+#identity-box {
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
+}
+
+#nav-bar:hover #identity-box {
+  opacity: 1;
+}
+
+/* 2. VERTICAL TABS: Permanently hide the "New Tab" and "Customize" buttons */
+/* Hides the '+' button for a new tab */
+#vertical-tabs-newtab-button,
+#tabs-newtab-button {
+  display: none !important;
+}
+
+/* Hides the gear icon for "Customize Sidebar" */
+.tools-and-extensions moz-button[view="viewCustomizeSidebar"] {
+  display: none !important;
+}
+
+
+/* Hide the update indicator dot on background tabs */
+.tab-content[titlechanged]:not([selected]) {
+  background-image: none !important;
+}
+/* 1. URL BAR: Hide location/identity icon until hovering DIRECTLY over it */
+#identity-box {
+  opacity: 0 !important;
+  transition: opacity 150ms ease-in-out !important;
+}
+
+#identity-box:hover {
+  opacity: 1 !important;
+}
+
+
+/* 2. VERTICAL TABS: Permanently hide ALL buttons at the bottom */
+/* This includes "New Tab", "Customize", and the new "More Tools" button */
+#vertical-tabs-newtab-button,
+#tabs-newtab-button,
+.tools-and-extensions.actions-list {
+  display: none !important;
+}
+
+/* --- FIX: Remove Scroll Shadow/Glow in Vertical Tabs --- */
+#tabbrowser-tabs .arrowscrollbox-scrollbox {
+  mask-image: none !important;
+}
+
+/* --- TABS: Remove hover effect on non-selected tabs --- */
+.tabbrowser-tab:not([selected]):hover .tab-background {
+  background-color: transparent !important;
+}
+
+/* --- TABS: Show close button only on direct hover --- */
+
+/* This rule now applies to ALL tabs, including the selected one. */
+.tabbrowser-tab .tab-close-button {
+  opacity: 0 !important;
+  transition: opacity 150ms ease-in-out !important;
+}
+.tabbrowser-tab .tab-close-button:hover {
+  opacity: 1 !important;
+}
 
