@@ -74,6 +74,7 @@ command -v doas >/dev/null && \
     gp="git pull"                                                             \
     gr="git rm -r"                                                            \
     gl="git log --graph"                                                      \
+    gra="git commit --amend --no-edit --reset-author"                         \
     gco="git checkout"                                                        \
     gsm="git status -sbuno"                                                   \
     grp="git request-pull"                                                    \
