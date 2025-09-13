@@ -71,6 +71,7 @@ command -v doas >/dev/null && \
     gm="git merge"                                                            \
     gr="git rebase"                                                           \
     gp="git push"                                                             \
+    gpf="git push --force-with-lease"                                          \
     gp="git pull"                                                             \
     gr="git rm -r"                                                            \
     gl="git log --graph"                                                      \

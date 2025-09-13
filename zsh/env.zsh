@@ -19,6 +19,17 @@ if [[ -d "$HOME/.local/bin" && ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
+# --------------------------------------------
+# SSH Agent
+# --------------------------------------------
+# Starta ssh-agent automatiskt om den inte redan körs
+if ! pgrep -u "$USER" ssh-agent > /dev/null; then
+    ssh-agent > "$XDG_RUNTIME_DIR/ssh-agent.env"
+fi
+if [[ -f "$XDG_RUNTIME_DIR/ssh-agent.env" ]]; then
+    source "$XDG_RUNTIME_DIR/ssh-agent.env" > /dev/null
+fi
+
 # Git
 export GITFLOW_MAIN_BRANCH=main
 export GITFLOW_DEVELOP_BRANCH=develop
