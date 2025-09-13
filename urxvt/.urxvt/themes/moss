@@ -1,0 +1,41 @@
+! █▓▒░ moss
+
+! Special
+*.cursorColor:  #CCC5AD
+*.background:   #080808
+*.foreground:   #CCC5AD
+*.mouseBackground: #CCC5AD
+*.mouseForeground: #CCC098
+*.highlight:    #38362F
+
+! Black
+*.color0:       #33312B
+*.color8:       #38362F
+
+! Red
+*.color1:       #BEC35C
+*.color9:       #C7CC60
+
+! Green
+*.color2:       #707746
+*.color10:      #7A824D
+
+! Yellow
+*.color3:       #A09F73
+*.color11:      #ABAA7B
+
+! Blue
+*.color4:       #909A49
+*.color12:      #99A34D
+
+! Magenta
+*.color5:       #65694A
+*.color13:      #6E7351
+
+! Cyan
+*.color6:       #837E5E
+*.color14:      #8C8765
+
+! White
+*.color7:       #D1CAB1
+*.color15:      #D6CFB5

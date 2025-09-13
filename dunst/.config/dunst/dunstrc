@@ -1,0 +1,42 @@
+[global]
+    monitor = 0
+    follow = keyboard
+
+    # Typsnitt och formatering
+    font = Monospace 10
+    markup = full
+    format = "<b>%s</b>\n%b"
+
+    # Geometri (placering och storlek)
+    origin = top-right
+    offset = (10, 10)  # <<< KORRIGERAD SYNTAX MED PARENTESER
+
+    # Diverse beteende
+    sort = yes
+    idle_threshold = 120
+    show_indicators = yes
+    stack_duplicates = yes
+    hide_duplicate_count = no
+    sticky_history = yes
+    history_length = 20
+
+    # Ram och separator
+    frame_width = 1
+    frame_color = "#aaaaaa"
+    separator_height = 2
+    separator_color = frame
+
+[urgency_low]
+    background = "#222222"
+    foreground = "#888888"
+    timeout = 5
+
+[urgency_normal]
+    background = "#285577"
+    foreground = "#ffffff"
+    timeout = 10
+
+[urgency_critical]
+    background = "#900000"
+    foreground = "#ffffff"
+    timeout = 0

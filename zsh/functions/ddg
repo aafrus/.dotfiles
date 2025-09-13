@@ -1,0 +1,7 @@
+ddg() {
+    local query=$(echo -n "$*" | jq -sRr @uri)
+    case "$OSTYPE" in
+        darwin*)  open "https://duckduckgo.com/?q=${query}" ;;
+        linux*)   xdg-open "https://duckduckgo.com/?q=${query}" ;;
+    esac
+}

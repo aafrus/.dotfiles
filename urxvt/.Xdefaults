@@ -1,0 +1,25 @@
+! ░█░█░█▀▄░█▀▀░█▀▀░█▀█░█░█░█░░░▀█▀░█▀▀░░
+! ░▄▀▄░█░█░█▀▀░█▀▀░█▀█░█░█░█░░░░█░░▀▀█░░
+! ░▀░▀░▀▀░░▀▀▀░▀░░░▀░▀░▀▀▀░▀▀▀░░▀░░▀▀▀░░
+
+! fonts
+urxvt*font: xft:JetBrainsMono Nerd Font:pixelsize=15::style=medium:antialias=true
+urxvt*boldFont:
+urxvt*italicFont:
+urxvt*bolditalicFont:
+
+urxvt*letterSpace: 0
+urxvt*lineSpace: -1
+
+! interface
+urxvt*scrollBar: false
+urxvt*cursorUnderline: false
+urxvt*cursorBlink: true
+
+! misc
+urxvt.saveLines: 9999
+urxvt.iso14755: false
+urxvt.iso14755_52: false
+
+
+#include ".urxvt/themes/active-theme"

@@ -1,0 +1,33 @@
+# Detta är din OFFENTLIGA git-konfiguration.
+
+[core]
+    editor = nvim
+
+# ==============================================================
+# Git-alias för portabilitet över olika shells
+# ==============================================================
+[alias]
+    # Korta kommandon
+    a = add
+    b = branch
+    c = commit -m
+    co = checkout
+    d = diff
+    f = fetch
+    l = log --graph --oneline --decorate --all # Ändrade från 'lg' för enkelhet
+    m = merge
+    p = push
+    r = rebase
+    s = status -sb # Från ditt 'gs'
+
+    # Längre kommandon
+    gg = log --graph
+    gsm = status -sbuno
+    gpr = request-pull
+    unstage = restore --staged # Från ditt 'gu'
+
+# ==============================================================
+# VIKTIGT: Inkludera din privata fil för namn/e-post
+# ==============================================================
+[include]
+    path = ~/.dotfiles/git/.gitconfig.local

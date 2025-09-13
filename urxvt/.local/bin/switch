@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+THEME_DIR="$HOME/.dotfiles/urxvt/.urxvt/themes"
+ACTIVE_THEME_LINK="$HOME/.urxvt/themes/active-theme"
+NEW_THEME="$1"
+
+if [ ! -f "$THEME_DIR/$NEW_THEME" ]; then
+    echo "Error: Theme '$NEW_THEME' not found."
+    exit 1
+fi
+
+rm -f "$ACTIVE_THEME_LINK"
+ln -s "$THEME_DIR/$NEW_THEME" "$ACTIVE_THEME_LINK"
+echo "theme switched"
+
+export DISPLAY=':0'
+export XAUTHORITY="HOME/.Xauthority"
+xrdb -merge "$HOME/.Xdefaults"
