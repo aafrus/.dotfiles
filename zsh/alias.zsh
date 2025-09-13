@@ -79,6 +79,7 @@ command -v doas >/dev/null && \
     gsm="git status -sbuno"                                                   \
     grp="git request-pull"                                                    \
     ggg="git graphgpg"                                                        \
+    gao="git remote add origin"                                               \
     gpsu='{ branch=$(git_current_branch) || exit 1; git push --set-upstream origin "$branch"; }'    \
     gcn="git config user.name"                                                \
     gce="git config user.email"                                               \
