@@ -5,3 +5,5 @@ browser.urlbar.scotchBonnet.enableOverride = false
 browser.taskbarTabs.enabled = false 
 
 toolkit.legacyUserProfileCustomizations.stylesheets = true 
+
+browser.compactmode.show = true
