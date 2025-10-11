@@ -1,0 +1,83 @@
+/* Hide specific elements in Private Window */
+@-moz-document url("about:privatebrowsing") {
+    html.private
+        body
+        div.showPrivate.showSearch.container
+        div.info-border
+        div.info,
+    html.private
+        body
+        div.showPrivate.showSearch.container
+        div.logo-and-wordmark
+        div.wordmark,
+    html.private
+        body
+        div.showPrivate.showSearch.container
+        div.logo-and-wordmark
+        div#about-private-browsing-logo.logo,
+    #private-browsing-indicator-with-label {
+        display: none !important;
+    }
+}
+
+/*remove new tab personalize button */
+
+button.icon-settings {
+    display: none !important;
+}
+
+/* Remove search bar in private window*/
+.search-inner-wrapper {
+    display: none !important;
+}
+
+/* För WebKit-baserade webbläsare (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+/* För Firefox */
+* {
+    scrollbar-width: none;
+}
+
+/* För att hantera överflöd */
+html,
+body {
+    overflow: auto;
+}
+
+:root {
+    scrollbar-width: none !important;
+}
+
+@-moz-document url(about:privatebrowsing) {
+    :root {
+        scrollbar-width: none !important;
+    }
+}
+
+/* Döljer promotion-sektionen I private  */
+.promo {
+    display: none !important;
+}
+
+/* Ändra bakgrunden till svart I private */
+@-moz-document url-prefix("about:"),
+ url("about:private-browsing") {
+    /* Ändra bakgrunden till svart */
+    body {
+        background-color: black !important;
+    }
+}
+/* Make the private browsing start page completely black */
+@-moz-document url("about:privatebrowsing") {
+    body {
+        background: #000 !important;
+    }
+    /* Hide all text and logos on the page */
+    .private-browsing-container {
+        display: none !important;
+    }
+}

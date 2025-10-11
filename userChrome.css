@@ -1,0 +1,128 @@
+/*
+ * ===================================================================
+ * ===         ULTRA-MINIMALIST FIREFOX                            ===
+ * ===================================================================
+ * Hides all UI by default, but reveals the URL bar
+ * when it receives focus via a keybinding (e.g. Ctrl+L)
+*/
+
+#TabsToolbar {
+    display: none !important;
+}
+#nav-bar {
+    margin-top: -40px;
+    opacity: 0;
+    transition: all 0.2s ease-in-out;
+}
+
+#nav-bar:focus-within {
+    margin-top: 0;
+    opacity: 1;
+    transition-delay: 100ms;
+}
+
+#back-button,
+#forward-button,
+#reload-button,
+#stop-button,
+#home-button,
+#library-button,
+#sidebar-button,
+#pocket-button,
+#tracking-protection-icon-container,
+.titlebar-spacer,
+#customizableui-special-spring1,
+#customizableui-special-spring-2 {
+    display: none !important;
+}
+
+#statuspanel {
+    display: none !important;
+}
+
+/* Compact context menu */
+menupopup > menuitem,
+menupopup > menu {
+    padding-block: 2px !important;
+    min-height: unset !important;
+}
+
+/* Remove excess paddings on the context menu */
+menupopup > menuitem,
+menupopup > menu,
+menupopup > menucaption,
+menupopup > menuseparator {
+    padding-inline: 0px !important;
+}
+
+/* Based on: <https://github.com/Redundakitties/colorful-minimalist/raw/main/hacks/darkContextMenu.css> */
+/* And: <https://gist.github.com/soulhotel/23c20583751a7f457eb5b5579e828965> */
+menupopup {
+    color-scheme: light dark;
+    --panel-background: #080808 !important;
+    --panel-color: #b0adac !important;
+    --panel-border-radius: 0px !important; /* Change pixel for circular menu */
+    --panel-border-color: rgba(32, 32, 32, 0) !important;
+}
+
+menuitem:hover {
+    background-color: #080808 !important;
+    color: #b0adac !important;
+}
+
+menu:where([_moz-menuactive="true"]:not([disabled="true"])),
+menuitem:where([_moz-menuactive="true"]:not([disabled="true"])) {
+    background-color: #080808 !important;
+    color: #b0adac !important;
+}
+
+/* foreground */
+menupopup > menuitem[_moz-menuactive="true"],
+menupopup > menu[_moz-menuactive="true"],
+#context-navigation
+    > menuitem[_moz-menuactive="true"]
+    > .menu-iconic-left
+    > .menu-iconic-icon {
+    color: whitesmoke !important;
+    filter: brightness(1.2);
+}
+
+menupopup > menuitem,
+menupopup > menu,
+menupopup > menucaption,
+menupopup > menuseparator {
+    margin-inline: 0px !important;
+}
+
+/* Remove separator */
+menupopup menuseparator {
+    display: none;
+}
+
+/* Navigation Icons */
+/* Remove Forward, Backward, Reload, Stop, and Bookmark Page */
+#context-back,
+#context-forward,
+#context-reload,
+#context-stop,
+#context-bookmarkpage {
+    display: none !important;
+}
+/* Compact context menu */
+
+/* full screen indicator label */
+/*--the label that says ("website.com is now in full screen...")--*/
+#fullscreen-warning {
+    &,
+    *.pointerlockfswarning {
+        opacity: 0 !important;
+        border-radius: 20px !important;
+    }
+    & * {
+        border-radius: var(--uc-all-border-radius) !important;
+    }
+}
+/* Hide URL Bar View */
+.urlbarView {
+    display: none !important;
+}
