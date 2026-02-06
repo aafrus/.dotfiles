@@ -3,6 +3,9 @@
 [core]
     editor = nvim
 
+[commit]
+    template = ~/.config/git/gitmessage
+
 # ==============================================================
 # Git-alias för portabilitet över olika shells
 # ==============================================================

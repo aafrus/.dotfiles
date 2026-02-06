@@ -64,7 +64,7 @@ command -v doas >/dev/null && \
     gu="git restore --staged"                                                 \
     gb="git branch"                                                           \
     gcl="git clone"                                                           \
-    gc="git commit -m"                                                        \
+    gc="git commit"                                                            \
     gs="git status -sb"                                                       \
     gd="git diff"                                                             \
     gf="git fetch && git log --pretty=format:'%C(always,yellow)%h%Creset %s %Cred%d' ..@{u}" \

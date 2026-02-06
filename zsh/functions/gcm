@@ -1,0 +1,8 @@
+gcm() {
+  local types="feat|fix|docs|style|refactor|test|chore"
+  if [[ "$1" =~ ^($types)$ ]]; then
+    git commit -m "$1: $2"
+  else
+    git commit -m "$*"
+  fi
+}

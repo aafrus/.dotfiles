@@ -1,0 +1,15 @@
+
+# <type>(<scope>): <subject>
+#
+# Types:
+#   feat:     ny feature
+#   fix:      buggfix
+#   docs:     dokumentation
+#   style:    formatering (ingen kodändring)
+#   refactor: omstrukturering (ingen ny feature/fix)
+#   test:     tester
+#   chore:    underhåll (deps, config, etc)
+#
+# Exempel:
+#   feat(ssh): add config.d structure
+#   fix(zsh): correct alias for git rebase
