@@ -7,6 +7,8 @@
 /git/.config/git/school.conf
 
 # SSH - Careful not to commit actual keys
-ssh/.ssh/keys/**/*
+ssh/.ssh/keys/**/
+!ssh/.ssh/keys/**/
+ssh/.ssh/keys/**
 !ssh/.ssh/keys/**/.gitkeep
 ssh/.ssh/known_hosts
