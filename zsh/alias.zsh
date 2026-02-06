@@ -71,8 +71,8 @@ command -v doas >/dev/null && \
     gm="git merge"                                                            \
     gr="git rebase"                                                           \
     gp="git push"                                                             \
-    gpf="git push --force-with-lease"                                          \
-    gp="git pull"                                                             \
+    gpf="git push --force-with-lease"                                         \
+    gpl="git pull"                                                            \
     gr="git rm -r"                                                            \
     gl="git log --graph"                                                      \
     gra="git commit --amend --no-edit --reset-author"                         \
@@ -140,4 +140,4 @@ command -v doas >/dev/null && \
     feh="feh -g 640x480"                                                      \
     tidy="python3 ~/.local/bin/tidy"                                          \
     sys="~/.local/bin/sysinfo"                                                \
-    s="exec zsh"                                                       \
+    s="exec zsh"                                                              \

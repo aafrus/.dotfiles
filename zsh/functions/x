@@ -1,0 +1,26 @@
+# A safe function to empty all content from a specified directory.
+# Autoloaded by Zsh.
+
+# Check if a target directory was provided.
+if [ -z "$1" ]; then
+  echo "Error: No directory specified."
+  return 1
+fi
+
+# Ensure the target is actually a directory.
+if [ ! -d "$1" ]; then
+  echo "Error: '$1' is not a valid directory."
+  return 1
+fi
+
+# --- DEN KORRIGERADE RADEN ---
+# Ask for confirmation using Zsh-specific syntax: read 'variable?Prompt'
+read 'response?Are you sure you want to PERMANENTLY delete all content inside '$1'? [y/N] '
+
+if [[ "$response" =~ ^[Yy]$ ]]; then
+  # If confirmed, use 'find' to delete all content (including hidden files).
+  find "$1" -mindepth 1 -delete
+  echo "Successfully emptied '$1'."
+else
+  echo "Operation cancelled for '$1'."
+fi
