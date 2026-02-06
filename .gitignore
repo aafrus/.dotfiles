@@ -1,2 +1,12 @@
 /urxvt/.urxvt/active-theme
 /git/.gitconfig.local
+
+# Git context configs (innehåller personlig info per maskin)
+/git/.config/git/personal.conf
+/git/.config/git/work.conf
+/git/.config/git/school.conf
+
+# SSH - Careful not to commit actual keys
+ssh/.ssh/keys/**/*
+!ssh/.ssh/keys/**/.gitkeep
+ssh/.ssh/known_hosts

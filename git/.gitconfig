@@ -27,7 +27,13 @@
     unstage = restore --staged # Från ditt 'gu'
 
 # ==============================================================
-# VIKTIGT: Inkludera din privata fil för namn/e-post
+# Kontext-baserad identitet (baserat på katalog)
 # ==============================================================
-[include]
-    path = ~/.dotfiles/git/.gitconfig.local
+[includeIf "gitdir:~/personal/"]
+    path = ~/.config/git/personal.conf
+
+[includeIf "gitdir:~/work/"]
+    path = ~/.config/git/work.conf
+
+[includeIf "gitdir:~/school/"]
+    path = ~/.config/git/school.conf
