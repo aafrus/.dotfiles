@@ -36,7 +36,7 @@ hc keybind $Mod-t spawn zsh /home/ns/.local/bin/s-date
 
 hc keybind $Mod-Control-q quit
 hc keybind $Mod-Shift-r reload
-hc keybind $Mod-Control-x spawn /usr/bin/zsh -c 'shutdown now'
+hc keybind $Mod-Control-Return spawn /usr/bin/zsh -c 'shutdown now'
 hc keybind $Mod-q close
 hc keybind $Mod-Return spawn urxvtc
 hc keybind $Mod-d spawn /usr/bin/zsh -c 'dmenu_run'
@@ -84,7 +84,7 @@ hc keybind $Mod-Control-Right   resize right +$resizestep
 
 # tags
 tag_names=( {0..4} )
-tag_keys=( {1..5} 0 )
+tag_keys=( {1..9} 0 )
 
 # set up normal tags
 hc rename default "${tag_names[0]}" || true
@@ -162,7 +162,7 @@ hc set frame_border_width 0
 hc set always_show_frame on
 hc set frame_bg_transparent on
 hc set frame_transparent_width 0
-hc set frame_gap 20
+hc set frame_gap 5
 
 hc attr theme.title_height 0
 hc attr theme.padding_top 0
@@ -183,7 +183,7 @@ hc attr theme.active.outer_color '#262626'
 hc attr theme.background_color '#262626'
 
 
-hc set window_gap 10
+hc set window_gap 0
 hc set frame_padding -5
 hc set smart_window_surroundings off
 hc set smart_frame_surroundings off

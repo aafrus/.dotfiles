@@ -21,5 +21,7 @@ urxvt.saveLines: 9999
 urxvt.iso14755: false
 urxvt.iso14755_52: false
 
+urxvt.perl-lib: .urxvt/ext
+urxvt.perl-ext-common: right-click-paste
 
 #include ".urxvt/themes/active-theme"

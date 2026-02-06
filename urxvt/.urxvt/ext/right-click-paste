@@ -1,0 +1,20 @@
+sub on_button_press {
+    my ($self, $event) = @_;
+    if ($event->{button} == 3) {
+        my $sel = $self->selection();
+        if (defined $sel && length $sel) {
+            open my $pipe, '| xsel --clipboard -i' or return ();
+            print $pipe $sel;
+            close $pipe;
+            $self->selection_clear();
+        } else {
+            my $clip = `xsel --clipboard -o 2>/dev/null`;
+            if (!defined $clip || !length $clip) {
+                $clip = `xsel --primary -o 2>/dev/null`;
+            }
+            $self->tt_write($clip) if defined $clip && length $clip;
+        }
+        return 1;
+    }
+    return ();
+}
