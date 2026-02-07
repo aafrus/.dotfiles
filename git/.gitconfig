@@ -33,10 +33,10 @@
 # Kontext-baserad identitet (baserat på katalog)
 # ==============================================================
 [includeIf "gitdir:~/hub/personal/"]
-    path = ~/.config/git/personal.conf
+    path = ~/.config/git/local/personal.conf
 
 [includeIf "gitdir:~/hub/work/"]
-    path = ~/.config/git/work.conf
+    path = ~/.config/git/local/work.conf
 
 [includeIf "gitdir:~/hub/school/"]
-    path = ~/.config/git/school.conf
+    path = ~/.config/git/local/school.conf
