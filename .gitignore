@@ -12,3 +12,7 @@ ssh/.ssh/keys/**/
 ssh/.ssh/keys/**
 !ssh/.ssh/keys/**/.gitkeep
 ssh/.ssh/known_hosts
+ssh/.ssh/config.d/local/
+ssh/.ssh/config.d/02-school.conf
+ssh/.ssh/config.d/03-homelab.conf
+git/.config/.wrangler/
