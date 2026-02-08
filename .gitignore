@@ -16,3 +16,5 @@ git/.config/.wrangler/
 /git/.config/git/local/
 !/git/.config/git/local/.gitkeep
 /git/.config/.wrangler/
+
+/git/.config/gh/
