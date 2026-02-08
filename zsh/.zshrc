@@ -23,4 +23,4 @@ done
 # [4] Load aliases LAST
 source ~/.dotfiles/zsh/alias.zsh
 
-. "$HOME/.cargo/env"
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"

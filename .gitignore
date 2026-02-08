@@ -18,3 +18,5 @@ git/.config/.wrangler/
 /git/.config/.wrangler/
 
 /git/.config/gh/
+ssh/.ssh/config.d/00-personal.conf
+ssh/.ssh/config.d/01-work.conf

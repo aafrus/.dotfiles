@@ -38,8 +38,15 @@ zinit snippet OMZP::sudo
 # Tools Initialization
 # --------------------------------------------
 
-# FZF shell integration (without bindings)
-(( ${+commands[fzf]} )) && eval "$(fzf --zsh)"
+# FZF shell integration
+if (( ${+commands[fzf]} )); then
+  if fzf --help 2>/dev/null | grep -q -- '--zsh'; then
+    eval "$(fzf --zsh)"
+  else
+    [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+    [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+  fi
+fi
 
 # Zoxide initialization
 (( ${+commands[zoxide]} )) && eval "$(zoxide init --cmd cd zsh)"

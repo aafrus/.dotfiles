@@ -14,11 +14,15 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
-#kubectl completion
-source <(kubectl completion zsh)
+# kubectl completion (only if installed)
+if (( ${+commands[kubectl]} )); then
+  source <(kubectl completion zsh)
+fi
 
-#minikube completion
-source <(minikube completion zsh)
+# minikube completion (only if installed)
+if (( ${+commands[minikube]} )); then
+  source <(minikube completion zsh)
+fi
 
 #no emoji
 export MINIKUBE_IN_STYLE=false
