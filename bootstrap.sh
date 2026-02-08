@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NO_INSTALL=0
+
+if [[ "${1:-}" == "--no-install" ]]; then
+    NO_INSTALL=1
+fi
+
+log() {
+    printf '[bootstrap] %s\n' "$*"
+}
+
+have() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+install_pkg() {
+    local cmd="$1"
+    local apt_pkg="$2"
+    local pac_pkg="$3"
+    local dnf_pkg="$4"
+
+    if have "$cmd"; then
+        return 0
+    fi
+
+    if [[ "$NO_INSTALL" -eq 1 ]]; then
+        log "Missing '$cmd' (skip install due to --no-install)"
+        return 1
+    fi
+
+    if have apt-get; then
+        log "Installing $apt_pkg via apt-get"
+        sudo apt-get update -y
+        sudo apt-get install -y "$apt_pkg"
+        return 0
+    fi
+
+    if have pacman; then
+        log "Installing $pac_pkg via pacman"
+        sudo pacman -Sy --noconfirm "$pac_pkg"
+        return 0
+    fi
+
+    if have dnf; then
+        log "Installing $dnf_pkg via dnf"
+        sudo dnf install -y "$dnf_pkg"
+        return 0
+    fi
+
+    log "No supported package manager found for '$cmd'"
+    return 1
+}
+
+log "Checking base tools"
+install_pkg git git git git || true
+install_pkg stow stow stow stow || true
+install_pkg zsh zsh zsh zsh || true
+install_pkg rg ripgrep ripgrep ripgrep || true
+
+if ! have stow; then
+    log "stow is required; install it and rerun"
+    exit 1
+fi
+
+log "Applying stow packages"
+cd "$DOTFILES_DIR"
+stow git ssh zsh
+
+log "Creating hub structure"
+"$DOTFILES_DIR/setup-hub.sh"
+
+log "Creating local git identity files from templates (if missing)"
+mkdir -p "$HOME/.config/git/local"
+for name in default personal work school; do
+    target="$HOME/.config/git/local/${name}.conf"
+    template="$DOTFILES_DIR/git/.config/git/${name}.conf.example"
+    if [[ ! -f "$target" && -f "$template" ]]; then
+        cp "$template" "$target"
+        chmod 600 "$target"
+        log "Created $target"
+    fi
+done
+
+log "Creating local ssh config files from templates (if missing)"
+mkdir -p "$HOME/.ssh/config.d/local"
+for name in personal work school homelab; do
+    idx=""
+    case "$name" in
+        personal) idx="00" ;;
+        work) idx="01" ;;
+        school) idx="02" ;;
+        homelab) idx="03" ;;
+    esac
+    target="$HOME/.ssh/config.d/local/${name}.conf"
+    template="$DOTFILES_DIR/ssh/.ssh/config.d/${idx}-${name}.conf.example"
+    if [[ ! -f "$target" && -f "$template" ]]; then
+        cp "$template" "$target"
+        chmod 600 "$target"
+        log "Created $target"
+    fi
+done
+
+chmod 700 "$HOME/.ssh"
+
+log "Done"
+log "Next: fill in values in ~/.config/git/local/*.conf and ~/.ssh/config.d/local/*.conf"
+log "Then run: $DOTFILES_DIR/verify.sh"

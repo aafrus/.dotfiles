@@ -22,6 +22,7 @@ dirs=(
     hub/media/videos
     hub/downloads
     hub/archive
+    hub/projects
 )
 
 for dir in "${dirs[@]}"; do

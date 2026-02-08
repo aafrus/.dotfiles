@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "$repo_root" ]]; then
+  exit 0
+fi
+
+if [[ "$(basename "$repo_root")" != ".dotfiles" ]]; then
+  exit 0
+fi
+
+staged_files="$(git diff --cached --name-only)"
+if [[ -z "$staged_files" ]]; then
+  exit 0
+fi
+
+blocked_paths_regex='^(ssh/\.ssh/config\.d/local/|ssh/\.ssh/config\.d/(00-personal|01-work|02-school|03-homelab)\.conf$|ssh/\.ssh/keys/|git/\.config/git/local/|git/\.config/(gh|\.wrangler)/)'
+if printf '%s\n' "$staged_files" | grep -Eq "$blocked_paths_regex"; then
+  echo "pre-commit: blocked sensitive/local paths detected in staging:" >&2
+  printf '%s\n' "$staged_files" | grep -E "$blocked_paths_regex" >&2
+  echo "Use *.example files and local overrides instead." >&2
+  exit 1
+fi
+
+while IFS= read -r f; do
+  [[ -z "$f" ]] && continue
+  if [[ "$f" != *.example ]]; then
+    if git show ":$f" | grep -Eq '<[A-Z_]+>'; then
+      echo "pre-commit: placeholder token found in non-example file: $f" >&2
+      echo "Move placeholders to *.example and keep real values local." >&2
+      exit 1
+    fi
+  fi
+done <<< "$staged_files"
+
+exit 0

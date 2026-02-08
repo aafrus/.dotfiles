@@ -2,6 +2,7 @@
 
 [core]
     editor = nvim
+    hooksPath = ~/.dotfiles/.githooks
 
 [commit]
     template = ~/.config/git/gitmessage
@@ -32,6 +33,15 @@
 # ==============================================================
 # Kontext-baserad identitet (baserat på katalog)
 # ==============================================================
+[include]
+    path = ~/.config/git/local/default.conf
+
+[includeIf "gitdir:~/.dotfiles/"]
+    path = ~/.config/git/local/personal.conf
+
+[includeIf "gitdir:~/hub/projects/"]
+    path = ~/.config/git/local/personal.conf
+
 [includeIf "gitdir:~/hub/personal/"]
     path = ~/.config/git/local/personal.conf
 
