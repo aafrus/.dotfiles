@@ -1,0 +1,135 @@
+# Sway config — migrerad från herbstluftwm
+
+set $mod Mod1
+
+# Terminal
+set $term wezterm
+
+# Launcher
+set $menu dmenu_run -b -fn 'JetBrainsMono Nerd Font-10' -nb '#0a0a0a' -nf '#888888' -sb '#333333' -sf '#e0e0e0'
+
+input type:keyboard {
+    xkb_layout se
+}
+
+seat seat0 hide_cursor 3000
+seat seat0 hide_cursor when-typing enable
+
+# Output / skärm
+output eDP-1 resolution 1920x1080
+
+# Bakgrund (svart som i din xinitrc)
+output * bg #000000 solid_color
+
+# Ingen sleep
+exec swayidle -w timeout 0 '' || true
+exec /home/ns/.local/bin/i3a-master-stack --stack=dwm --stack-size=35
+
+# Clipboard
+exec wl-paste --watch cliphist store 2>/dev/null || true
+
+# --- Keybinds (samma som herbstluftwm) ---
+
+# Terminal: Alt+Enter
+bindsym $mod+Return exec $term
+
+# Stäng fönster: Alt+Q
+bindsym $mod+q kill
+
+# Launcher: Alt+D
+bindsym $mod+d exec $menu
+
+# Firefox: Alt+W
+bindsym $mod+w exec firefox
+
+# Notifieringar
+bindsym $mod+t exec zsh /home/ns/.local/bin/s-date
+bindsym $mod+b exec zsh /home/ns/.local/bin/s-bat -c
+bindsym $mod+n exec bash /home/ns/.local/bin/s-net
+
+# Volym
+bindsym XF86AudioMute exec bash /home/ns/.local/bin/s-vol mute
+bindsym XF86AudioLowerVolume exec bash /home/ns/.local/bin/s-vol down
+bindsym XF86AudioRaiseVolume exec bash /home/ns/.local/bin/s-vol up
+
+# Ljusstyrka
+bindsym XF86MonBrightnessDown exec bash /home/ns/.local/bin/s-bright down
+bindsym XF86MonBrightnessUp exec bash /home/ns/.local/bin/s-bright up
+
+# Screenshot
+bindsym $mod+p exec bash /home/ns/.local/bin/s-screenshot
+
+# Reload config: Alt+Shift+R
+bindsym $mod+Shift+r reload
+
+# Quit sway: Alt+Ctrl+Q
+bindsym $mod+Control+q exec swaymsg exit
+
+# Shutdown: Alt+Ctrl+Enter
+bindsym $mod+Control+Return exec shutdown now
+
+# Fokus: Alt+H/J/K/L
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# Flytta fönster: Alt+Shift+H/J/K/L
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+# Splitta: Alt+U (horisontellt) Alt+O (vertikalt)
+bindsym $mod+u splith
+bindsym $mod+o splitv
+
+# Fullskärm: Alt+F
+bindsym $mod+f floating disable; fullscreen toggle
+
+# Floating: Alt+S
+bindsym $mod+s floating toggle
+
+# Växla layout: Alt+Space
+bindsym $mod+space layout toggle split tabbed
+
+# Workspaces: Alt+1-5
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+
+# Flytta till workspace: Alt+Shift+1-5
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+
+# Ändra storlek: Alt+Ctrl+H/J/K/L
+bindsym $mod+Control+h resize grow width 20px
+bindsym $mod+Control+j resize shrink height 20px
+bindsym $mod+Control+k resize grow height 20px
+bindsym $mod+Control+l resize shrink width 20px
+
+# Mus: Alt+drag för att flytta floating
+floating_modifier $mod normal
+
+# Focus följer musen
+focus_follows_mouse yes
+
+# Firefox på workspace 2
+assign [app_id="firefox"] workspace number 2
+
+# Floating för dialoger
+for_window [window_role="dialog"] floating enable
+for_window [window_type="dialog"] floating enable
+
+# --- Utseende (matchar herbstluftwm-färger) ---
+gaps inner 5
+default_border pixel 0
+
+client.focused          #262626 #262626 #e0e0e0 #262626 #262626
+client.unfocused        #191919 #191919 #888888 #191919 #191919
+client.focused_inactive #262626 #262626 #888888 #262626 #262626

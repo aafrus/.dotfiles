@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+BAT_NUM='0'
+STATUS_FILE="/tmp/s-bat-status.tmp" # Ändrat från check-bat.tmp
+BATTPERC=$(cat "/sys/class/power_supply/BAT${BAT_NUM}/capacity")
+BATTSTATUS=$(cat "/sys/class/power_supply/BAT${BAT_NUM}/status")
+LAST_STATUS=''      # Laddas från STATUS_FILE
+LAST_NOTIF_LEVEL=0  # Laddas från STATUS_FILE
+NOTIF_LEVEL=0       # Sätts av skriptet baserat på BATTPERC
+CHECK="N"
+
+# Ladda föregående status om filen finns
+if [ -e "$STATUS_FILE" ] ; then
+    . "$STATUS_FILE" # Source the file to load variables
+fi
+
+save_status() {
+    # Spara aktuell status för nästa körning
+    echo "LAST_STATUS=${BATTSTATUS}" > "$STATUS_FILE"
+    echo "LAST_NOTIF_LEVEL=${NOTIF_LEVEL}" >> "$STATUS_FILE"
+}
+
+notify() {
+    local level="$1"
+    local msg="$2"
+    # Försöker skicka notis utan explicit DISPLAY=:0 först
+    # Systemd user service bör ha rätt miljövariabler.
+    /usr/bin/notify-send -t 3500 -u "$level" "BATTERI" "$msg"
+}
+
+# Hantera -c flaggan för manuell koll
+while getopts "c" arg ; do
+    case "$arg" in
+        c) CHECK="Y" ;;
+        *) ;; # Ignorera andra flaggor
+    esac
+done
+
+# Om -c flaggan är satt, visa aktuell status och avsluta
+if [[ "$CHECK" == "Y" ]] ; then
+    notify "normal" "Batteri är nu $BATTSTATUS, Kapacitet: $BATTPERC%"
+    exit 0
+fi
+
+# Om batteristatus har ändrats (laddar/laddar ur)
+# Notera: LAST_STATUS laddades via source från STATUS_FILE
+if [[ "$BATTSTATUS" != "$LAST_STATUS" ]] ; then
+    notify "normal" "Batteri är nu $BATTSTATUS, Kapacitet: $BATTPERC%"
+    NOTIF_LEVEL=0 # Återställ notisnivån vid statusändring
+    save_status
+    # Vi vill fortsätta för att kolla procentnivåer även vid statusändring
+fi
+
+# Kritisk nivå <= 10% och laddar ur -> försök att suspendera
+if [ "$BATTSTATUS" = "Discharging" ] && [ "$BATTPERC" -le 10 ]; then
+    NOTIF_LEVEL=10 # Sätt nuvarande notisnivå
+    # Kontrollera om vi redan har notifierat för denna nivå och status
+    if [ "$LAST_NOTIF_LEVEL" -ne "$NOTIF_LEVEL" ] || [ "$BATTSTATUS" != "$LAST_STATUS" ]; then
+        notify "critical" "Batteri mindre än 10% - Anslut laddare! Går i viloläge om 10s."
+        sleep 10
+        # Kontrollera status igen innan suspend
+        CURRENT_BATTSTATUS_AFTER_SLEEP=$(cat "/sys/class/power_supply/BAT${BAT_NUM}/status")
+        if [ "$CURRENT_BATTSTATUS_AFTER_SLEEP" = "Discharging" ]; then
+            notify "critical" "Går i viloläge nu..."
+            sleep 3
+            logger "bat-script: Critical battery threshold, suspending system."
+            save_status # Spara innan suspend
+            systemctl suspend
+            exit 0 # Avsluta efter lyckad suspend
+        else
+            notify "normal" "Batteriet laddas nu, viloläge avbrutet."
+            NOTIF_LEVEL=0 # Återställ så vi får nya procentnotiser
+        fi
+    fi
+    save_status # Spara alltid den senaste nivån
+    exit 0 # Avsluta oavsett, hanterat som specialfall
+fi
+
+# Varningar för olika procentnivåer (endast om den inte laddas)
+if [ "$BATTSTATUS" != "Charging" ]; then
+    if [ "$BATTPERC" -le 20 ]; then
+        NOTIF_LEVEL=20
+        if [ "$LAST_NOTIF_LEVEL" -ne "$NOTIF_LEVEL" ] || [ "$BATTSTATUS" != "$LAST_STATUS" ]; then
+            notify "critical" "Batteri $BATTSTATUS, mindre än 20%!"
+        fi
+    elif [ "$BATTPERC" -le 30 ]; then
+        NOTIF_LEVEL=30
+        if [ "$LAST_NOTIF_LEVEL" -gt "$NOTIF_LEVEL" ] || ([ "$LAST_NOTIF_LEVEL" -ne "$NOTIF_LEVEL" ] && [ "$BATTSTATUS" = "Discharging" ]); then
+             notify "normal" "Batteri $BATTSTATUS, 30%."
+        fi
+    elif [ "$BATTPERC" -le 50 ]; then
+        NOTIF_LEVEL=50
+        if [ "$LAST_NOTIF_LEVEL" -gt "$NOTIF_LEVEL" ] || ([ "$LAST_NOTIF_LEVEL" -ne "$NOTIF_LEVEL" ] && [ "$BATTSTATUS" = "Discharging" ]); then
+            notify "low" "Batteri $BATTSTATUS, 50%."
+        fi
+    elif [ "$BATTPERC" -le 60 ]; then
+        NOTIF_LEVEL=60
+        if [ "$LAST_NOTIF_LEVEL" -gt "$NOTIF_LEVEL" ] || ([ "$LAST_NOTIF_LEVEL" -ne "$NOTIF_LEVEL" ] && [ "$BATTSTATUS" = "Discharging" ]); then
+            notify "normal" "Batteri $BATTSTATUS, 60%."
+        fi
+    else
+        # Om batteriet är över 60% och laddar ur, och vi tidigare varnat för en lägre nivå
+        if [ "$LAST_NOTIF_LEVEL" -ne 0 ] && [ "$BATTSTATUS" = "Discharging" ]; then
+             NOTIF_LEVEL=100 # Sätt en "OK" nivå
+        elif [ "$BATTSTATUS" = "Charging" ] && [ "$LAST_NOTIF_LEVEL" -ne 0 ]; then
+            NOTIF_LEVEL=100 # Om det börjar ladda, återställ så vi kan få notiser när det sjunker igen
+        fi
+    fi
+fi
+
+# Spara bara om NOTIF_LEVEL faktiskt har ändrats relevant, eller om BATTSTATUS ändrats.
+# Denna save_status hanterar de flesta procentuella nivåerna.
+if [ "$NOTIF_LEVEL" -ne "$LAST_NOTIF_LEVEL" ] || [ "$BATTSTATUS" != "$LAST_STATUS" ]; then
+    save_status
+fi

@@ -1,0 +1,18 @@
+#!/bin/bash
+IFACE=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $5; exit}')
+IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}')
+
+if [ -z "$IFACE" ]; then
+    NET="Ingen uppkoppling"
+else
+    case "$IFACE" in
+        wl*) TYPE="WiFi" ;;
+        en*|eth*) TYPE="Ethernet" ;;
+        *) TYPE="$IFACE" ;;
+    esac
+    NET="$TYPE  $IP"
+fi
+
+NETBIRD=$(netbird status 2>/dev/null | grep -E "NetBird IP|Management" | awk '{print $NF}' | tr '\n' ' ')
+
+notify-send -t 4000 -r 8884 "Nätverk" "$NET\nNetBird: $NETBIRD"

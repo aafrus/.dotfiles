@@ -1,0 +1,15 @@
+#!/bin/bash
+case "$1" in
+    mute)   wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+    up)     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ ;;
+    down)   wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- ;;
+esac
+
+MUTED=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -c MUTED)
+VOL=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d", $2 * 100}')
+
+if [ "$MUTED" -gt 0 ]; then
+    notify-send -t 1500 -r 8881 "Volym" "Mute"
+else
+    notify-send -t 1500 -r 8881 "Volym" "${VOL}%"
+fi

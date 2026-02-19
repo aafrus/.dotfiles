@@ -1,0 +1,15 @@
+#!/bin/bash
+LOCATION=$(cat "$HOME/.config/local/weather-location" 2>/dev/null)
+
+if [ -z "$LOCATION" ]; then
+    notify-send -t 3000 "Väder" "Ingen plats konfigurerad i ~/.config/local/weather-location"
+    exit 1
+fi
+
+WEATHER=$(curl -s "wttr.in/$LOCATION?format=%c%t+%w")
+
+if [ -n "$WEATHER" ]; then
+    notify-send -t 5000 "Väder i $LOCATION" "$WEATHER"
+else
+    notify-send -t 5000 "Väder" "Kunde inte hämta väderdata."
+fi

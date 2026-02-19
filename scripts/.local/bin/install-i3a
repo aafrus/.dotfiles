@@ -1,0 +1,12 @@
+#!/bin/sh
+# Installerar och patchar i3a för Python 3.14+
+pipx install i3a
+
+PATCH_FILE=$(find ~/.local/share/pipx/venvs/i3a -name "master_stack.py" 2>/dev/null)
+if [ -z "$PATCH_FILE" ]; then
+    echo "Hittade inte master_stack.py"
+    exit 1
+fi
+
+sed -i 's/loop = asyncio.get_event_loop()/loop = asyncio.new_event_loop()\n    asyncio.set_event_loop(loop)/' "$PATCH_FILE"
+echo "i3a installerad och patchad."

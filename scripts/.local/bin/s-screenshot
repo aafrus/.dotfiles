@@ -1,0 +1,6 @@
+#!/bin/bash
+DEST="$HOME/hub/media/pictures/screenshots/$(date '+%Y-%m-%d_%H-%M-%S').png"
+mkdir -p "$(dirname "$DEST")"
+
+AREA=$(slurp -b 00000066 -s ffffff33 -B 00000066) || exit 0
+grim -g "$AREA" "$DEST" && wl-copy < "$DEST" && notify-send -t 3000 -r 8883 "Screenshot" "Sparad och kopierad"

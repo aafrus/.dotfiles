@@ -58,7 +58,7 @@ unclutter -idle 1 &
 
 #load resources
 xrdb -load ~/.config/urxvt/.Xdefaults
-export TERMINAL='urxvtc'
+export TERMINAL='kitty'
 #set monitor
 xrandr --output eDP-1 --mode 1920x1080
 
@@ -73,8 +73,7 @@ while true; do clipnotify; xsel -o | xsel --clipboard -i; done &
 
 clipmenud &
 
-# start urxvtd
-urxvtd -q -o -f
+# urxvtd not needed with kitty
 
 #start wm
 exec herbstluftwm

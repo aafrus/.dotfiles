@@ -1,0 +1,14 @@
+#!/bin/bash
+CURRENT_TIME=$(date '+%H:%M')
+CURRENT_DATE=$(LC_ALL=sv_SE.UTF-8 date '+%A %d %B %Y')
+CACHE="/tmp/s-weather-cache"
+LOCATION=$(cat "$HOME/.config/local/weather-location" 2>/dev/null)
+
+if [ ! -f "$CACHE" ] && [ -n "$LOCATION" ]; then
+    curl -s "wttr.in/$LOCATION?format=%c%t+%w" > "$CACHE"
+fi
+
+WEATHER=$(cat "$CACHE" 2>/dev/null)
+notify-send -t 4000 -r 9999 "$CURRENT_TIME" "$CURRENT_DATE${WEATHER:+\n$WEATHER}"
+
+[ -n "$LOCATION" ] && { FRESH=$(curl -s "wttr.in/$LOCATION?format=%c%t+%w"); [ -n "$FRESH" ] && echo "$FRESH" > "$CACHE"; } &

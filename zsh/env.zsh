@@ -6,7 +6,7 @@
 export EDITOR='nvim'
 export VISUAL='nvim'
 export TERM='xterm-256color'
-export TERMINAL='urxvtc'
+export TERMINAL='wezterm'
 
 # XDG Base Directories
 export XDG_CONFIG_HOME="$HOME/.config"

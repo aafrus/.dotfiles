@@ -2,16 +2,13 @@
     monitor = 0
     follow = keyboard
 
-    # Typsnitt och formatering
-    font = Monospace 10
+    font = JetBrainsMono Nerd Font 10
     markup = full
     format = "<b>%s</b>\n%b"
 
-    # Geometri (placering och storlek)
     origin = top-right
-    offset = (10, 10)  # <<< KORRIGERAD SYNTAX MED PARENTESER
+    offset = (10, 10)
 
-    # Diverse beteende
     sort = yes
     idle_threshold = 120
     show_indicators = yes
@@ -20,23 +17,23 @@
     sticky_history = yes
     history_length = 20
 
-    # Ram och separator
     frame_width = 1
-    frame_color = "#aaaaaa"
+    frame_color = "#333333"
     separator_height = 2
     separator_color = frame
 
 [urgency_low]
-    background = "#222222"
+    background = "#0a0a0a"
     foreground = "#888888"
     timeout = 5
 
 [urgency_normal]
-    background = "#285577"
-    foreground = "#ffffff"
+    background = "#0a0a0a"
+    foreground = "#e0e0e0"
     timeout = 10
 
 [urgency_critical]
-    background = "#900000"
+    background = "#0a0a0a"
     foreground = "#ffffff"
+    frame_color = "#555555"
     timeout = 0

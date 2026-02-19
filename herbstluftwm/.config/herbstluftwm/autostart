@@ -38,7 +38,7 @@ hc keybind $Mod-Control-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Control-Return spawn /usr/bin/zsh -c 'shutdown now'
 hc keybind $Mod-q close
-hc keybind $Mod-Return spawn urxvtc
+hc keybind $Mod-Return spawn kitty
 hc keybind $Mod-d spawn /usr/bin/zsh -c 'dmenu_run'
 hc keybind $Mod-w spawn firefox
 
