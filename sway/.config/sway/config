@@ -62,6 +62,9 @@ bindsym XF86AudioRaiseVolume exec bash /home/ns/.local/bin/s-vol up
 bindsym XF86MonBrightnessDown exec bash /home/ns/.local/bin/s-bright down
 bindsym XF86MonBrightnessUp exec bash /home/ns/.local/bin/s-bright up
 
+# Lås skärm
+bindsym $mod+x exec hyprlock
+
 # Screenshot
 bindsym $mod+p exec bash /home/ns/.local/bin/s-screenshot
 

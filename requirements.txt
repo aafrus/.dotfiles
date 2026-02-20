@@ -26,6 +26,9 @@ dmenu
 # Notifieringar
 dunst
 
+# Lockscreen
+hyprlock
+
 # Screenshot
 grim
 slurp
