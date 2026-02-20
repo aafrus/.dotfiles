@@ -1,0 +1,57 @@
+# ============================================================
+# Paket som behövs för denna setup
+# ============================================================
+# Arch:   sudo pacman -S --needed <paket>
+# Fedora: sudo rpm-ostree install <paket> (eller flatpak)
+# Ubuntu: sudo apt install <paket>
+# ============================================================
+
+# Window manager & Wayland
+sway
+swaybg
+swayidle
+
+# Terminal
+wezterm                     # Arch: wezterm | Flatpak: org.wezfurlong.wezterm
+
+# Browser
+firefox                     # Flatpak: org.mozilla.firefox
+
+# Font
+ttf-jetbrains-mono-nerd     # Arch: ttf-jetbrains-mono-nerd | Fedora: jetbrains-mono-fonts
+
+# Launcher
+dmenu
+
+# Notifieringar
+dunst
+
+# Screenshot
+grim
+slurp
+
+# Ljusstyrka
+brightnessctl
+
+# Ljud
+pipewire
+wireplumber
+
+# Clipboard
+wl-clipboard                # Fedora/Ubuntu: wl-clipboard
+
+# Dotfiles
+stow
+
+# Shell & verktyg
+zsh
+git
+curl
+neovim
+
+# Python (för i3a master-stack)
+pipx                        # Arch: python-pipx | Fedora/Ubuntu: pipx
+# Kör sedan: install-i3a
+
+# VPN
+# netbird - se https://netbird.io/docs/installation/linux

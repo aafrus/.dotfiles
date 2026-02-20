@@ -22,3 +22,6 @@ ssh/.ssh/config.d/02-school.conf
 ssh/.ssh/config.d/03-homelab.conf
 ssh/.ssh/config.d/00-personal.conf
 ssh/.ssh/config.d/01-work.conf
+git/.config/git/personal.conf
+git/.config/git/school.conf
+git/.config/git/work.conf
