@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SETUP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="$(dirname "$SETUP_DIR")"
 NO_INSTALL=0
 
 if [[ "${1:-}" == "--no-install" ]]; then
@@ -70,7 +71,7 @@ cd "$DOTFILES_DIR"
 stow git ssh zsh
 
 log "Creating hub structure"
-"$DOTFILES_DIR/setup-hub.sh"
+"$SETUP_DIR/setup-hub.sh"
 
 log "Creating local git identity files from templates (if missing)"
 mkdir -p "$HOME/.config/git/local"
@@ -106,5 +107,5 @@ done
 chmod 700 "$HOME/.ssh"
 
 log "Done"
-log "Next: fill in values in ~/.config/git/local/*.conf and ~/.ssh/config.d/local/*.conf"
-log "Then run: $DOTFILES_DIR/verify.sh"
+log "Next: kör $SETUP_DIR/setup-local.sh för SSH-nycklar och git-identitet"
+log "Verifiera sedan med: $SETUP_DIR/verify.sh"

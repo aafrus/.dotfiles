@@ -53,5 +53,9 @@ neovim
 pipx                        # Arch: python-pipx | Fedora/Ubuntu: pipx
 # Kör sedan: install-i3a
 
+# Secrets / SSH-nycklar
+gnome-keyring                # krävs av pass-cli för att dekryptera sessionen
+# pass-cli — installeras manuellt, se https://github.com/nicholasgasior/pass-cli
+
 # VPN
 # netbird - se https://netbird.io/docs/installation/linux
