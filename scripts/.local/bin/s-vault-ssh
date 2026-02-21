@@ -1,0 +1,32 @@
+#!/bin/bash
+VAULT_ADDR="http://REDACTED:8200"
+PASS_FILE="$HOME/.config/local/vault-pass"
+
+if [[ ! -f "$PASS_FILE" ]]; then
+    echo "Vault lösenord saknas i $PASS_FILE"
+    exit 1
+fi
+
+export VAULT_ADDR
+VAULT_TOKEN=$(vault login -method=userpass -field=token \
+    username=ns \
+    password="$(cat "$PASS_FILE" | tr -d '\n')" 2>/dev/null)
+
+if [[ -z "$VAULT_TOKEN" ]]; then
+    echo "Vault login misslyckades"
+    exit 1
+fi
+
+export VAULT_TOKEN
+
+# Signera homelab-certifikat
+vault write -field=signed_key ssh/sign/homelab-client \
+    public_key=@"$HOME/.ssh/keys/homelab.pub" \
+    valid_principals=ns \
+    > "$HOME/.ssh/keys/homelab-cert.pub"
+
+# Ladda personal-nyckel i ssh-agent
+vault kv get -field=private_key kv/ssh/personal > /tmp/personal-key
+chmod 600 /tmp/personal-key
+ssh-add /tmp/personal-key 2>/dev/null
+rm /tmp/personal-key

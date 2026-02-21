@@ -27,8 +27,6 @@ output * bg #000000 solid_color
 
 # Ingen sleep
 exec swayidle -w timeout 0 '' || true
-exec gnome-keyring-daemon --start --components=secrets
-exec ~/.local/bin/pass-cli ssh-agent load --vault-name keys
 exec /home/ns/.local/bin/i3a-master-stack --stack=dwm --stack-size=35
 
 # Clipboard

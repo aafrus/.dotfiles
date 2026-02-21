@@ -19,15 +19,17 @@ if [[ -d "$HOME/.local/bin" && ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# --------------------------------------------
 # SSH Agent
-# --------------------------------------------
-# Starta ssh-agent automatiskt om den inte redan körs
-if ! pgrep -u "$USER" ssh-agent > /dev/null; then
-    ssh-agent > "$XDG_RUNTIME_DIR/ssh-agent.env"
+export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+if [[ ! -S "$SSH_AUTH_SOCK" ]]; then
+    ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null 2>&1
+    s-vault-ssh 2>/dev/null || true
 fi
-if [[ -f "$XDG_RUNTIME_DIR/ssh-agent.env" ]]; then
-    source "$XDG_RUNTIME_DIR/ssh-agent.env" > /dev/null
+
+# Proton Pass CLI
+export PROTON_PASS_KEY_PROVIDER=env
+if [[ -f "$HOME/.config/local/proton-pass-key" ]]; then
+    export PROTON_PASS_ENCRYPTION_KEY=$(cat "$HOME/.config/local/proton-pass-key")
 fi
 
 # Git

@@ -1,0 +1,8 @@
+#!/bin/bash
+KEY_FILE="$HOME/.config/local/proton-pass-key"
+if [[ ! -f "$KEY_FILE" ]]; then
+    exit 1
+fi
+export PROTON_PASS_KEY_PROVIDER=env
+export PROTON_PASS_ENCRYPTION_KEY=$(cat "$KEY_FILE")
+exec ~/.local/bin/pass-cli ssh-agent start --vault-name keys
