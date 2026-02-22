@@ -102,17 +102,19 @@ for name in personal work school homelab; do
         chmod 600 "$target"
         log "Created $target"
     fi
-    if [[ -f "$target" ]] && grep -q '__GITEA_HOST__' "$target"; then
-        _gitea_host=""
+    if [[ -f "$target" ]] && grep -qE '__GITEA_HOST__|__HOMELAB_HOST__|__HOMELAB_USER__' "$target"; then
+        _vault_host=""
+        _vault_user=""
         if [[ -f "$HOME/.config/local/vault-config" ]]; then
-            _gitea_host=$(grep VAULT_HOSTS "$HOME/.config/local/vault-config" \
+            _vault_host=$(grep VAULT_HOSTS "$HOME/.config/local/vault-config" \
                 | cut -d'"' -f2 | awk '{print $1}')
+            _vault_user=$(grep VAULT_USER "$HOME/.config/local/vault-config" \
+                | cut -d'"' -f2)
         fi
-        if [[ -z "$_gitea_host" ]]; then
-            read -rp "[bootstrap] Gitea SSH-host: " _gitea_host
-        fi
-        sed -i "s/__GITEA_HOST__/$_gitea_host/" "$target"
-        log "Updated $target med host: $_gitea_host"
+        sed -i "s/__GITEA_HOST__/$_vault_host/g" "$target"
+        sed -i "s/__HOMELAB_HOST__/$_vault_host/g" "$target"
+        sed -i "s/__HOMELAB_USER__/$_vault_user/g" "$target"
+        log "Updated $target"
     fi
 done
 
