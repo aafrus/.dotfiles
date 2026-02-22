@@ -101,6 +101,10 @@ for name in personal work school homelab; do
         cp "$template" "$target"
         chmod 600 "$target"
         log "Created $target"
+        if [[ "$name" == "personal" ]] && grep -q '__GITEA_HOST__' "$target"; then
+            read -rp "[bootstrap] Gitea SSH-host: " _gitea_host
+            sed -i "s/__GITEA_HOST__/$_gitea_host/" "$target"
+        fi
     fi
 done
 
@@ -111,7 +115,7 @@ mkdir -p "$HOME/.config/local"
 VAULT_CONFIG="$HOME/.config/local/vault-config"
 if [[ ! -f "$VAULT_CONFIG" ]]; then
     read -rp "[bootstrap] Vault användarnamn: " _vault_user
-    read -rp "[bootstrap] Vault host(s) (space-separerat, t.ex. t-mini): " _vault_hosts
+    read -rp "[bootstrap] Vault host(s) (space-separerat): " _vault_hosts
     printf 'VAULT_USER="%s"\nVAULT_HOSTS="%s"\n' "$_vault_user" "$_vault_hosts" > "$VAULT_CONFIG"
     chmod 600 "$VAULT_CONFIG"
     log "vault-config skapad"
