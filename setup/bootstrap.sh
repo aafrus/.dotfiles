@@ -101,10 +101,11 @@ for name in personal work school homelab; do
         cp "$template" "$target"
         chmod 600 "$target"
         log "Created $target"
-        if [[ "$name" == "personal" ]] && grep -q '__GITEA_HOST__' "$target"; then
-            read -rp "[bootstrap] Gitea SSH-host: " _gitea_host
-            sed -i "s/__GITEA_HOST__/$_gitea_host/" "$target"
-        fi
+    fi
+    if [[ -f "$target" ]] && grep -q '__GITEA_HOST__' "$target"; then
+        read -rp "[bootstrap] Gitea SSH-host: " _gitea_host
+        sed -i "s/__GITEA_HOST__/$_gitea_host/" "$target"
+        log "Updated $target"
     fi
 done
 
