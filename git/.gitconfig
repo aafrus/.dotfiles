@@ -45,6 +45,9 @@
 [includeIf "gitdir:~/hub/personal/"]
     path = ~/.config/git/local/personal.conf
 
+[includeIf "gitdir:~/notes/"]
+    path = ~/.config/git/local/personal.conf
+
 [includeIf "gitdir:~/hub/work/"]
     path = ~/.config/git/local/work.conf
 
