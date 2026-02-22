@@ -10,7 +10,7 @@ if [[ "$(basename "$repo_root")" != ".dotfiles" ]]; then
   exit 0
 fi
 
-staged_files="$(git diff --cached --name-only)"
+staged_files="$(git diff --cached --name-only --diff-filter=d)"
 if [[ -z "$staged_files" ]]; then
   exit 0
 fi
