@@ -11,22 +11,8 @@
 # Git-alias för portabilitet över olika shells
 # ==============================================================
 [alias]
-    a   = add
-    aa  = add --all
-    c   = commit -m
-    ca  = commit --amend --no-edit
-    s   = status -sb
-    d   = diff
-    ds  = diff --staged
-    f   = fetch
-    p   = push
-    pl  = pull
-    pf  = push --force-with-lease
-    sw  = switch
-    b   = branch -vv
-    l   = log --graph --oneline --decorate --all
-    lg  = log --graph --pretty=format:'%C(yellow)%h%Creset %s %C(dim)%cr%Creset'
     unstage = restore --staged
+    lg      = log --graph --pretty=format:'%C(yellow)%h%Creset %s %C(dim)%cr%Creset'
 
 # ==============================================================
 # Kontext-baserad identitet (baserat på katalog)

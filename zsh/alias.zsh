@@ -61,29 +61,27 @@ command -v doas >/dev/null && \
     g="git"                                                                   \
     gi="git init"                                                             \
     ga="git add"                                                              \
+    gaa="git add --all"                                                       \
     gu="git restore --staged"                                                 \
-    gb="git branch"                                                           \
+    gb="git branch -vv"                                                       \
     gcl="git clone"                                                           \
-    gc="git commit"                                                            \
+    gc="git commit -m"                                                        \
+    gca="git commit --amend --no-edit"                                        \
     gs="git status -sb"                                                       \
+    gsm="git status -sbuno"                                                   \
     gd="git diff"                                                             \
+    gds="git diff --staged"                                                   \
     gf="git fetch && git log --pretty=format:'%C(always,yellow)%h%Creset %s %Cred%d' ..@{u}" \
     gm="git merge"                                                            \
     gr="git rebase"                                                           \
     gp="git push"                                                             \
     gpf="git push --force-with-lease"                                         \
     gpl="git pull"                                                            \
-    gr="git rm -r"                                                            \
-    gl="git log --graph"                                                      \
-    gra="git commit --amend --no-edit --reset-author"                         \
-    gco="git checkout"                                                        \
-    gsm="git status -sbuno"                                                   \
-    grp="git request-pull"                                                    \
-    ggg="git graphgpg"                                                        \
+    gsw="git switch"                                                          \
+    gl="git log --graph --oneline --decorate --all"                           \
+    glg="git log --graph --pretty=format:'%C(yellow)%h%Creset %s %C(dim)%cr%Creset'" \
     gao="git remote add origin"                                               \
-    gpsu='{ branch=$(git_current_branch) || exit 1; git push --set-upstream origin "$branch"; }'    \
-    gcn="git config user.name"                                                \
-    gce="git config user.email"                                               \
+    gpsu='{ branch=$(git_current_branch) || exit 1; git push --set-upstream origin "$branch"; }' \
                                                                               \
 
 
