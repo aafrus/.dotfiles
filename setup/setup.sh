@@ -104,7 +104,7 @@ log "Hämtar SSH-nycklar från Vault..."
 mkdir -p "$HOME/.ssh/keys"
 chmod 700 "$HOME/.ssh"
 
-for key in homelab personal; do
+for key in personal work school; do
     if vault kv get kv/ssh/$key &>/dev/null; then
         vault kv get -field=private_key kv/ssh/$key > "$HOME/.ssh/keys/$key"
         vault kv get -field=public_key  kv/ssh/$key > "$HOME/.ssh/keys/$key.pub" 2>/dev/null || true

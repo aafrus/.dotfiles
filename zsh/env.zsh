@@ -24,7 +24,7 @@ export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
 if ! ssh-add -l &>/dev/null; then
     rm -f "$SSH_AUTH_SOCK"
     ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null 2>&1
-    for _key in "$HOME/.ssh/keys/personal" "$HOME/.ssh/keys/homelab"; do
+    for _key in "$HOME/.ssh/keys/personal" "$HOME/.ssh/keys/work" "$HOME/.ssh/keys/school"; do
         [[ -f "$_key" ]] && ssh-add "$_key" 2>/dev/null || true
     done
     unset _key
