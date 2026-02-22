@@ -103,9 +103,16 @@ for name in personal work school homelab; do
         log "Created $target"
     fi
     if [[ -f "$target" ]] && grep -q '__GITEA_HOST__' "$target"; then
-        read -rp "[bootstrap] Gitea SSH-host: " _gitea_host
+        _gitea_host=""
+        if [[ -f "$HOME/.config/local/vault-config" ]]; then
+            _gitea_host=$(grep VAULT_HOSTS "$HOME/.config/local/vault-config" \
+                | cut -d'"' -f2 | awk '{print $1}')
+        fi
+        if [[ -z "$_gitea_host" ]]; then
+            read -rp "[bootstrap] Gitea SSH-host: " _gitea_host
+        fi
         sed -i "s/__GITEA_HOST__/$_gitea_host/" "$target"
-        log "Updated $target"
+        log "Updated $target med host: $_gitea_host"
     fi
 done
 
