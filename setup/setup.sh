@@ -120,10 +120,10 @@ export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
 if [[ ! -S "$SSH_AUTH_SOCK" ]]; then
     ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null 2>&1
 fi
-ssh-add "$HOME/.ssh/keys/personal" 2>/dev/null || true
+for key in personal work school; do
+    [[ -f "$HOME/.ssh/keys/$key" ]] && ssh-add "$HOME/.ssh/keys/$key" 2>/dev/null || true
+done
+log "SSH-nycklar laddade i agent"
 
 echo ""
 log "Klar!"
-log "Testa GitHub:  ssh -T git@github.com"
-log "Testa Gitea:   ssh -T git@git.amandus.xyz"
-log "Testa homelab: ssh <din-server>"
