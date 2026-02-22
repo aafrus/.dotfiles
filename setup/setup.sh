@@ -9,7 +9,7 @@ VAULT_CONFIG="$HOME/.config/local/vault-config"
 if [[ -f "$VAULT_CONFIG" ]]; then
     source "$VAULT_CONFIG"
 else
-    read -rp "Vault adress (t.ex. http://100.x.x.x:8200): " VAULT_ADDR
+    read -rp "Vault adress (t.ex. http://NETBIRD-IP:8200): " VAULT_ADDR
     read -rp "Vault användarnamn: " VAULT_USER
     mkdir -p "$HOME/.config/local"
     printf 'VAULT_ADDR="%s"\nVAULT_USER="%s"\n' "$VAULT_ADDR" "$VAULT_USER" > "$VAULT_CONFIG"
@@ -19,21 +19,11 @@ fi
 echo "=== Lokal setup ==="
 
 # --- Väder ---
-read -rp "Väderplats (stad): " LOCATION
-mkdir -p "$HOME/.config/local"
-echo "$LOCATION" > "$HOME/.config/local/weather-location"
-
-# --- Git identitet ---
-read -rp "Git namn (personlig): " GIT_NAME
-read -rp "Git email (personlig): " GIT_EMAIL
-mkdir -p "$HOME/.config/git/local"
-cat > "$HOME/.config/git/local/personal.conf" << EOF
-[user]
-    name = $GIT_NAME
-    email = $GIT_EMAIL
-EOF
-chmod 600 "$HOME/.config/git/local/personal.conf"
-log "Git personlig identitet sparad"
+if [[ ! -f "$HOME/.config/local/weather-location" ]]; then
+    read -rp "Väderplats (stad): " LOCATION
+    mkdir -p "$HOME/.config/local"
+    echo "$LOCATION" > "$HOME/.config/local/weather-location"
+fi
 
 # --- Vault CLI ---
 if ! command -v vault &>/dev/null; then
@@ -75,6 +65,19 @@ if [[ -z "$VAULT_TOKEN" ]]; then
 fi
 export VAULT_TOKEN
 log "Inloggad i Vault"
+
+# --- Git identitet ---
+if [[ ! -f "$HOME/.config/git/local/personal.conf" ]]; then
+    GIT_NAME=$(vault kv get -field=name kv/config/git 2>/dev/null || echo '')
+    GIT_EMAIL=$(vault kv get -field=email kv/config/git 2>/dev/null || echo '')
+    if [[ -n "$GIT_NAME" && -n "$GIT_EMAIL" ]]; then
+        mkdir -p "$HOME/.config/git/local"
+        printf '[user]\n    name = %s\n    email = %s\n' "$GIT_NAME" "$GIT_EMAIL" \
+            > "$HOME/.config/git/local/personal.conf"
+        chmod 600 "$HOME/.config/git/local/personal.conf"
+        log "Git identitet hämtad från Vault"
+    fi
+fi
 
 # --- SSH-nycklar ---
 log "Hämtar SSH-nycklar från Vault..."
