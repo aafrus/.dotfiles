@@ -73,6 +73,17 @@ stow git ssh zsh
 log "Creating hub structure"
 "$SETUP_DIR/setup-hub.sh"
 
+log "Creating vault config (if missing)"
+mkdir -p "$HOME/.config/local"
+VAULT_CONFIG="$HOME/.config/local/vault-config"
+if [[ ! -f "$VAULT_CONFIG" ]]; then
+    read -rp "[bootstrap] Vault användarnamn: " _vault_user
+    read -rp "[bootstrap] Vault host(s) (space-separerat): " _vault_hosts
+    printf 'VAULT_USER="%s"\nVAULT_HOSTS="%s"\n' "$_vault_user" "$_vault_hosts" > "$VAULT_CONFIG"
+    chmod 600 "$VAULT_CONFIG"
+    log "vault-config skapad"
+fi
+
 log "Creating local git identity files from templates (if missing)"
 mkdir -p "$HOME/.config/git/local"
 for name in default personal work school; do
@@ -119,17 +130,6 @@ for name in personal work school homelab; do
 done
 
 chmod 700 "$HOME/.ssh"
-
-log "Creating vault config (if missing)"
-mkdir -p "$HOME/.config/local"
-VAULT_CONFIG="$HOME/.config/local/vault-config"
-if [[ ! -f "$VAULT_CONFIG" ]]; then
-    read -rp "[bootstrap] Vault användarnamn: " _vault_user
-    read -rp "[bootstrap] Vault host(s) (space-separerat): " _vault_hosts
-    printf 'VAULT_USER="%s"\nVAULT_HOSTS="%s"\n' "$_vault_user" "$_vault_hosts" > "$VAULT_CONFIG"
-    chmod 600 "$VAULT_CONFIG"
-    log "vault-config skapad"
-fi
 
 log "Done"
 log "Next: kör $SETUP_DIR/setup.sh för SSH-nycklar och git-identitet"
