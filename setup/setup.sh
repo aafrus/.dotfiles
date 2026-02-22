@@ -4,26 +4,46 @@ set -euo pipefail
 
 log() { printf '[setup-local] %s\n' "$*"; }
 
-# --- Vault-anslutning ---
 VAULT_CONFIG="$HOME/.config/local/vault-config"
-if [[ -f "$VAULT_CONFIG" ]]; then
-    source "$VAULT_CONFIG"
-else
-    read -rp "Vault adress (t.ex. http://NETBIRD-IP:8200): " VAULT_ADDR
-    read -rp "Vault användarnamn: " VAULT_USER
-    mkdir -p "$HOME/.config/local"
-    printf 'VAULT_ADDR="%s"\nVAULT_USER="%s"\n' "$VAULT_ADDR" "$VAULT_USER" > "$VAULT_CONFIG"
+VAULT_EXAMPLE="$(dirname "$0")/vault.conf.example"
+
+if [[ ! -f "$VAULT_CONFIG" ]]; then
+    cp "$VAULT_EXAMPLE" "$VAULT_CONFIG"
     chmod 600 "$VAULT_CONFIG"
+    log "Fyll i ~/.config/local/vault-config och kör om setup.sh"
+    ${EDITOR:-nano} "$VAULT_CONFIG"
 fi
+source "$VAULT_CONFIG"
+
+# --- Vault adress (auto-discovery) ---
+# Hosts läses från VAULT_HOSTS i vault-config (lokal fil, ej i git).
+_find_vault_addr() {
+    local ports=(8200 443)
+    for host in $VAULT_HOSTS; do
+        for port in "${ports[@]}"; do
+            local scheme="http"
+            [[ "$port" == "443" ]] && scheme="https"
+            local addr="${scheme}://${host}:${port}"
+            if curl -sf --connect-timeout 1 "${addr}/v1/sys/health" &>/dev/null; then
+                echo "$addr"
+                return 0
+            fi
+        done
+    done
+    return 1
+}
+
+if [[ -z "${VAULT_ADDR:-}" ]]; then
+    log "Söker Vault-server..."
+    if VAULT_ADDR=$(_find_vault_addr); then
+        log "  Hittade Vault på $VAULT_ADDR"
+    else
+        read -rp "Kunde inte hitta Vault - ange adress: " VAULT_ADDR
+    fi
+fi
+export VAULT_ADDR
 
 echo "=== Lokal setup ==="
-
-# --- Väder ---
-if [[ ! -f "$HOME/.config/local/weather-location" ]]; then
-    read -rp "Väderplats (stad): " LOCATION
-    mkdir -p "$HOME/.config/local"
-    echo "$LOCATION" > "$HOME/.config/local/weather-location"
-fi
 
 # --- Vault CLI ---
 if ! command -v vault &>/dev/null; then
