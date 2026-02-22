@@ -107,9 +107,9 @@ for name in personal work school homelab; do
         _vault_user=""
         if [[ -f "$HOME/.config/local/vault-config" ]]; then
             _vault_host=$(grep VAULT_HOSTS "$HOME/.config/local/vault-config" \
-                | cut -d'"' -f2 | awk '{print $1}')
+                | cut -d'"' -f2 | awk '{print $1}') || true
             _vault_user=$(grep VAULT_USER "$HOME/.config/local/vault-config" \
-                | cut -d'"' -f2)
+                | cut -d'"' -f2) || true
         fi
         sed -i "s/__GITEA_HOST__/$_vault_host/g" "$target"
         sed -i "s/__HOMELAB_HOST__/$_vault_host/g" "$target"
