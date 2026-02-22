@@ -65,6 +65,17 @@ else
     warn "GitHub SSH auth not ready"
 fi
 
+echo "== SSH homelab test =="
+HOMELAB_HOST=$(grep HostName "$HOME/.ssh/config.d/"*homelab* 2>/dev/null | awk '{print $2}' | head -1)
+if [[ -z "$HOMELAB_HOST" ]]; then
+    warn "Ingen homelab SSH-config hittad"
+elif ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+        -i "$HOME/.ssh/keys/homelab" "ns@$HOMELAB_HOST" true 2>/dev/null; then
+    ok "Homelab SSH funkar (lösenordsfritt)"
+else
+    warn "Homelab SSH nåbar men lösenord krävs - kör setup.sh"
+fi
+
 echo "== Hub paths =="
 for path in \
     "$HOME/hub/projects" \

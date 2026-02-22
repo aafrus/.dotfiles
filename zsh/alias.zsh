@@ -93,7 +93,7 @@ command -v doas >/dev/null && \
                                                                         alias \
     pac="sudo pacman"                                                         \
     pacman="sudo pacman"                                                      \
-    update="sudo paccache -r ; pacman -S --noconfirm archlinux-keyring ; pacman -Syu"
+    update="sudo paccache -rfk2 && pacman -S --noconfirm archlinux-keyring && pacman -Syu --noconfirm && sudo netbird-update"
 
 # ▓▓▒░ devops
                                                                         alias \

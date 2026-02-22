@@ -107,5 +107,5 @@ done
 chmod 700 "$HOME/.ssh"
 
 log "Done"
-log "Next: kör $SETUP_DIR/setup-local.sh för SSH-nycklar och git-identitet"
+log "Next: kör $SETUP_DIR/setup.sh för SSH-nycklar och git-identitet"
 log "Verifiera sedan med: $SETUP_DIR/verify.sh"
