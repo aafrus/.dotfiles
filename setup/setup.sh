@@ -122,16 +122,6 @@ if [[ ! -S "$SSH_AUTH_SOCK" ]]; then
 fi
 ssh-add "$HOME/.ssh/keys/personal" 2>/dev/null || true
 
-# --- Notes repo ---
-if [[ ! -d "$HOME/notes/.git" ]]; then
-    log "Klonar notes-repo..."
-    git clone git@git.amandus.xyz:aafrus/notes.git "$HOME/notes" 2>/dev/null \
-        && log "  notes klonat till ~/notes" \
-        || log "  notes kunde inte klonas - kör manuellt: git clone git@git.amandus.xyz:aafrus/notes.git ~/notes"
-else
-    log "  ~/notes finns redan"
-fi
-
 echo ""
 log "Klar!"
 log "Testa GitHub:  ssh -T git@github.com"
