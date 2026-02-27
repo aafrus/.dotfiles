@@ -25,7 +25,15 @@ if ! ssh-add -l &>/dev/null; then
     rm -f "$SSH_AUTH_SOCK"
     ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null 2>&1
     if command -v s-vault-ssh &>/dev/null; then
-        s-vault-ssh &>/dev/null &!
+        _vault_token="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/vault/token"
+        if [[ -f "$_vault_token" ]]; then
+            # Token finns — kan köra i bakgrund utan prompt
+            s-vault-ssh &>/dev/null &!
+        else
+            # Ingen token — kör i förgrund så lösenordsprompt fungerar
+            s-vault-ssh
+        fi
+        unset _vault_token
     fi
 fi
 

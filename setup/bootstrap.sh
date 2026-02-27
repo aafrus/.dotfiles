@@ -55,29 +55,59 @@ install_pkg() {
     return 1
 }
 
-# --- 1. Base tools ---
-log "Checking base tools"
-install_pkg git git git git || true
-install_pkg stow stow stow stow || true
-install_pkg zsh zsh zsh zsh || true
-install_pkg rg ripgrep ripgrep ripgrep || true
+# --- 1. Install packages from requirements.txt ---
+REQUIREMENTS="$DOTFILES_DIR/requirements.txt"
+log "Installerar paket från requirements.txt"
 
-if ! have stow; then
-    log "stow is required; install it and rerun"
-    exit 1
-fi
+_apt_updated=0
+while IFS=':' read -r cmd pac apt dnf; do
+    # Hoppa över kommentarer och tomma rader
+    cmd=$(echo "$cmd" | xargs)
+    [[ -z "$cmd" || "$cmd" == \#* ]] && continue
+    pac=$(echo "$pac" | xargs)
+    apt=$(echo "$apt" | xargs)
+    dnf=$(echo "$dnf" | xargs)
 
-# --- 2. Vault CLI ---
-if ! have vault; then
-    if [[ "$NO_INSTALL" -eq 1 ]]; then
-        log "Missing 'vault' (skip install due to --no-install)"
-    else
-        log "Installing vault CLI..."
+    # Paket utan kommando (t.ex. fonts) — kolla om paketet redan är installerat
+    if [[ "$cmd" == _* ]]; then
         if have pacman; then
-            sudo pacman -S --noconfirm vault
-        elif have apt-get; then
+            pacman -Qi "$pac" &>/dev/null && continue
+        elif have dpkg; then
+            dpkg -s "$apt" &>/dev/null 2>&1 && continue
+        elif have rpm; then
+            rpm -q "$dnf" &>/dev/null && continue
+        fi
+    else
+        have "$cmd" && continue
+    fi
+
+    if [[ "$NO_INSTALL" -eq 1 ]]; then
+        log "Saknas: $cmd (hoppar över pga --no-install)"
+        continue
+    fi
+
+    if have pacman; then
+        sudo pacman -S --noconfirm --needed "$pac" || log "Kunde inte installera $pac"
+    elif have apt-get; then
+        if [[ "$_apt_updated" -eq 0 ]]; then
+            sudo apt-get update -qq
+            _apt_updated=1
+        fi
+        sudo apt-get install -y "$apt" || log "Kunde inte installera $apt"
+    elif have dnf; then
+        sudo dnf install -y "$dnf" || log "Kunde inte installera $dnf"
+    else
+        log "Ingen pakethanterare hittad för $cmd"
+    fi
+done < "$REQUIREMENTS"
+
+# Vault kan kräva extern repo på apt/dnf
+if ! have vault; then
+    if [[ "$NO_INSTALL" -eq 0 ]]; then
+        log "Installerar vault CLI från HashiCorp-repo..."
+        if have apt-get; then
             curl -fsSL https://apt.releases.hashicorp.com/gpg \
-                | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp.gpg
+                | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp.gpg 2>/dev/null || true
             echo "deb [signed-by=/usr/share/keyrings/hashicorp.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
                 | sudo tee /etc/apt/sources.list.d/hashicorp.list > /dev/null
             sudo apt-get update -qq && sudo apt-get install -y vault
@@ -85,12 +115,15 @@ if ! have vault; then
             sudo dnf install -y dnf-plugins-core
             sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo
             sudo dnf install -y vault
-        else
-            log "Okand pakethanterare - installera vault manuellt: https://developer.hashicorp.com/vault/install"
-            exit 1
         fi
     fi
 fi
+
+if ! have stow; then
+    log "stow krävs — installera och kör igen"
+    exit 1
+fi
+
 have vault && log "Vault CLI ok"
 
 # --- 3. Stow packages ---
@@ -162,18 +195,19 @@ done
 
 chmod 700 "$HOME/.ssh"
 
-# --- 7. Vault password ---
-if [[ ! -f "$HOME/.config/local/vault-pass" ]]; then
-    read -rsp "[bootstrap] Vault lösenord: " VAULT_PASS
-    echo ""
-    mkdir -p "$HOME/.config/local"
-    echo -n "$VAULT_PASS" > "$HOME/.config/local/vault-pass"
-    chmod 600 "$HOME/.config/local/vault-pass"
-    log "Vault lösenord sparat"
+# --- 7. Cleanup legacy vault-pass ---
+if [[ -f "$HOME/.config/local/vault-pass" ]]; then
+    log "Tar bort legacy vault-pass från disk"
+    shred -u "$HOME/.config/local/vault-pass" 2>/dev/null \
+        || rm -f "$HOME/.config/local/vault-pass"
 fi
 
-# --- 8. Vault login + auto-discovery ---
+# --- 8. Vault login → token till tmpfs ---
 source "$VAULT_CONFIG"
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+TOKEN_FILE="$RUNTIME_DIR/vault/token"
+AGENT_TEMPLATE="$HOME/.config/vault/agent.hcl.tmpl"
+AGENT_CONFIG="$RUNTIME_DIR/vault/agent.hcl"
 
 _find_vault_addr() {
     local ports=(8200 443)
@@ -201,16 +235,33 @@ if [[ -z "${VAULT_ADDR:-}" ]]; then
 fi
 export VAULT_ADDR
 
+mkdir -p "$RUNTIME_DIR/vault"
+
+read -rsp "[bootstrap] Vault lösenord: " _vault_pass
+echo ""
 log "Loggar in i Vault..."
 VAULT_TOKEN=$(vault login -method=userpass -field=token \
     username="$VAULT_USER" \
-    password="$(tr -d '\n' < "$HOME/.config/local/vault-pass")" 2>/dev/null)
-if [[ -z "$VAULT_TOKEN" ]]; then
+    password="$_vault_pass" 2>/dev/null) || {
+    unset _vault_pass
     log "Vault login misslyckades - kontrollera lösenord och att Netbird är uppe"
     exit 1
-fi
+}
+unset _vault_pass
 export VAULT_TOKEN
-log "Inloggad i Vault"
+echo -n "$VAULT_TOKEN" > "$TOKEN_FILE"
+chmod 600 "$TOKEN_FILE"
+log "Inloggad i Vault (token i tmpfs)"
+
+# Rendera agent config och starta vault-agent
+if [[ -f "$AGENT_TEMPLATE" ]]; then
+    sed -e "s|@@VAULT_ADDR@@|$VAULT_ADDR|g" \
+        -e "s|@@RUNTIME_DIR@@|$RUNTIME_DIR|g" \
+        "$AGENT_TEMPLATE" > "$AGENT_CONFIG"
+    systemctl --user daemon-reload
+    systemctl --user restart vault-agent.service 2>/dev/null || true
+    log "vault-agent startad"
+fi
 
 # --- 9. Git identity from Vault ---
 PERSONAL_CONF="$HOME/.config/git/local/personal.conf"

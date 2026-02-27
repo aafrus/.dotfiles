@@ -2,12 +2,10 @@
 set -euo pipefail
 
 VAULT_CONFIG="$HOME/.config/local/vault-config"
-PASS_FILE="$HOME/.config/local/vault-pass"
-
-if [[ ! -f "$PASS_FILE" ]]; then
-    echo "Vault lösenord saknas i $PASS_FILE" >&2
-    exit 1
-fi
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+TOKEN_FILE="$RUNTIME_DIR/vault/token"
+AGENT_CONFIG="$RUNTIME_DIR/vault/agent.hcl"
+AGENT_TEMPLATE="$HOME/.config/vault/agent.hcl.tmpl"
 
 if [[ ! -f "$VAULT_CONFIG" ]]; then
     echo "Vault config saknas i $VAULT_CONFIG" >&2
@@ -16,20 +14,70 @@ fi
 
 source "$VAULT_CONFIG"
 
-_vault_host=$(echo "${VAULT_HOSTS}" | awk '{print $1}')
-export VAULT_ADDR="http://${_vault_host}:8200"
+# --- Hitta Vault-adress ---
+_find_vault_addr() {
+    local ports=(8200 443)
+    for host in $VAULT_HOSTS; do
+        for port in "${ports[@]}"; do
+            local scheme="http"
+            [[ "$port" == "443" ]] && scheme="https"
+            local addr="${scheme}://${host}:${port}"
+            if curl -sf --connect-timeout 1 "${addr}/v1/sys/health" &>/dev/null; then
+                echo "$addr"
+                return 0
+            fi
+        done
+    done
+    return 1
+}
 
-VAULT_TOKEN=$(vault login -method=userpass -field=token \
-    username="${VAULT_USER}" \
-    password="$(tr -d '\n' < "$PASS_FILE")" 2>/dev/null)
+if [[ -z "${VAULT_ADDR:-}" ]]; then
+    _vault_host=$(echo "${VAULT_HOSTS}" | awk '{print $1}')
+    export VAULT_ADDR="http://${_vault_host}:8200"
+fi
 
-if [[ -z "$VAULT_TOKEN" ]]; then
-    echo "Vault login misslyckades" >&2
+# --- Token-hantering ---
+mkdir -p "$RUNTIME_DIR/vault"
+
+_token_valid() {
+    [[ -f "$TOKEN_FILE" ]] || return 1
+    VAULT_TOKEN=$(cat "$TOKEN_FILE")
+    export VAULT_TOKEN
+    vault token lookup &>/dev/null
+}
+
+if _token_valid; then
+    : # Token finns och är giltig
+elif [[ -t 0 ]]; then
+    # Interaktiv terminal — fråga efter lösenord
+    read -rsp "Vault lösenord: " _vault_pass
+    echo ""
+    VAULT_TOKEN=$(vault login -method=userpass -field=token \
+        username="$VAULT_USER" \
+        password="$_vault_pass" 2>/dev/null) || {
+        unset _vault_pass
+        echo "Vault login misslyckades" >&2
+        exit 1
+    }
+    unset _vault_pass
+    export VAULT_TOKEN
+    echo -n "$VAULT_TOKEN" > "$TOKEN_FILE"
+    chmod 600 "$TOKEN_FILE"
+
+    # Rendera agent config och starta vault-agent
+    if [[ -f "$AGENT_TEMPLATE" ]]; then
+        sed -e "s|@@VAULT_ADDR@@|$VAULT_ADDR|g" \
+            -e "s|@@RUNTIME_DIR@@|$RUNTIME_DIR|g" \
+            "$AGENT_TEMPLATE" > "$AGENT_CONFIG"
+        systemctl --user daemon-reload
+        systemctl --user restart vault-agent.service 2>/dev/null || true
+    fi
+else
+    echo "Ingen giltig Vault-token och ingen TTY — kör s-vault-ssh interaktivt först" >&2
     exit 1
 fi
 
-export VAULT_TOKEN
-
+# --- SSH-nycklar ---
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 

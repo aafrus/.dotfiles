@@ -1,64 +1,63 @@
 # ============================================================
 # Paket som behövs för denna setup
 # ============================================================
-# Arch:   sudo pacman -S --needed <paket>
-# Fedora: sudo rpm-ostree install <paket> (eller flatpak)
-# Ubuntu: sudo apt install <paket>
+# Format: kommando : arch-paket : apt-paket : dnf-paket
+# Rader som börjar med # ignoreras
 # ============================================================
 
+# Shell & basverktyg
+zsh         : zsh                      : zsh                : zsh
+git         : git                      : git                : git
+stow        : stow                     : stow               : stow
+curl        : curl                     : curl               : curl
+nvim        : neovim                   : neovim             : neovim
+rg          : ripgrep                  : ripgrep            : ripgrep
+fzf         : fzf                      : fzf                : fzf
+zoxide      : zoxide                   : zoxide             : zoxide
+
+# Secrets & SSH
+vault       : vault                    : vault              : vault
+
 # Window manager & Wayland
-sway
-swaybg
-swayidle
+sway        : sway                     : sway               : sway
+swaybg      : swaybg                   : swaybg             : swaybg
+swayidle    : swayidle                 : swayidle           : swayidle
 
 # Terminal
-wezterm                     # Arch: wezterm | Flatpak: org.wezfurlong.wezterm
+wezterm     : wezterm                  : wezterm            : wezterm
 
 # Browser
-firefox                     # Flatpak: org.mozilla.firefox
+firefox     : firefox                  : firefox            : firefox
 
-# Font
-ttf-jetbrains-mono-nerd     # Arch: ttf-jetbrains-mono-nerd | Fedora: jetbrains-mono-fonts
+# Font (inget kommando — installeras via paketnamn)
+_font       : ttf-jetbrains-mono-nerd  : fonts-jetbrains-mono : jetbrains-mono-fonts
 
 # Launcher
-dmenu
+dmenu_run   : dmenu                    : dmenu              : dmenu
 
 # Notifieringar
-dunst
+dunst       : dunst                    : dunst              : dunst
 
 # Lockscreen
-hyprlock
+hyprlock    : hyprlock                 : hyprlock           : hyprlock
 
 # Screenshot
-grim
-slurp
+grim        : grim                     : grim               : grim
+slurp       : slurp                    : slurp              : slurp
 
 # Ljusstyrka
-brightnessctl
+brightnessctl : brightnessctl          : brightnessctl      : brightnessctl
 
 # Ljud
-pipewire
-wireplumber
+wpctl       : pipewire                 : pipewire           : pipewire
+wireplumber : wireplumber              : wireplumber        : wireplumber
 
 # Clipboard
-wl-clipboard                # Fedora/Ubuntu: wl-clipboard
-
-# Dotfiles
-stow
-
-# Shell & verktyg
-zsh
-git
-curl
-neovim
+wl-copy     : wl-clipboard             : wl-clipboard       : wl-clipboard
+cliphist    : cliphist                 : cliphist           : cliphist
 
 # Python (för i3a master-stack)
-pipx                        # Arch: python-pipx | Fedora/Ubuntu: pipx
-# Kör sedan: install-i3a
-
-# Secrets / SSH-nycklar
-gnome-keyring                # krävs av pass-cli för att dekryptera sessionen
-# pass-cli — installeras manuellt, se https://github.com/nicholasgasior/pass-cli
+pipx        : python-pipx              : pipx               : pipx
 
 # VPN
-# netbird - se https://netbird.io/docs/installation/linux
+# netbird — installeras separat, se https://netbird.io/docs/installation/linux

@@ -93,6 +93,20 @@ else
     err "s-vault-ssh saknas i PATH"
 fi
 
+echo "== Vault Agent =="
+if systemctl --user is-active vault-agent.service &>/dev/null; then
+    ok "vault-agent.service är aktiv"
+else
+    warn "vault-agent.service är inte aktiv"
+fi
+
+_vault_token="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/vault/token"
+if [[ -f "$_vault_token" ]]; then
+    ok "Vault token finns i tmpfs"
+else
+    warn "Vault token saknas i $_vault_token"
+fi
+
 echo "== Systemd timer =="
 if systemctl --user is-active vault-ssh-renew.timer &>/dev/null; then
     ok "vault-ssh-renew.timer är aktiv"

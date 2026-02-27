@@ -1,0 +1,11 @@
+[Unit]
+Description=Vault Agent - token caching and renewal
+ConditionPathExists=%t/vault/agent.hcl
+
+[Service]
+ExecStart=/usr/bin/vault agent -config=%t/vault/agent.hcl
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

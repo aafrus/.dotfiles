@@ -1,5 +1,7 @@
 [Unit]
 Description=Renew Vault SSH keys and certificates
+Requires=vault-agent.service
+After=vault-agent.service
 
 [Service]
 Type=oneshot
