@@ -11,12 +11,6 @@ command -v gls >/dev/null && \
     alias ls="gls -hF --color=auto" || \
     alias ls="ls -hF --color=auto"
 
-# ▓▓▒░ root
-
-command -v doas >/dev/null && \
-    alias sudo='doas ' || \
-    alias sudo='sudo '
-
 # ▓▓▒░ sys
                                                                         alias \
     ll="ls -lahF --color=auto"                                                \
@@ -80,6 +74,8 @@ command -v doas >/dev/null && \
     gsw="git switch"                                                          \
     gl="git log --graph --oneline --decorate --all"                           \
     glg="git log --graph --pretty=format:'%C(yellow)%h%Creset %s %C(dim)%cr%Creset'" \
+    gup="git log --oneline @{u}..HEAD"                                      \
+    gupd="git log -p @{u}..HEAD"                                              \
     gao="git remote add origin"                                               \
     gpsu='{ branch=$(git_current_branch) || exit 1; git push --set-upstream origin "$branch"; }' \
                                                                               \

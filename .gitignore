@@ -25,3 +25,6 @@ ssh/.ssh/config.d/01-work.conf
 git/.config/git/personal.conf
 git/.config/git/school.conf
 git/.config/git/work.conf
+
+# Local data
+git/.config/local/
