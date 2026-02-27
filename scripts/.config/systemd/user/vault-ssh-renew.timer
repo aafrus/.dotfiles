@@ -1,0 +1,9 @@
+[Unit]
+Description=Renew Vault SSH certs every 12h
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=12h
+
+[Install]
+WantedBy=timers.target

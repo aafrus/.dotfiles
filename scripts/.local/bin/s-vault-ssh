@@ -1,14 +1,16 @@
 #!/bin/bash
+set -euo pipefail
+
 VAULT_CONFIG="$HOME/.config/local/vault-config"
 PASS_FILE="$HOME/.config/local/vault-pass"
 
 if [[ ! -f "$PASS_FILE" ]]; then
-    echo "Vault lösenord saknas i $PASS_FILE"
+    echo "Vault lösenord saknas i $PASS_FILE" >&2
     exit 1
 fi
 
 if [[ ! -f "$VAULT_CONFIG" ]]; then
-    echo "Vault config saknas i $VAULT_CONFIG"
+    echo "Vault config saknas i $VAULT_CONFIG" >&2
     exit 1
 fi
 
@@ -22,13 +24,30 @@ VAULT_TOKEN=$(vault login -method=userpass -field=token \
     password="$(tr -d '\n' < "$PASS_FILE")" 2>/dev/null)
 
 if [[ -z "$VAULT_TOKEN" ]]; then
-    echo "Vault login misslyckades"
+    echo "Vault login misslyckades" >&2
     exit 1
 fi
 
 export VAULT_TOKEN
 
-# Ladda SSH-nycklar i agent från disk
-for key in personal work school; do
-    [[ -f "$HOME/.ssh/keys/$key" ]] && ssh-add "$HOME/.ssh/keys/$key" 2>/dev/null || true
-done
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+# Personal key -> agent
+{ vault kv get -field=private_key kv/ssh/personal; echo; } > "$TMPDIR/personal"
+chmod 600 "$TMPDIR/personal"
+ssh-add "$TMPDIR/personal"
+
+# Homelab key + cert -> agent
+{ vault kv get -field=private_key kv/ssh/homelab; echo; } > "$TMPDIR/homelab"
+{ vault kv get -field=public_key kv/ssh/homelab; echo; } > "$TMPDIR/homelab.pub"
+chmod 600 "$TMPDIR/homelab"
+vault write -field=signed_key ssh/sign/homelab-client \
+    public_key=@"$TMPDIR/homelab.pub" valid_principals=ns \
+    > "$TMPDIR/homelab-cert.pub"
+ssh-add "$TMPDIR/homelab"
+
+# Spara cert till disk (inte hemligt) så SSH kan matcha det
+cp "$TMPDIR/homelab-cert.pub" "$HOME/.ssh/keys/homelab-cert.pub"
+
+echo "SSH-nycklar laddade i agent"

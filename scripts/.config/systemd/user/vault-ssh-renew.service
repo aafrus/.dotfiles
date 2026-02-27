@@ -1,0 +1,7 @@
+[Unit]
+Description=Renew Vault SSH keys and certificates
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/s-vault-ssh
+Environment=SSH_AUTH_SOCK=%h/.ssh/agent.sock

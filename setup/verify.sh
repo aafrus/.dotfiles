@@ -57,6 +57,16 @@ if ! git config --global --show-origin --get-regexp '^includeIf\..*\.path$'; the
     warn "No includeIf rules found"
 fi
 
+echo "== SSH agent =="
+export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-$HOME/.ssh/agent.sock}"
+if ssh-add -l &>/dev/null; then
+    AGENT_KEYS=$(ssh-add -l)
+    ok "SSH agent has keys loaded:"
+    printf '     %s\n' "$AGENT_KEYS"
+else
+    err "SSH agent has no keys (ssh-add -l failed)"
+fi
+
 echo "== SSH github test =="
 SSH_OUT="$(ssh -o BatchMode=yes -T git@github.com 2>&1 || true)"
 if printf '%s\n' "$SSH_OUT" | grep -q 'successfully authenticated'; then
@@ -70,10 +80,24 @@ HOMELAB_HOST=$(grep HostName "$HOME/.ssh/config.d/"*homelab* 2>/dev/null | awk '
 if [[ -z "$HOMELAB_HOST" ]]; then
     warn "Ingen homelab SSH-config hittad"
 elif ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
-        -i "$HOME/.ssh/keys/homelab" "ns@$HOMELAB_HOST" true 2>/dev/null; then
-    ok "Homelab SSH funkar (lösenordsfritt)"
+        "ns@$HOMELAB_HOST" true 2>/dev/null; then
+    ok "Homelab SSH funkar (via agent)"
 else
-    warn "Homelab SSH nåbar men lösenord krävs - kör setup.sh"
+    warn "Homelab SSH nåbar men auth misslyckades - kör bootstrap.sh"
+fi
+
+echo "== Tools =="
+if command -v s-vault-ssh &>/dev/null; then
+    ok "s-vault-ssh finns i PATH"
+else
+    err "s-vault-ssh saknas i PATH"
+fi
+
+echo "== Systemd timer =="
+if systemctl --user is-active vault-ssh-renew.timer &>/dev/null; then
+    ok "vault-ssh-renew.timer är aktiv"
+else
+    warn "vault-ssh-renew.timer är inte aktiv"
 fi
 
 echo "== Hub paths =="
